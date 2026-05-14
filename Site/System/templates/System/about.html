@@ -3,19 +3,21 @@
 
 {% block content %}
 <section class="about-hero">
-    <div class="hero-content">
-        <nav class="breadcrumb">COCOWA > About Us</nav>
-        <h1>Dedicated To Passenger Welfare.</h1>
-        <p class="company-intro">
-            The Counties Commuter Welfare Association (COCOWA) is a dedicated organization committed to enhancing the travel experience across road, rail, water, and air. We advocate for policies that minimize safety risks and ensure equitable and dignified treatment for all travelers.
-        </p>
-        <a href="#objectives" class="btn-primary">Our Objectives &rarr;</a>
-    </div>
-    <div class="hero-image">
-        <img src="{% static 'images/hero1.jpeg' %}" alt="Commuter Welfare">
+    <div class="about-hero-bg"></div>
+
+    <div class="container about-hero-content">
+        <div class="about-glass-card">
+            <h1>About Us</h1>
+            <p>
+                We are committed to transforming public transport safety,
+                protecting commuter rights, and ensuring accountability
+                across all transport operators.
+            </p>
+
+            <a href="#" class="hero-btn">Learn More</a>
+        </div>
     </div>
 </section>
-
 <section class="mission-vision-wrapper">
     <div class="container">
         <div class="mission-outer-box">
@@ -56,57 +58,434 @@
     </div>
 </section>
 
+<!-- =========================================
+     MEMBERSHIP PLANS SECTION
+========================================= 
+<section id="membership" class="membership-section">
+
+    <div class="container">
+
+       
+        <div class="section-heading center">
+            <span class="label-red">Affordable Protection</span>
+
+            <h2>Membership Plans</h2>
+
+            <p>
+                Choose a membership package that protects your commuter rights
+                and gives you access to emergency assistance, compensation,
+                and support services.
+            </p>
+        </div>
+
+        <div class="membership-grid">
+
+            <div class="membership-card standard-plan">
+
+                <div class="plan-badge">
+                    Popular
+                </div>
+
+                <div class="plan-header">
+                    <h3>Standard Membership</h3>
+
+                    <div class="plan-price">
+                        <span>Ksh.</span> 550
+                    </div>
+                </div>
+
+                <p class="plan-desc">
+                    Basic commuter protection package for passengers using
+                    public transport services.
+                </p>
+
+                <ul class="plan-features">
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Protection against insults and harassment from operators
+                    </li>
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Fare disagreement support and dispute handling
+                    </li>
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Assistance for lost luggage claims
+                    </li>
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Injury compensation support after accidents
+                    </li>
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Coverage for commuter rights violations
+                    </li>
+
+                </ul>
+
+                <a href="#" class="membership-btn">
+                    Join Standard Plan
+                </a>
+
+            </div>
+
+            <div class="membership-card premium-plan">
+
+                <div class="premium-tag">
+                    Best Value
+                </div>
+
+                <div class="plan-header">
+                    <h3>Super Subscription</h3>
+
+                    <div class="plan-price">
+                        <span>Ksh.</span> 3050
+                    </div>
+                </div>
+
+                <p class="plan-desc">
+                    Premium membership with hospital support and death
+                    compensation benefits.
+                </p>
+
+                <ul class="plan-features">
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Includes all Standard Membership benefits
+                    </li>
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Hospital bill support up to Ksh. 50,000
+                    </li>
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Covers boda boda, road, and water accident injuries
+                    </li>
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Ksh. 100,000 compensation on subscriber death
+                    </li>
+
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Compensation processed within 4 days
+                    </li>
+
+                </ul>
+
+                <a href="#" class="membership-btn premium-btn">
+                    Join Super Plan
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
 
-<section id="objectives" class="goals-targets">
+
+<!-- =========================
+     OBJECTIVES SECTION
+========================= -->
+<section id="objectives" class="objectives-section">
     <div class="container">
-        <div class="goals-column">
-            <span class="label-red">Our Strategic Goals</span>
-            <h2>Our Objectives</h2>
-            <ul class="checkmark-list">
-                <li><i class="fas fa-check-circle"></i> Standardized Safety Protocols</li>
-                <li><i class="fas fa-check-circle"></i> Eradicate Passenger Harassment</li>
-                <li><i class="fas fa-check-circle"></i> Legal Support & Dispute Resolution</li>
-                <li><i class="fas fa-check-circle"></i> Emergency Communication Systems</li>
-                <li><i class="fas fa-check-circle"></i> Passenger Rights Awareness</li>
-            </ul>
+
+        <div class="section-heading center">
+            <h2>Our Objectives & Goals</h2>
+            <p>
+                We are committed to improving public transport safety,
+                strengthening passenger protection, and promoting accountability
+                across the transport sector.
+            </p>
         </div>
-        <div class="targets-column">
-            <h2 class="navy-title">Who We Serve</h2>
-            <div class="target-card">
-                <strong>Commuters</strong>
-                <p>Ensuring daily safety for public transport users across all counties.</p>
+
+        <div class="objectives-grid">
+
+            <div class="objective-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Legal Aid</h3>
+                <p>
+                    Provide Free Legal Aid to Commuters whose Rights have
+                    been Violated During Travelling.
+                </p>
             </div>
-            <div class="target-card">
-                <strong>Vulnerable Groups</strong>
-                <p>Prioritizing the needs of children, the elderly, and persons with disabilities.</p>
+
+            <div class="objective-card">
+                <i class="fas fa-user-shield"></i>
+                <h3>Membership</h3>
+                <p>
+                    To establish a National Commuter Member Register for
+                    Direct engagement and Service Delivery.
+                </p>
             </div>
-            <div class="target-card">
-                <strong>Transport Operators</strong>
-                <p>Collaborating with industry stakeholders to enforce safety standards.</p>
+
+            <div class="objective-card">
+                <i class="fas fa-gavel"></i>
+                <h3>Knowledge</h3>
+                <p>
+                    To Equip Commuters with Knowledge of Road Safety,
+                    Rights and Responsibilities
+                </p>
             </div>
+
+            <div class="objective-card">
+                <i class="fas fa-phone-volume"></i>
+                <h3>Mobilization</h3>
+                <p>
+                    To Mobilize Institutions like Schools, Colleges, Chief Barazas
+                    and Churches to build a Culture of Safety and Accountability
+                </p>
+            </div>
+
+            <div class="objective-card">
+                <i class="fas fa-bullhorn"></i>
+                <h3>Action</h3>
+                <p>
+                    To Completely stop the Bad behaviors in our Public
+                    Transport Sector which affects around 85% of the Population
+                    who totally Depends on it in Kenya.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- =========================
+     WHO WE SERVE SECTION
+========================= -->
+<section id="who-we-serve" class="serve-section">
+    <div class="container">
+
+        <div class="section-heading center">
+            <h2>Who We Serve</h2>
+            <p>
+                Our services and safety initiatives are designed to protect and
+                support everyone who relies on public transportation daily.
+            </p>
+        </div>
+
+        <div class="serve-grid">
+
+            <div class="serve-card">
+                <div class="serve-icon">
+                    <i class="fas fa-bus"></i>
+                </div>
+
+                <h3>Community Groups</h3>
+
+                <p>
+                    Women, Youth and Elderly groups
+                </p>
+            </div>
+
+            <div class="serve-card">
+                <div class="serve-icon">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+
+                <h3>Religious Institutions</h3>
+
+                <p>
+                    Churches, mosques and other faith based organization
+                </p>
+            </div>
+
+            <div class="serve-card">
+                <div class="serve-icon">
+                    <i class="fas fa-people-carry"></i>
+                </div>
+
+                <h3>Educational Institutions</h3>
+
+                <p>
+                    Primary, secondary and higher
+                   learning institutions
+                </p>
+            </div>
+
         </div>
     </div>
 </section>
 
 <section class="partnerships">
-    <div class="container text-center">
-        <h2 class="navy-title">Our Partnerships</h2>
-        <p>Working with key authorities to create a safer travel environment.</p>
-        
+
+    <div class="container">
+
+        <!-- SECTION HEADING -->
+        <div class="section-heading">
+            <h2>Our Partnerships</h2>
+
+            <p>
+                Working together with key authorities and stakeholders
+                to create a safer, more accountable, and reliable
+                public transport environment.
+            </p>
+        </div>
+
+        <!-- LOGO SLIDER -->
         <div class="logo-slider">
+
             <div class="logo-slide-track">
-                <div class="slide"><img src="{% static 'images/p1.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p2.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p3.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p4.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p5.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p1.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p2.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p3.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p4.png' %}" alt="Partner"></div>
-                <div class="slide"><img src="{% static 'images/p5.png' %}" alt="Partner"></div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p1.png' %}" alt="Partner">
+                </div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p2.png' %}" alt="Partner">
+                </div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p3.png' %}" alt="Partner">
+                </div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p4.png' %}" alt="Partner">
+                </div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p5.png' %}" alt="Partner">
+                </div>
+
+                <!-- DUPLICATES FOR INFINITE SLIDE -->
+
+                <div class="slide">
+                    <img src="{% static 'images/p1.png' %}" alt="Partner">
+                </div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p2.png' %}" alt="Partner">
+                </div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p3.png' %}" alt="Partner">
+                </div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p4.png' %}" alt="Partner">
+                </div>
+
+                <div class="slide">
+                    <img src="{% static 'images/p5.png' %}" alt="Partner">
+                </div>
+
             </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- =========================================
+      MEMBERSHIP PLANS SECTION
+========================================= -->
+<section id="membership" class="membership-section">
+    <div class="container">
+
+        <div class="section-heading center">
+            <h2>Membership Plans</h2>
+            <p>
+                Choose a membership package that protects your commuter rights 
+                and gives you access to emergency assistance, compensation, 
+                and professional support.
+            </p>
+        </div>
+
+        <div class="membership-grid">
+
+            <!-- Standard Membership -->
+            <div class="membership-card standard-plan">
+                <div class="plan-badge">Essential</div>
+                <div class="plan-header">
+                    <h3>Standard Membership</h3>
+                    <div class="plan-price">
+                        <span>Ksh.</span> 550
+                    </div>
+                </div>
+
+                <p class="plan-desc">
+                    Qualifies a subscriber to benefit from protection against all kinds of Commuter Rights Violations.
+                </p>
+
+                <ul class="plan-features">
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Protection against insults/vulgarity from Makangas & Drivers
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Support in Fare disagreements
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Assistance with loss of Luggage
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        Insurance compensation support for accident injuries
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        General Commuter Rights Advocacy
+                    </li>
+                </ul>
+
+                <a href="{% url 'join' %}" class="btn-primary">Join Standard Plan</a>
+            </div>
+
+            <!-- Super Subscription -->
+            <div class="membership-card premium-plan">
+                <div class="premium-tag">Best Value</div>
+                <div class="plan-header">
+                    <h3>Super Subscription</h3>
+                    <div class="plan-price">
+                        <span>Ksh.</span> 3050
+                    </div>
+                </div>
+
+                <p class="plan-desc">
+                    A comprehensive package covering all Standard benefits plus enhanced medical and life compensation.
+                </p>
+
+                <ul class="plan-features">
+                    <li>
+                        <i class="fas fa-plus-circle"></i>
+                        <strong>Includes ALL Standard Plan benefits</strong>
+                    </li>
+                    <li>
+                        <i class="fas fa-hospital-symbol"></i>
+                        <strong>Hospital Bill:</strong> We pay half of bill up to 50,000/- (Covers Road, BodaBoda & Water accidents)
+                    </li>
+                    <li>
+                        <i class="fas fa-dove"></i>
+                        <strong>Death Benefit:</strong> 100,000/- compensation for accident or natural death
+                    </li>
+                    <li>
+                        <i class="fas fa-bolt"></i>
+                        <strong>Fast Processing:</strong> Payment within 4 days of death date
+                    </li>
+                    <li>
+                        <i class="fas fa-user-friends"></i>
+                        Next of Kin registration included
+                    </li>
+                </ul>
+
+                <a href="{% url 'join' %}" class="btn-primary">Join Super Plan</a>
+            </div>
+
         </div>
     </div>
 </section>
