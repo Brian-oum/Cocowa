@@ -1,0 +1,41 @@
+{% extends 'System/base.html' %}
+{% load static %}
+
+
+{% block content %}
+<section class="services-hero">
+    <div class="hero-content">
+        <nav class="breadcrumb">PWAK > Services</nav>
+        <h1>What We Do</h1>
+        <a href="#" class="btn-primary">Become a member &rarr;</a>
+    </div>
+    <div class="hero-image">
+        <img src="{% static 'images/hero1.jpeg' %}" alt="Professional Driver">
+    </div>
+</section>
+
+<section class="services-grid">
+    <div class="container">
+        <div class="service-card">
+            <img src="{% static 'images/hero1.jpeg' %}" alt="Air Travel">
+            <h3>Reducing Passenger-Related Incidents</h3>
+            <p>We conduct safety audits, partner with transport operators to enforce safety measures, and push for improved infrastructure on high-risk travel routes.</p>
+        </div>
+        
+        <div class="service-card">
+            <img src="{% static 'images/hero2.jpeg' %}" alt="Rail Travel">
+            <h3>Ending Passenger Harassment</h3>
+            <p>We provide channels for passengers to report incidents, advocate for stricter enforcement of anti-harassment policies, and promote passenger rights awareness.</p>
+        </div>
+
+        <div class="service-card">
+            <img src="{% static 'images/hero3.jpeg' %}" alt="Water Travel">
+            <h3>Enhancing Passenger Safety And Security</h3>
+            <p>PWAK collaborates with transport authorities to enforce safety protocols, set up emergency communication systems, and develop guidelines for passenger safety.</p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+</body>
+</html>

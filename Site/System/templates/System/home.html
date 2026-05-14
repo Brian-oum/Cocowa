@@ -1,0 +1,147 @@
+{% extends 'System/base.html' %}
+{% load static %}
+
+
+{% block content %}
+<section class="hero-slider">
+    <div class="home-slide active">
+        <img src="{% static 'images/hero1.jpeg' %}" alt="Commuter Safety">
+        <div class="hero-content">
+            <h1>Right To Complain</h1>
+            <p>Passengers should have access to complaint mechanisms to address their grievances.</p>
+            <a href="/join/" class="hero-btn">Become a member &rarr;</a>
+        </div>
+    </div>
+
+    <div class="home-slide">
+        <img src="{% static 'images/hero2.jpeg' %}" alt="Public Transport">
+        <div class="hero-content">
+            <h1>Safe Travel for All</h1>
+            <p>Advocating for secure and reliable commuter services across all counties.</p>
+            <a href="/join/" class="hero-btn">Become a member &rarr;</a>
+        </div>
+    </div>
+
+    <div class="home-slide">
+        <img src="{% static 'images/hero3.jpeg' %}" alt="Welfare Support">
+        <div class="hero-content">
+            <h1>Your Rights, Our Priority</h1>
+            <p>Empowering commuters through education and organized representation.</p>
+            <a href="/join/" class="hero-btn">Become a member &rarr;</a>
+        </div>
+    </div>
+
+    <div class="slider-dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+    </div>
+</section>
+
+<section class="info-split">
+    <div class="container">
+        <h2 class="navy-title">Reducing Passenger-Related Incidents</h2>
+        <div class="split-content">
+            <div class="image-box">
+                <img src="{% static 'images/hero1.jpeg' %}" alt="Driver">
+                <div class="play-overlay"><i class="fas fa-play"></i></div>
+            </div>
+            <div class="text-box">
+                <p><strong>COCOWA works to implement and advocate for measures that lower the rate of passenger-related incidents...</strong></p>
+                <p>We conduct safety audits, partner with transport operators to enforce safety measures, and push for improved infrastructure.</p>
+                <a href="#" class="hero-btn">Become a member &rarr;</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mission-vision-wrapper">
+    <div class="container">
+        <div class="mission-outer-box">
+            <div class="mission-vision-grid">
+                
+                <div class="card mission-card">
+                    <h3>Our Mission</h3>
+                    <p>To increase passenger safety by 90% by 2030 through diligent monitoring, impactful partnerships, and initiatives that promote safety awareness, accessibility, and equitable travel conditions, contributing directly to Kenya's Vision 2030 and SDG 11 goals.</p>
+                    <div class="phone-cta">
+                        <div class="phone-icon-circle">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <span>0705109803</span>
+                    </div>
+                </div>
+
+                <div class="card vision-card">
+                    <h3>Our Vision</h3>
+                    <p>To become a global leader in passenger safety advocacy, setting standards that foster safe, inclusive, and sustainable travel across all modes of transport.</p>
+                    <a href="/services/" class="outline-services-btn">Our Services &rarr;</a>
+                </div>
+
+                <div class="card values-card">
+                    <h3>Our Values</h3>
+                    <div class="value-item">
+                        <strong>Transparency</strong> - Promoting open, accessible communication and accountability in all actions to build stakeholder trust.
+                    </div>
+                    <div class="value-item">
+                        <strong>Accountability</strong> - Demonstrating responsibility for all initiatives and ensuring they align with the objectives of SDG 11 and Vision 2030.
+                    </div>
+                    <div class="value-item" style="border-bottom: none;">
+                        <strong>Sincerity</strong> - Encouraging trust and goodwill through honest and respectful interactions with passengers and partners.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="safety-features">
+    <div class="safety-container">
+        <div class="safety-header">
+            <span>Your Safety Is Our Priority</span>
+            <h2>Enhancing Passenger Safety And Security And Offer Legal Support & Dispute Resolution.</h2>
+        </div>
+
+        <div class="safety-details">
+            <p>COCOWA collaborates with transport authorities to enforce safety protocols, set up emergency communication systems, and develop guidelines for passenger safety. One of our objectives is Establish and promote safety protocols that ensure passengers are protected from potential threats, thereby creating a safer travel environment.</p>
+            
+            <div class="features-grid">
+                <div class="feat"><i class="fas fa-check"></i> Emergency Support and Rescue</div>
+                <div class="feat"><i class="fas fa-check"></i> Empowering Passengers</div>
+                <div class="feat"><i class="fas fa-check"></i> Enhancing Passenger Safety</div>
+                <div class="feat"><i class="fas fa-check"></i> Ending Passenger Harassment</div>
+                <div class="feat"><i class="fas fa-check"></i> Reducing Passenger-Related Incidents</div>
+                <div class="feat"><i class="fas fa-check"></i> Enhancing Passenger Security</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="support-cta">
+    <canvas id="waveCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
+
+    <div class="support-container" style="position: relative; z-index: 2;">
+        <div class="support-top-row">
+            <h2>We Have Dedicated Passenger Support Team To Assist You When Travelling.</h2>
+            <div class="support-description">
+                <p>PWAK aims to eradicate all forms of harassment and mistreatment of passengers, ensuring that every traveler experiences fair, respectful, and dignified treatment.</p>
+                <div class="support-actions">
+                    <a href="#" class="hero-btn">Become a member &rarr;</a>
+                    <a href="#" class="services-link">
+                        <i class="fas fa-arrow-alt-circle-right"></i> Our services
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-info">
+            <p>Responding to the growing demand for improved passenger safety across diverse modes of transport—road, rail, water, and air—PWAK advocates for policies and practices that minimize safety risks...</p>
+            <strong>Contact Us For More Information &rarr;</strong>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+</body>
+</html>

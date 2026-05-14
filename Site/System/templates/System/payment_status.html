@@ -1,0 +1,57 @@
+{% extends 'System/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="status-page">
+    <div class="status-card">
+        
+        {% if member.payment_status == 'pending' %}
+            <div class="status-icon-container">
+                <div class="loader"></div>
+            </div>
+            <h2>Payment Under Review</h2>
+            <p>Hello <strong>{{ member.first_name }}</strong>, your payment is being verified. This may take a few minutes.</p>
+            <div class="status-badge pending">Pending</div>
+
+        {% elif member.payment_status == 'paid' %}
+            <div class="status-icon-container">
+                <div class="success-checkmark">
+                    <div class="check-icon">
+                        <span class="icon-line line-tip"></span>
+                        <span class="icon-line line-long"></span>
+                        <div class="icon-circle"></div>
+                        <div class="icon-fix"></div>
+                    </div>
+                </div>
+            </div>
+            <h2>Payment Successful</h2>
+            <p>Welcome to Cocowa, <strong>{{ member.first_name }}</strong>! Your membership is now active.</p>
+            <p>Your Membership Number:</p>
+            <p>{{ member.membership_number }}</p>
+            <div class="status-badge success">Activated</div>
+            <div class="action-footer">
+            <a href="{% url 'download_card' member.id %}" class="btn-outline">Download Membership Card</a>
+        </div>
+
+
+        {% elif member.payment_status == 'rejected' %}
+            <div class="status-icon-container">
+                <div class="error-cross">
+                    <div class="cross-icon">
+                        <span class="cross-line left"></span>
+                        <span class="cross-line right"></span>
+                        <div class="icon-circle-red"></div>
+                    </div>
+                </div>
+            </div>
+            <h2>Payment Failed</h2>
+            <p>Sorry <strong>{{ member.first_name }}</strong>, we couldn't verify that transaction. Please double-check your code.</p>
+            <div class="status-badge rejected">Rejected</div>
+        {% endif %}
+
+        <div class="action-footer">
+            <a href="/" class="btn-outline">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

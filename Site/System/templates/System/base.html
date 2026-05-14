@@ -1,0 +1,396 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocowa</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{% static 'images/cocowalogo.png' %}">
+    
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+
+        /* Top Green Bar */
+        .top-bar {
+            background-color: #6A2B91; /* Forest Green */
+            color: white;
+            padding: 10px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .contact-info span { margin-right: 20px; }
+        .social-links i { margin-left: 15px; cursor: pointer; }
+
+        /* Main Navbar */
+        .main-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 50px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Specific styles for the logo layout */
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .logo-img {
+        height: 70px; /* Adjust based on your image size */
+        width: auto;
+    }
+
+    .logo-text-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* Style for each line of the main title */
+    .title-line {
+        color: #6A2B91; /* Navy Blue */
+        font-family: 'Arial', sans-serif;
+        font-size: 18px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin: 0;
+        padding-bottom: 3px; /* Space between text and its border */
+        border-bottom: 1px solid #29ABE2; /* The 1px green border */
+        display: inline-block;
+        width: fit-content; /* Ensures the border only spans the words */
+    }
+
+    /* Extra spacing for the second line so they don't look cramped */
+    .second-title-line {
+        margin-top: 5px; 
+        color: #000; /* Navy Blue */
+        font-family: 'Arial', sans-serif;
+        font-size: 18px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin: 0;
+        padding-bottom: 2px; /* Space between text and its border */
+        border-bottom: 1px solid #a19a0f; /* The 1px green border */
+        display: inline-block;
+        width: fit-content; /* Ensures the border only spans the words */
+    }
+
+    .sub-title {
+        color: #006837; /* Green Slogan */
+        font-size: 10px;
+        font-style: italic;
+        margin-top: 6px;
+        margin-bottom: 0;
+    }
+
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            margin: 0 15px;
+            font-weight: 600;
+        }
+        .nav-links a:hover { color: #6A2B91; }
+
+        /* "Become a Member" Button */
+        .btn-member {
+            background-color: #6A2B91;
+            color: white !important;
+            padding: 10px 10px;
+            display: flex;
+            align-items: center;
+        }
+        .btn-member i { 
+            margin-right: 6px;
+         }
+        footer {
+        background-color: #6A2B91;; /* Deep Navy */
+        color: #ffffff;
+        padding: 60px 50px 20px 50px;
+        font-family: Arial, sans-serif;
+    }
+
+    .footer-container {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 0.8fr 1.5fr;
+        gap: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .footer-column h3 {
+        font-size: 18px;
+        margin-bottom: 20px;
+        color: #fff;
+    }
+
+    .footer-logo-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        background: white; /* Optional: adds a white backing like the PWAK screenshot */
+        padding: 10px;
+        border-radius: 4px;
+        width: fit-content;
+    }
+
+    .footer-logo-text-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .footer-title-line {
+        color: #6A2B91; /* Navy Blue */
+        font-size: 16px; /* Scaled down for footer */
+        font-weight: bold;
+        text-transform: uppercase;
+        border-bottom: 1px solid #29ABE2;
+        width: fit-content;
+        padding-bottom: 1px;
+    }
+
+    .footer-second-title-line {
+        color: #000;
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-bottom: 1px solid #a19a0f;
+        width: fit-content;
+        margin-top: 3px;
+        padding-bottom: 1px;
+    }
+
+    .footer-sub-title {
+        color: #006837;
+        font-size: 10px;
+        font-style: italic;
+        margin: 5px 0 0 0;
+    }
+
+    .footer-column p {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #cbd5e0;
+    }
+
+    .footer-column ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .footer-column ul li {
+        margin-bottom: 12px;
+    }
+
+    .footer-column ul li a {
+        color: #cbd5e0;
+        text-decoration: none;
+        font-size: 14px;
+        transition: 0.3s;
+    }
+
+    .footer-column ul li a:hover { color: #6A2B91; }
+
+    /* The White Contact Card */
+    .contact-card {
+        background: white;
+        color: #333;
+        padding: 30px;
+        border-radius: 12px;
+        border-left: 5px solid #a19a0f;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .contact-card h3 { color: #1a233a; margin-top: 0; }
+    
+    .contact-item {
+        display: flex;
+        align-items: center;
+        margin-top: 20px;
+        color: #6A2B91;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .contact-item i {
+        font-size: 24px;
+        margin-right: 15px;
+    }
+
+    .directions-link {
+        display: block;
+        margin-top: 20px;
+        color: #6A2B91;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    /* Bottom Copyright Bar */
+    .footer-bottom {
+        border-top: 1px solid #a19a0f;
+        margin-top: 50px;
+        padding-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #94a3b8;
+    }
+
+    .back-to-top {
+        background: #29ABE2;
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="contact-info">
+            <span><i class="fas fa-phone"></i> +254 739471918</span>
+            <span><i class="fas fa-envelope"></i> countiescom@gmail.com</span>
+            <span><i class="fas fa-map-marker-alt"></i> Development House 3rd Floor Rm 3-16 ,
+Moi Avenue, Nairobi</span>
+        </div>
+        <div class="social-links">
+            <i class="fab fa-facebook-f"></i>
+            <i class="fab fa-instagram"></i>
+            <i class="fab fa-linkedin-in"></i>
+            <i class="fab fa-youtube"></i>
+        </div>
+    </div>
+
+    <nav class="main-nav">
+        <div class="logo-section">
+    <a href="{% url 'home' %}" style="text-decoration: none; display: flex;">
+        <div class="logo-container">
+            {% load static %}
+            <img src="{% static 'images/cocowalogo.jpeg' %}" alt="COCOWA Logo" class="logo-img">
+
+            <div class="logo-text-wrapper">
+                <div class="title-line">
+                    COUNTIES COMMUTER
+                </div>
+    
+                <div class="second-title-line">
+                    WELFARE ASSOCIATION
+                </div>
+
+                <p class="sub-title">Sauti, Haki na Usalama Kwa Usafiri</p>
+            </div>
+        </div>
+    </a>
+</div>
+
+        <div class="nav-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'services' %}">Services</a>
+            <a href="/membership/">Membership</a>
+            <a href="{% url 'contact' %}">Contacts</a>
+            <a href="/join/" class="btn-member">
+                <i class="fas fa-user"></i> Become a member
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <footer>
+    <div class="footer-container">
+        <div class="footer-column">
+            <div class="footer-logo-container">
+                <img src="{% static 'images/cocowalogo.png' %}" alt="COCOWA" style="height: 50px;">
+        
+                <div class="footer-logo-text-wrapper">
+                    <div class="footer-title-line">
+                        COUNTIES COMMUTER
+                    </div>
+
+                    <div class="footer-second-title-line">
+                        WELFARE ASSOCIATION
+                    </div>
+
+                    <p class="footer-sub-title">Sauti, Haki na Usalama Kwa Usafiri</p>
+                </div>
+            </div>
+    
+            <p>Our Vision is to become a global leader in passenger safety advocacy, setting standards that foster safe, inclusive, and sustainable travel across all modes of transport.</p>
+    
+            <a href="/join/" class="btn-member" style="display: inline-block; text-decoration: none; margin-top: 10px;">
+                Become a member &rarr;
+            </a>
+        </div>
+
+        <div class="footer-column">
+            <h3>Our Services</h3>
+            <ul>
+                <li><a href="#">Reducing Passenger-Related Incidents</a></li>
+                <li><a href="#">Ending Passenger Harassment</a></li>
+                <li><a href="#">Enhancing Passenger Safety and Security</a></li>
+                <li><a href="#">Empowering Passengers</a></li>
+                <li><a href="#">Emergency Support and Rescue</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h3>Links</h3>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about/">About</a></li>
+                <li><a href="/membership/">Membership</a></li>
+                <li><a href="/join/">Join us</a></li>
+                <li><a href="/rights/">Passenger Rights</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <div class="contact-card">
+                <h3>Quick Contacts</h3>
+                <p style="color: #666;">If you have any questions or need help, feel free to contact with our team.</p>
+                
+                <div class="contact-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <div>+254705109803,<br>+254707110003</div>
+                </div>
+
+                <div class="contact-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <div>+254735943903,<br>+254739867509</div>
+                </div>
+
+                <p style="font-size: 12px; margin-top: 20px; color: #666;">P.O.Box 58905 - 00200, Riverside, Kenya</p>
+                <a href="#" class="directions-link">&rarr; Get Directions</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div>&copy; 2026 COCOWA | All Rights Reserved.</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="#" style="color: #94a3b8; text-decoration: none;">Terms & Conditions</a>
+            <a href="#" style="color: #94a3b8; text-decoration: none;">Privacy Policy</a>
+            <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+        </div>
+    </div>
+</footer>
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
