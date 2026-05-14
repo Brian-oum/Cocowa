@@ -1,0 +1,113 @@
+{% extends 'System/base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="about-hero">
+    <div class="hero-content">
+        <nav class="breadcrumb">COCOWA > About Us</nav>
+        <h1>Dedicated To Passenger Welfare.</h1>
+        <p class="company-intro">
+            The Counties Commuter Welfare Association (COCOWA) is a dedicated organization committed to enhancing the travel experience across road, rail, water, and air. We advocate for policies that minimize safety risks and ensure equitable and dignified treatment for all travelers.
+        </p>
+        <a href="#objectives" class="btn-primary">Our Objectives &rarr;</a>
+    </div>
+    <div class="hero-image">
+        <img src="{% static 'images/hero1.jpeg' %}" alt="Commuter Welfare">
+    </div>
+</section>
+
+<section class="mission-vision-wrapper">
+    <div class="container">
+        <div class="mission-outer-box">
+            <div class="mission-vision-grid">
+                
+                <div class="card mission-card">
+                    <h3>Our Mission</h3>
+                    <p>To increase passenger safety by 90% by 2030 through diligent monitoring, impactful partnerships, and initiatives that promote safety awareness, accessibility, and equitable travel conditions, contributing directly to Kenya's Vision 2030 and SDG 11 goals.</p>
+                    <div class="phone-cta">
+                        <div class="phone-icon-circle">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <span>0705109803</span>
+                    </div>
+                </div>
+
+                <div class="card vision-card">
+                    <h3>Our Vision</h3>
+                    <p>To become a global leader in passenger safety advocacy, setting standards that foster safe, inclusive, and sustainable travel across all modes of transport.</p>
+                    <a href="/services/" class="outline-services-btn">Our Services &rarr;</a>
+                </div>
+
+                <div class="card values-card">
+                    <h3>Our Values</h3>
+                    <div class="value-item">
+                        <strong>Transparency</strong> - Promoting open, accessible communication and accountability in all actions to build stakeholder trust.
+                    </div>
+                    <div class="value-item">
+                        <strong>Accountability</strong> - Demonstrating responsibility for all initiatives and ensuring they align with the objectives of SDG 11 and Vision 2030.
+                    </div>
+                    <div class="value-item" style="border-bottom: none;">
+                        <strong>Sincerity</strong> - Encouraging trust and goodwill through honest and respectful interactions with passengers and partners.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+</section>
+
+<section id="objectives" class="goals-targets">
+    <div class="container">
+        <div class="goals-column">
+            <span class="label-red">Our Strategic Goals</span>
+            <h2>Our Objectives</h2>
+            <ul class="checkmark-list">
+                <li><i class="fas fa-check-circle"></i> Standardized Safety Protocols</li>
+                <li><i class="fas fa-check-circle"></i> Eradicate Passenger Harassment</li>
+                <li><i class="fas fa-check-circle"></i> Legal Support & Dispute Resolution</li>
+                <li><i class="fas fa-check-circle"></i> Emergency Communication Systems</li>
+                <li><i class="fas fa-check-circle"></i> Passenger Rights Awareness</li>
+            </ul>
+        </div>
+        <div class="targets-column">
+            <h2 class="navy-title">Who We Serve</h2>
+            <div class="target-card">
+                <strong>Commuters</strong>
+                <p>Ensuring daily safety for public transport users across all counties.</p>
+            </div>
+            <div class="target-card">
+                <strong>Vulnerable Groups</strong>
+                <p>Prioritizing the needs of children, the elderly, and persons with disabilities.</p>
+            </div>
+            <div class="target-card">
+                <strong>Transport Operators</strong>
+                <p>Collaborating with industry stakeholders to enforce safety standards.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="partnerships">
+    <div class="container text-center">
+        <h2 class="navy-title">Our Partnerships</h2>
+        <p>Working with key authorities to create a safer travel environment.</p>
+        
+        <div class="logo-slider">
+            <div class="logo-slide-track">
+                <div class="slide"><img src="{% static 'images/p1.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p2.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p3.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p4.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p5.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p1.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p2.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p3.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p4.png' %}" alt="Partner"></div>
+                <div class="slide"><img src="{% static 'images/p5.png' %}" alt="Partner"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

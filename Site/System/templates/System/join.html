@@ -1,0 +1,50 @@
+{% extends 'System/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="membership-page">
+    <div class="form-container">
+        <h1 class="form-title">Membership Form</h1>
+        <p class="form-subtitle">Complete your registration and take the next step toward becoming part of Cocowa. Once you submit the form, follow the payment instructions provided and confirm your membership by completing the M-PESA transaction. Your commitment helps build a stronger, more empowered community.</p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Name Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.first_name }}
+                    <label>First Name</label>
+                </div>
+                <div class="form-group">
+                    {{ form.second_name }}
+                    <label>Middle Name</label>
+                </div>
+                <div class="form-group">
+                    {{ form.email }}
+                    <label>Email Address</label>
+                </div>
+            </div>
+
+            <!-- ID and Phone Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.id_number }}
+                    <label>ID Number/Passport</label>
+                </div>
+                <div class="form-group">
+                    {{ form.phone_number }}
+                    <label>Mpesa phone number</label>
+                </div>
+                <div class="form-group">
+                    {{ form.package }}
+                    <label>Membership Package</label>
+                 </div>
+                <div class="form-group empty"></div> <!-- Spacer -->
+            </div>
+
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

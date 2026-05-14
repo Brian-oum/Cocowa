@@ -1,0 +1,49 @@
+{% extends 'System/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="payment-page">
+    <div class="payment-card">
+        <h1 class="form-title">Complete Your Payment</h1>
+        
+        <div class="user-greeting">
+            <p>Hello <strong>{{ member.first_name }}</strong>,</p>
+            <div class="amount-summary">
+                <span>Package: <strong>{{ member.package|title }}</strong></span>
+                <span>Amount: <strong>KES {{ member.get_amount }}</strong></span>
+            </div>
+        </div>
+
+        <div class="instructions-section">
+            <h3>M-PESA Instructions</h3>
+            <div class="paybill-info">
+                <div class="info-item"><span>Business No:</span> <strong>522533</strong></div>
+                <div class="info-item"><span>Account No:</span> <strong>9966234</strong></div>
+                <div class="info-item"><span>Reference:</span> <strong>{{ member.id }}</strong></div>
+            </div>
+            
+            <ol class="step-list">
+                <li>Go to M-PESA menu on your phone</li>
+                <li>Select <strong>Lipa na M-PESA</strong> then <strong>Paybill</strong></li>
+                <li>Enter the Business and Account numbers shown above</li>
+                <li>Enter Amount: <strong>KES {{ member.get_amount }}</strong></li>
+                <li>Use phone number: <strong>{{ member.phone_number }}</strong></li>
+            </ol>
+        </div>
+
+        <hr class="divider">
+
+        <div class="verification-section">
+            <h3>Verify Your Payment</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="text" name="transaction_code" placeholder="Enter M-PESA Transaction Code (e.g. QWE123RTY)" required>
+                    <label>Transaction Code</label>
+                </div>
+                <button type="submit" class="submit-btn">Verify Payment</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

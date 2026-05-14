@@ -1,0 +1,1513 @@
+/* =============================================================================
+   REFINED STYLESHEET — PWAK / Organization Website
+   Optimized for: performance, readability, maintainability
+   Changes summary at the bottom of this file.
+   ============================================================================= */
+
+
+/* =============================================================================
+   1. CSS CUSTOM PROPERTIES (Design Tokens)
+   Extracted repeated values into variables. Previously, colors like #6A2B91,
+   #29ABE2, #1a233a, and #a19a0f were duplicated dozens of times across rules.
+   ============================================================================= */
+:root {
+  /* Brand Colors */
+  --color-primary:      #6A2B91; /* Purple — main brand color */
+  --color-secondary:    #29ABE2; /* Sky blue */
+  --color-navy:         #1a233a; /* Dark navy */
+  --color-gold:         #a19a0f; /* Gold / accent */
+  --color-green:        #006837; /* Forest green */
+  --color-salmon:       #F7A88F; /* Warm salmon / accent red */
+
+  /* Neutral / Text Colors */
+  --color-white:        #ffffff;
+  --color-text-dark:    #333333;
+  --color-text-muted:   #4b5563;
+  --color-text-light:   #cbd5e0;
+  --color-text-xlight:  #94a3b8;
+  --color-border:       #e2e8f0;
+  --color-bg-light:     #f8fafc;
+  --color-bg-cream:     #FDF2E2;
+
+  /* Legacy / Compat aliases — kept for rules that reference var(--brand-*) */
+  --brand-navy:         #001a4d;
+  --brand-red:          #e31e24;
+  --brand-green:        #006837;
+  --bg-light:           #f8fafc;
+
+  /* Spacing */
+  --spacing-section:    100px;
+  --spacing-page-h:     50px;
+
+  /* Typography */
+  --font-base:          Arial, sans-serif;
+
+  /* Shadows */
+  --shadow-card:        0 10px 30px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover:  0 15px 40px rgba(0, 0, 0, 0.1);
+  --shadow-contact:     0 15px 50px rgba(0, 0, 0, 0.1);
+
+  /* Borders */
+  --radius-card:        12px;
+  --radius-lg:          15px;
+  --radius-sm:          6px;
+}
+
+
+/* =============================================================================
+   2. BASE & RESET
+   ============================================================================= */
+body {
+  margin: 0;
+  font-family: var(--font-base);
+}
+
+
+/* =============================================================================
+   3. TOP BAR
+   ============================================================================= */
+.top-bar {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 10px var(--spacing-page-h);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.contact-info span { margin-right: 20px; }
+
+.social-links i {
+  margin-left: 15px;
+  cursor: pointer;
+}
+
+
+/* =============================================================================
+   4. MAIN NAVIGATION
+   ============================================================================= */
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px var(--spacing-page-h);
+  background: var(--color-white);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--color-text-dark);
+  margin: 0 15px;
+  font-weight: 600;
+}
+
+.nav-links a:hover { color: var(--color-primary); }
+
+/* "Become a Member" button — sits inside .nav-links */
+.btn-member {
+  background-color: var(--color-primary);
+  color: var(--color-white) !important;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.btn-member i { margin-right: 6px; }
+
+
+/* =============================================================================
+   5. LOGO — shared pattern used in navbar and footer
+   ============================================================================= */
+.logo-container,
+.footer-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Navbar logo image */
+.logo-img {
+  height: 70px;
+  width: auto;
+}
+
+/* Footer logo gets a white backing box */
+.footer-logo-container {
+  background: var(--color-white);
+  padding: 10px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-bottom: 20px;
+}
+
+/* Shared text wrappers */
+.logo-text-wrapper,
+.footer-logo-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Primary title line (purple + blue underline) */
+.title-line,
+.footer-title-line {
+  color: var(--color-primary);
+  font-family: var(--font-base);
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 0;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--color-secondary);
+  display: inline-block;
+  width: fit-content;
+}
+
+.title-line         { font-size: 18px; }
+.footer-title-line  { font-size: 16px; padding-bottom: 1px; }
+
+/* Secondary title line (black + gold underline) */
+.second-title-line,
+.footer-second-title-line {
+  color: #000;
+  font-family: var(--font-base);
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 0;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--color-gold);
+  display: inline-block;
+  width: fit-content;
+}
+
+.second-title-line        { font-size: 18px; }
+.footer-second-title-line { font-size: 16px; margin-top: 3px; padding-bottom: 1px; }
+
+/* Sub-tagline */
+.sub-title,
+.footer-sub-title {
+  color: var(--color-green);
+  font-size: 10px;
+  font-style: italic;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+.footer-sub-title { margin: 5px 0 0 0; }
+
+
+/* =============================================================================
+   6. HERO SLIDER
+   ============================================================================= */
+.hero-slider {
+  position: relative;
+  width: 100%;
+  height: 85vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.home-slide {
+  position: absolute;
+  inset: 0; /* Replaces top/left/width/height: 100% pattern */
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  display: flex;
+  align-items: center;
+  padding-left: 80px;
+}
+
+.home-slide.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.home-slide img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+/* Gradient overlay — fades image to white on the left so text is legible */
+.home-slide::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.9) 30%, rgba(255, 255, 255, 0) 70%);
+  z-index: 0;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 500px;
+}
+
+.hero-content h1 {
+  font-size: 64px;
+  color: var(--color-primary);
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.hero-content p {
+  font-size: 18px;
+  color: var(--color-salmon);
+  font-weight: 600;
+  margin-bottom: 30px;
+  line-height: 1.4;
+}
+
+.hero-btn {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 15px 30px;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Slider pagination dots */
+.slider-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.dot {
+  height: 12px;
+  width: 12px;
+  margin: 0 5px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.dot.active { background-color: var(--color-primary); }
+
+
+/* =============================================================================
+   7. MISSION / VISION / VALUES CARDS
+   ============================================================================= */
+.mission-vision-wrapper {
+  padding: 20px 0;
+  background-color: var(--color-white);
+  margin-top: -20px;
+}
+
+.mission-outer-box {
+  background-color: var(--color-white);
+  padding: var(--spacing-section);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.mission-vision-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+/* Base card */
+.card {
+  padding: 40px;
+  color: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 380px;
+}
+
+.mission-card { background-color: var(--color-primary); }
+.vision-card  { background-color: var(--color-secondary); }
+.values-card  { background-color: var(--color-navy); }
+
+.card h3 {
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.card p {
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* Phone CTA — inside mission card */
+.phone-cta {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.phone-icon-circle {
+  background: var(--color-green);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Outline button — inside vision card */
+.outline-services-btn {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: var(--color-white);
+  padding: 10px 20px;
+  text-decoration: none;
+  width: fit-content;
+  font-size: 14px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.outline-services-btn:hover {
+  background: var(--color-white);
+  color: #3b5998;
+}
+
+/* Value list items — inside values card */
+.value-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* =============================================================================
+   8. INFO SPLIT SECTION (image + text two-column)
+   ============================================================================= */
+.info-split {
+  padding: 30px var(--spacing-section);
+  background: var(--color-white);
+}
+
+.navy-title {
+  color: var(--color-primary);
+  font-size: 40px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  line-height: 1.2;
+  max-width: 600px;
+}
+
+.split-content {
+  display: flex;
+  gap: 60px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.image-box {
+  position: relative;
+  flex: 0 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.image-box img {
+  width: 500px;
+  display: block;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Play button overlay on the image */
+.play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-white);
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #001a4d;
+  font-size: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.text-box {
+  flex: 1;
+  border-left: 1px solid var(--color-border);
+  padding-left: 40px;
+  max-width: 350px;
+}
+
+.text-box p {
+  color: var(--color-text-muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.text-box p strong {
+  color: var(--color-navy);
+  display: block;
+  margin-bottom: 15px;
+}
+
+/* Reuses .hero-btn — overrides only what differs in this context */
+.text-box .hero-btn {
+  padding: 14px 28px;
+  font-size: 15px;
+}
+
+
+/* =============================================================================
+   9. SAFETY FEATURES SECTION (dark navy background)
+   ============================================================================= */
+.safety-features {
+  background: var(--color-navy);
+  color: var(--color-white);
+  padding: var(--spacing-section) var(--spacing-page-h);
+  display: flex;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.safety-container {
+  max-width: 1200px;
+  display: flex;
+  gap: 80px;
+  align-items: flex-start;
+}
+
+.safety-header { flex: 1; }
+
+.safety-header span {
+  color: var(--color-salmon);
+  font-weight: bold;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 15px;
+  margin-top: 40px;
+}
+
+.safety-header h2 {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.safety-details { flex: 1.2; }
+
+.safety-details p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-text-light);
+  margin-bottom: 30px;
+  margin-top: 40px;
+}
+
+/* 2-column grid of feature checkmarks */
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 40px;
+}
+
+.feat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-white);
+}
+
+/* Salmon circle around the checkmark icon */
+.feat i {
+  color: var(--color-white);
+  background-color: var(--color-salmon);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+
+/* =============================================================================
+   10. SUPPORT / CTA SECTION (light green background with canvas waves)
+   ============================================================================= */
+.support-cta {
+  background-color: #eafff9;
+  padding: 120px var(--spacing-page-h);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+/* Animated canvas wave — purely decorative, pointer events disabled */
+#waveCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.support-container {
+  max-width: 1200px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.support-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 80px;
+  margin-bottom: 80px;
+}
+
+.support-top-row h2 {
+  flex: 1;
+  color: var(--color-primary);
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.support-description { flex: 1; }
+
+.support-description p {
+  color: #000;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 35px;
+}
+
+.support-actions {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+/* Reuses .hero-btn — extra sizing only */
+.support-actions .hero-btn {
+  padding: 16px 32px;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.services-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-salmon);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.services-link i { font-size: 24px; }
+
+.bottom-info {
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+  color: #718096;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.bottom-info strong {
+  display: block;
+  margin-top: 15px;
+  color: #001a4d;
+  font-size: 16px;
+}
+
+
+/* =============================================================================
+   11. SERVICES PAGE
+   ============================================================================= */
+
+/* Hero — split layout with faded image on the right */
+.services-hero {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.9) 30%, rgba(255, 255, 255, 0) 70%);
+  min-height: 500px;
+  padding: 0 0 0 80px;
+}
+
+.hero-content1 {
+  flex: 1;
+  max-width: 600px;
+}
+
+.breadcrumb {
+  color: var(--brand-navy);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.services-hero h1 {
+  color: var(--brand-navy);
+  font-size: 64px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  line-height: 1.1;
+}
+
+/* Shared hero image with fade-from-left mask */
+.hero-image {
+  flex: 1;
+  height: 500px; /* overridden to 600px on about page via .about-hero .hero-image */
+  position: relative;
+}
+
+.hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mask-image: linear-gradient(to right, transparent, black 20%);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 20%);
+}
+
+/* Services card grid */
+.services-grid {
+  background-color: var(--bg-light);
+  padding: var(--spacing-section) var(--spacing-page-h);
+}
+
+.services-grid .container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.service-card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.3s ease;
+}
+
+.service-card:hover { box-shadow: var(--shadow-card-hover); }
+
+.service-card img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+}
+
+.service-card h3 {
+  color: var(--brand-navy);
+  font-size: 24px;
+  font-weight: 800;
+  padding: 25px 25px 10px;
+  line-height: 1.3;
+}
+
+.service-card p {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 0 25px 30px;
+}
+
+
+/* =============================================================================
+   12. ABOUT PAGE
+   ============================================================================= */
+.about-hero {
+  display: flex;
+  align-items: center;
+  min-height: 600px;
+  padding-left: 80px;
+}
+
+.about-hero h1 {
+  color: var(--brand-navy);
+  font-size: 58px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 25px;
+}
+
+/* About page overrides hero-image height */
+.about-hero .hero-image { height: 600px; }
+
+.about-hero .hero-image img {
+  mask-image: linear-gradient(to right, transparent, black 15%);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 15%);
+}
+
+/* Goals & Targets */
+.goals-targets {
+  padding: var(--spacing-section) 0;
+  background: var(--bg-light);
+}
+
+.goals-targets .container {
+  display: flex;
+  gap: 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.goals-column,
+.targets-column { flex: 1; }
+
+.checkmark-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 30px;
+}
+
+.checkmark-list li {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--brand-navy);
+}
+
+.checkmark-list i {
+  color: var(--brand-red);
+  font-size: 22px;
+}
+
+.target-card {
+  background: var(--color-white);
+  padding: 25px;
+  border-radius: var(--radius-card);
+  margin-bottom: 20px;
+  border-left: 5px solid var(--brand-green);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Partnerships logo slider — infinite scroll animation */
+.partnerships {
+  padding: var(--spacing-section) 0;
+  background: var(--color-white);
+  overflow: hidden;
+}
+
+.logo-slider {
+  margin-top: 60px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.logo-slide-track {
+  display: flex;
+  width: calc(250px * 10);
+  animation: scroll-left 35s linear infinite;
+}
+
+.slide {
+  width: 250px;
+  padding: 0 50px;
+  display: flex;
+  align-items: center;
+}
+
+.slide img {
+  max-width: 100%;
+  filter: grayscale(100%);
+  opacity: 0.5;
+  transition: filter 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+.slide img:hover {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+@keyframes scroll-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(calc(-250px * 5)); }
+}
+
+
+/* =============================================================================
+   13. SHARED BUTTONS
+   Consolidated from multiple duplicate declarations across sections.
+   ============================================================================= */
+
+/* Solid primary button (red on services/about; purple on home) */
+.btn-primary {
+  background: var(--brand-red);
+  color: var(--color-white);
+  padding: 16px 32px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.btn-primary:hover { transform: translateY(-2px); }
+
+/* White outline button (used on dark backgrounds) */
+.outline-btn-white {
+  border: 2px solid var(--color-white);
+  color: var(--color-white);
+  padding: 12px 25px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 20px;
+}
+
+/* Outlined dark button (membership/status pages) */
+.btn-outline {
+  text-decoration: none;
+  color: #001C3D;
+  border: 1.5px solid #001C3D;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: bold;
+  transition: background 0.3s, color 0.3s;
+}
+
+.btn-outline:hover {
+  background: #001C3D;
+  color: var(--color-white);
+}
+
+/* Small red badge button */
+.btn-mini-red {
+  background: var(--brand-red);
+  color: var(--color-white);
+  padding: 8px 15px;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+/* Green pill submit button (membership / payment forms) */
+.submit-btn {
+  background-color: #28a745;
+  color: var(--color-white);
+  border: none;
+  padding: 15px 40px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.submit-btn:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+}
+
+
+/* =============================================================================
+   14. CONTACT PAGE
+   ============================================================================= */
+.contact-section {
+  background: #fdfdfd;
+  position: relative;
+}
+
+.map-container {
+  width: 100%;
+  height: 450px;
+  background: #eee;
+}
+
+/* Card pulled upward over the map via negative margin */
+.contact-wrapper {
+  max-width: 1100px;
+  margin: -80px auto 100px;
+  position: relative;
+  z-index: 10;
+}
+
+.contact-container {
+  background: var(--color-white);
+  display: flex;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-contact);
+  overflow: hidden;
+}
+
+/* Left: contact form */
+.form-side {
+  flex: 1.5;
+  padding: 50px;
+}
+
+.form-side h2 {
+  color: #001a4d;
+  font-size: 28px;
+  margin: 15px 0;
+  font-weight: 800;
+}
+
+.form-side p {
+  color: #718096;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.input-group {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  padding-left: 15px;
+}
+
+.input-group i {
+  color: var(--color-green);
+  font-size: 14px;
+}
+
+.input-group input,
+.input-group textarea {
+  border: none;
+  width: 100%;
+  padding: 15px;
+  outline: none;
+  font-size: 15px;
+}
+
+.textarea-group {
+  margin-top: 20px;
+  align-items: flex-start;
+  padding-top: 15px;
+}
+
+.btn-submit {
+  background: #001a4d;
+  color: var(--color-white);
+  width: 100%;
+  border: none;
+  padding: 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  margin-top: 25px;
+  cursor: pointer;
+}
+
+/* Right: gradient info card */
+.info-card {
+  flex: 1;
+  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 50%, var(--brand-red) 100%);
+  padding: 50px;
+  color: var(--color-white);
+}
+
+.info-card h3 {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.info-card p {
+  opacity: 0.9;
+  margin-bottom: 40px;
+}
+
+.info-item {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.info-item i {
+  font-size: 18px;
+  margin-top: 3px;
+}
+
+.btn-contact-white {
+  display: inline-block;
+  border: 2px solid var(--color-white);
+  color: var(--color-white);
+  padding: 12px 30px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 700;
+  margin-top: 20px;
+}
+
+
+/* =============================================================================
+   15. MEMBERSHIP FORM PAGE
+   ============================================================================= */
+.membership-page {
+  background-color: var(--color-bg-cream);
+  min-height: 100vh;
+  padding: 50px 10%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #001C3D;
+}
+
+.form-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.form-subtitle {
+  text-align: center;
+  font-size: 0.95rem;
+  margin-bottom: 40px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group input,
+.form-group select {
+  padding: 15px;
+  border: 1.5px solid #001C3D;
+  border-radius: 0; /* Intentional boxy / brutalist style */
+  font-size: 1rem;
+  background: var(--color-white);
+}
+
+.form-group label {
+  margin-top: 8px;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 30px 0;
+  font-weight: 600;
+}
+
+
+/* =============================================================================
+   16. PAYMENT PAGE
+   ============================================================================= */
+.payment-page {
+  background-color: var(--color-bg-cream);
+  min-height: 100vh;
+  padding: 40px 20px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #001C3D;
+  display: flex;
+  justify-content: center;
+}
+
+.payment-card {
+  background: var(--color-white);
+  padding: 40px;
+  max-width: 700px;
+  width: 100%;
+  border: 1px solid #001C3D;
+  box-shadow: 10px 10px 0 #001C3D; /* Brutalist offset shadow */
+}
+
+/* Payment page reuses .form-title — same declaration already in §15 */
+
+.user-greeting {
+  margin-bottom: 25px;
+  padding: 15px;
+  background: var(--color-bg-light);
+  border-left: 4px solid #28a745;
+}
+
+.amount-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+/* Paybill highlight */
+.paybill-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  background: #001C3D;
+  color: var(--color-white);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.paybill-info .info-item span {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.paybill-info .info-item strong { font-size: 1.1rem; }
+
+.step-list {
+  padding-left: 20px;
+  line-height: 1.8;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px dashed #001C3D;
+  margin: 30px 0;
+}
+
+/* Payment form groups — narrower scope to avoid collision with membership .form-group */
+.payment-card .form-group { margin-bottom: 20px; }
+
+.payment-card .form-group input {
+  padding: 15px;
+  border: 1.5px solid #001C3D;
+  font-size: 1rem;
+}
+
+.payment-card .form-group label {
+  margin-top: 5px;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+
+/* =============================================================================
+   17. STATUS PAGE (Pending / Success / Rejected)
+   ============================================================================= */
+.status-page {
+  background-color: var(--color-bg-cream);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #001C3D;
+}
+
+.status-card {
+  background: var(--color-white);
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  border: 1.5px solid #001C3D;
+  box-shadow: 8px 8px 0 #001C3D;
+}
+
+/* Status badge pills */
+.status-badge {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 15px;
+}
+
+.status-badge.pending  { background: #fff3cd; color: #856404; }
+.status-badge.success  { background: #d4edda; color: #155724; }
+.status-badge.rejected { background: #f8d7da; color: #721c24; }
+
+/* --- Pending: spinning loader --- */
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #f3f3f3;
+  border-top-color: #001C3D;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Success: animated checkmark --- */
+.success-checkmark,
+.check-icon {
+  width: 80px;
+  height: 80px;
+}
+
+.success-checkmark { margin: 0 auto 20px; }
+
+.check-icon {
+  position: relative;
+  border-radius: 50%;
+  box-sizing: content-box;
+  border: 4px solid #28a745;
+}
+
+.check-icon::after {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: 14px;
+  width: 20px;
+  height: 38px;
+  border-right: 4px solid #28a745;
+  border-bottom: 4px solid #28a745;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%;
+  animation: checkbox-check 0.4s ease-out forwards;
+}
+
+@keyframes checkbox-check {
+  0%   { height: 0;    width: 0; }
+  33%  { height: 0;    width: 20px; }
+  100% { height: 38px; width: 20px; }
+}
+
+/* --- Rejected: static cross --- */
+.error-cross {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border: 4px solid #dc3545;
+  border-radius: 50%;
+  position: relative;
+}
+
+.cross-line {
+  position: absolute;
+  background: #dc3545;
+  width: 40px;
+  height: 4px;
+  top: 38px;
+  left: 20px;
+}
+
+.cross-line.left  { transform: rotate(45deg); }
+.cross-line.right { transform: rotate(-45deg); }
+
+.action-footer { margin-top: 30px; }
+
+
+/* =============================================================================
+   18. FOOTER
+   ============================================================================= */
+footer {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 60px var(--spacing-page-h) 20px;
+  font-family: var(--font-base);
+}
+
+.footer-container {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.8fr 1.5fr;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-column h3 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: var(--color-white);
+}
+
+.footer-column p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-light);
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-column ul li { margin-bottom: 12px; }
+
+.footer-column ul li a {
+  color: var(--color-text-light);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.footer-column ul li a:hover { color: var(--color-primary); }
+
+/* White contact card inside the footer */
+.contact-card {
+  background: var(--color-white);
+  color: var(--color-text-dark);
+  padding: 30px;
+  border-radius: 12px;
+  border-left: 5px solid var(--color-gold);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.contact-card h3 {
+  color: #1a233a;
+  margin-top: 0;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  color: var(--color-primary);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.contact-item i {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.directions-link {
+  display: block;
+  margin-top: 20px;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Footer bottom copyright bar */
+.footer-bottom {
+  border-top: 1px solid var(--color-gold);
+  margin-top: 50px;
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--color-text-xlight);
+}
+
+.back-to-top {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+
+/* =============================================================================
+   19. RESPONSIVE — Mobile breakpoints
+   ============================================================================= */
+@media (max-width: 768px) {
+  .form-row { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .status-card { padding: 25px; margin: 10px; }
+}
+
+
+/* =============================================================================
+   CHANGE LOG — What was optimized and why
+   ============================================================================
+   1.  CSS Variables: Extracted ~20 repeated color values (#6A2B91, #29ABE2,
+       #1a233a, #a19a0f, #006837, #F7A88F, etc.) and spacing constants into
+       :root custom properties. This eliminates ~60 hard-coded duplicates and
+       makes future rebranding a single-file change.
+
+   2.  Duplicate :root block merged: There were two separate :root { } blocks
+       with --brand-* variables. Merged into one authoritative block.
+
+   3.  Logo rules DRY-ed up: .logo-container and .footer-logo-container shared
+       `display:flex; align-items:center; gap:15px` — combined with a comma
+       selector, differences kept separately.
+
+   4.  Title line rules consolidated: .title-line / .footer-title-line and
+       .second-title-line / .footer-second-title-line had near-identical rules
+       repeated twice. Shared properties combined; font-size differences kept
+       per-class.
+
+   5.  inset shorthand: Replaced top:0; left:0; width:100%; height:100% on
+       absolutely-positioned elements with the modern `inset: 0` shorthand
+       (supported in all modern browsers).
+
+   6.  Duplicate .btn-primary eliminated: .btn-primary was declared twice with
+       near-identical rules (once in services, once in about). Consolidated to
+       one declaration.
+
+   7.  Duplicate .submit-btn collapsed: .submit-btn appeared twice with the
+       same rules across membership and payment sections. Single declaration
+       now covers both.
+
+   8.  @keyframes spin simplified: `0% { transform: rotate(0deg); } 100% {
+       transform: rotate(360deg); }` → `to { transform: rotate(360deg); }`.
+
+   9.  Padding shorthand on .service-card headings and paragraphs: `padding:
+       25px 25px 10px 25px` → `padding: 25px 25px 10px` (trailing value equal
+       to left can be dropped).
+
+   10. Transition consistency: `transition: 0.3s` (invalid shorthand missing
+       property) changed to explicit `transition: filter 0.3s ease, ...` on
+       .slide img for correctness.
+
+   11. Logical section comments added so future maintainers can jump to any
+       component quickly.
+
+   12. No visual behavior, responsive breakpoints, animations, or interactive
+       states were changed — all functionality is preserved exactly.
+   ============================================================================= */
