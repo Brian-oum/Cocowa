@@ -10,4 +10,5 @@ urlpatterns = [
     path('payment/<int:member_id>/', views.payment_page, name='payment'),
     path('payment-status/<int:member_id>/', views.payment_status, name='payment_status'),
     path('download-card/<int:member_id>/', views.download_membership_card, name='download_card'),
+    path('membership/check/',views.check_membership,name='check_membership'),
 ]

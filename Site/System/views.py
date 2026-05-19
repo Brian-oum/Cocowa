@@ -146,6 +146,32 @@ def download_membership_card(request, member_id):
 
     return response
 
+def check_membership(request):
+
+    member = None
+    error = None
+
+    if request.method == "POST":
+
+        membership_number = request.POST.get("membership_number")
+
+        try:
+            member = Membership.objects.get(
+                membership_number=membership_number
+            )
+
+        except Membership.DoesNotExist:
+            error = "No member found with that membership number."
+
+    return render(
+        request,
+        "System/membership.html",
+        {
+            "member": member,
+            "error": error
+        }
+    )
+
 def home(request):
     return render(request, 'System/home.html')
 

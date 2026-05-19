@@ -1,16 +1,24 @@
 from django.db import models
 import random
-
+import re 
 def generate_unique_membership_number():
     from .models import Membership
 
     last_member = Membership.objects.exclude(
         membership_number__isnull=True
-    ).order_by('-membership_number').first()
+    ).order_by('-id').first()
 
     if last_member and last_member.membership_number:
-        last_number = int(last_member.membership_number.replace('CMN', ''))
-        new_number = last_number + 1
+
+        # Extract only digits
+        numbers = re.findall(r'\d+', last_member.membership_number)
+
+        if numbers:
+            last_number = int(numbers[0])
+            new_number = last_number + 1
+        else:
+            new_number = 1
+
     else:
         new_number = 1
 
@@ -18,8 +26,8 @@ def generate_unique_membership_number():
 
 class Membership(models.Model):
     PACKAGE_CHOICES = [
-        ('standard', 'Standard'),
-        ('premium', 'premium'),
+        ('Standard', 'Standard'),
+        ('Premium', 'Premium'),
     ]
 
     PAYMENT_STATUS = [
@@ -43,7 +51,7 @@ class Membership(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def get_amount(self):
-        return 500 if self.package == 'standard' else 2000
+        return 550 if self.package == 'standard' else 3050
 
     def __str__(self):
         return f"{self.first_name} {self.second_name}"

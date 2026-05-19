@@ -1,0 +1,155 @@
+{% extends 'System/base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="verify-section">
+
+    <div class="verify-overlay"></div>
+
+    <div class="container">
+
+        <div class="verify-card">
+
+            <span class="verify-badge">
+                Membership Verification
+            </span>
+
+            <h1>Check Your Membership Status</h1>
+
+            <p>
+                Enter your membership number to verify your registration.
+            </p>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="verify-input">
+
+                    <i class="fas fa-id-card"></i>
+
+                    <input
+                        type="text"
+                        name="membership_number"
+                        placeholder="Enter Membership Number"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="verify-btn">
+                    Verify Membership
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================
+     VERIFICATION MODAL
+========================================= -->
+
+{% if member or error %}
+
+<div class="verify-modal active">
+
+    <div class="modal-backdrop"></div>
+
+    <div class="modal-content">
+
+        <button class="close-modal">
+            <i class="fas fa-times"></i>
+        </button>
+
+        {% if member %}
+
+        <div class="member-result success">
+
+            <div class="status-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+
+            <h3>Membership Verified</h3>
+
+            <div class="member-details">
+
+                <div class="detail-item">
+                    <span>Member Name</span>
+                    <strong>{{ member.first_name }} {{member.second_name}}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Membership Number</span>
+                    <strong>{{ member.membership_number }}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Plan</span>
+                    <strong>{{ member.package }}</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Status</span>
+                    <strong class="active-status">
+                        Active
+                    </strong>
+                </div>
+
+            </div>
+            <div style="margin-top: 25px; text-align: center;">
+
+            <a href="{% url 'download_card' member.id %}" class="btn-primary">
+                <i class="fas fa-download"></i>Download Membership Card
+            </a>
+        </div>
+
+        </div>
+
+        {% endif %}
+
+        {% if error %}
+
+        <div class="member-result error">
+
+            <div class="status-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+
+            <h3>{{ error }}</h3>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<script>
+
+const modal = document.querySelector(".verify-modal");
+const closeBtn = document.querySelector(".close-modal");
+const backdrop = document.querySelector(".modal-backdrop");
+
+if(closeBtn){
+
+    closeBtn.addEventListener("click", () => {
+        modal.classList.remove("active");
+    });
+
+}
+
+if(backdrop){
+
+    backdrop.addEventListener("click", () => {
+        modal.classList.remove("active");
+    });
+
+}
+
+</script>
+{% endblock %}
