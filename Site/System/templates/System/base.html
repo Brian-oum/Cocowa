@@ -581,11 +581,11 @@ Moi Avenue, Nairobi</span>
         <div class="footer-column">
             <h3>Links</h3>
             <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/about/">About</a></li>
-                <li><a href="/membership/">Membership</a></li>
-                <li><a href="/join/">Join us</a></li>
-                <li><a href="/rights/">Passenger Rights</a></li>
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'check_membership' %}">Membership</a></li>
+                <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                <li><a href="{% url 'services' %}">Services</a></li>
             </ul>
         </div>
 
@@ -604,8 +604,8 @@ Moi Avenue, Nairobi</span>
                     <div>+254735943903,<br>+254739867509</div>
                 </div>
 
-                <p style="font-size: 12px; margin-top: 20px; color: #666;">P.O.Box 58905 - 00200, Riverside, Kenya</p>
-                <a href="#" class="directions-link">&rarr; Get Directions</a>
+                <p style="font-size: 12px; margin-top: 20px; color: #666;">Development House 3rd Floor Rm 3-16 ,Moi Avenue, Nairobi</p>
+                <a href="https://www.google.com/maps/search/?api=1&query=Development+House+Moi+Avenue+Nairobi" target="_blank" class="directions-link">&rarr; Get Directions</a>
             </div>
         </div>
     </div>
