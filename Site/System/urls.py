@@ -9,6 +9,41 @@ urlpatterns = [
     path('join/', views.join_membership, name='join'),
     path('payment/<int:member_id>/', views.payment_page, name='payment'),
     path('payment-status/<int:member_id>/', views.payment_status, name='payment_status'),
-    path('download-card/<int:member_id>/', views.download_membership_card, name='download_card'),
     path('membership/check/',views.check_membership,name='check_membership'),
+    path("login/", views.custom_login, name="login"),
+
+    path("dashboard/sacco/", views.sacco_dashboard, name="sacco_dashboard"),
+    path("dashboard/individual/", views.individual_dashboard, name="individual_dashboard"),
+    path("dashboard/partner/", views.partner_dashboard, name="partner_dashboard"),
+    path("logout/", views.custom_logout, name="logout"),
+    path(
+    "dashboard-redirect/", views.dashboard_redirect, name="dashboard_redirect"),
+
+path(
+    "complete-individual-profile/",
+    views.complete_individual_profile,
+    name="complete_individual_profile"
+),
+path(
+        'download-membership-card/',
+        views.download_membership_card,
+        name='download_membership_card'
+    ),
+path(
+    "complete-sacco-profile/",
+    views.complete_sacco_profile,
+    name="complete_sacco_profile"
+),
+
+path(
+    "complete-partner-profile/",
+    views.complete_partner_profile,
+    name="complete_partner_profile"
+),
+ path(
+        'membership-card/',
+        views.membership_card,
+        name='membership_card'
+    ),
+
 ]

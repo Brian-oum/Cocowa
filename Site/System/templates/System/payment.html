@@ -1,49 +1,370 @@
-{% extends 'System/base.html' %}
+{% extends 'System/base_dashboard.html' %}
 {% load static %}
 
 {% block content %}
-<div class="payment-page">
-    <div class="payment-card">
-        <h1 class="form-title">Complete Your Payment</h1>
-        
-        <div class="user-greeting">
-            <p>Hello <strong>{{ member.first_name }}</strong>,</p>
-            <div class="amount-summary">
-                <span>Package: <strong>{{ member.package|title }}</strong></span>
-                <span>Amount: <strong>KES {{ member.get_amount }}</strong></span>
-            </div>
-        </div>
+<div class="payment-page-viewport">
+    <div class="payment-card-tight payment-card-expanded">
 
-        <div class="instructions-section">
-            <h3>M-PESA Instructions</h3>
-            <div class="paybill-info">
-                <div class="info-item"><span>Business No:</span> <strong>522533</strong></div>
-                <div class="info-item"><span>Account No:</span> <strong>9966234</strong></div>
-                <div class="info-item"><span>Reference:</span> <strong>{{ member.id }}</strong></div>
-            </div>
+        <div class="card-header-zone">
+            <h1 class="form-title-compact">Complete Your Payment</h1>
             
-            <ol class="step-list">
-                <li>Go to M-PESA menu on your phone</li>
-                <li>Select <strong>Lipa na M-PESA</strong> then <strong>Paybill</strong></li>
-                <li>Enter the Business and Account numbers shown above</li>
-                <li>Enter Amount: <strong>KES {{ member.get_amount }}</strong></li>
-                <li>Use phone number: <strong>{{ member.phone_number }}</strong></li>
-            </ol>
+            <div class="user-greeting-pill">
+                {% if member.first_name and member.second_name %}
+                    <p>Hello, <strong>{{ member.first_name }} {{ member.second_name }}</strong></p>
+                {% elif member.sacco_name %}
+                    <p>Hello, <strong>{{ member.sacco_name }}</strong></p>
+                {% elif member.number_plate %}
+                    <p>Hello, <strong>{{ member.number_plate }}</strong></p>
+                {% elif member.organization_name %}
+                    <p>Hello, <strong>{{ member.organization_name }}</strong></p>
+                {% else %}
+                    <p>Hello, <strong>Member</strong></p>
+                {% endif %}
+                
+                {% if member.sacco_name %}
+                    <span class="v-counter-tag">({{ member.vehicles.count }} Vehicles)</span>
+                {% endif %}
+            </div>
         </div>
 
-        <hr class="divider">
-
-        <div class="verification-section">
-            <h3>Verify Your Payment</h3>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="form-group">
-                    <input type="text" name="transaction_code" placeholder="Enter M-PESA Transaction Code (e.g. QWE123RTY)" required>
-                    <label>Transaction Code</label>
+        <div class="payment-split-grid">
+            
+            <div class="panel-column">
+                <div class="amount-summary-strip">
+                    <div class="strip-item">
+                        <span class="lbl">Account Type</span>
+                        <strong class="val">
+                            {% if member.first_name %} Individual
+                            {% elif member.sacco_name %} Sacco
+                            {% elif member.organization_name %} Partner
+                            {% else %} Member {% endif %}
+                        </strong>
+                    </div>
+                    <div class="strip-item active-amount">
+                        <span class="lbl">Total Due</span>
+                        <strong class="val highlight-kes">KES {{ amount }}</strong>
+                    </div>
                 </div>
-                <button type="submit" class="submit-btn">Verify Payment</button>
-            </form>
+
+                <div class="instructions-section-compact">
+                    <h3 class="section-heading"><i class="fa-solid fa-mobile-screen"></i> Lipa na M-PESA Paybill</h3>
+                    
+                    <div class="paybill-info-compact">
+                        <div class="info-item-box">
+                            <span>Business No.</span>
+                            <strong>522533</strong>
+                        </div>
+                        <div class="info-item-box">
+                            <span>Account No.</span>
+                            <strong>9966234</strong>
+                        </div>
+                        <div class="info-item-box">
+                            <span>Reference ID</span>
+                            <strong>{{ member.id }}</strong>
+                        </div>
+                    </div>
+
+                    <ol class="step-list-compact">
+                        <li>Open your phone's M-PESA menu.</li>
+                        <li>Select <strong>Lipa na M-PESA</strong> <i class="fa-solid fa-arrow-right"></i> <strong>Paybill</strong>.</li>
+                        <li>Enter Business Number, Account number, and exactly <strong>KES {{ amount }}</strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="panel-column verification-panel">
+                <div class="verification-section-compact">
+                    <h3 class="section-heading"><i class="fa-solid fa-shield-checkmark"></i> Verify Transaction</h3>
+                    <p class="verification-helper">Enter the official M-PESA alpha-numeric receipt code sent to your mobile device to complete verification.</p>
+
+                    <form method="POST" class="compact-form">
+                        {% csrf_token %}
+
+                        <div class="form-group-floating">
+                            <input type="text" 
+                                   name="transaction_code" 
+                                   id="tx_code"
+                                   placeholder=" " 
+                                   autocomplete="off"
+                                   style="text-transform: uppercase;"
+                                   required>
+                            <label for="tx_code">M-PESA Transaction Code</label>
+                        </div>
+
+                        <button type="submit" class="submit-btn-fluid">
+                            <i class="fa-solid fa-circle-check"></i> Verify & Activate Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </div>
+
     </div>
 </div>
+
+<style>
+    :root {
+        --dark-navy: #001C3D;
+        --soft-amber: #FDF2E2;
+        --border-thick: 1.5px solid #001C3D;
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .payment-page-viewport {
+        width: 100%;
+        height: calc(100vh - 110px); 
+        min-height: 580px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+    }
+
+    /* Increased card footprint limits and interior dynamic gutter space */
+    .payment-card-expanded {
+        max-width: 960px !important; /* Bumped up from 820px for a more expansive screen presence */
+        min-height: 440px;
+        padding: 36px !important;   /* Enhanced internal whitespace breathability */
+        box-shadow: 12px 12px 0 var(--dark-navy) !important;
+    }
+
+    .payment-card-tight {
+        background: #ffffff;
+        width: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: var(--border-thick);
+        box-sizing: border-box;
+        animation: cardEntryFade 0.5s var(--ease-out-expo) both;
+    }
+
+    @keyframes cardEntryFade {
+        from { opacity: 0; transform: translateY(15px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER CONFIGURATION */
+    .card-header-zone {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed rgba(0, 28, 61, 0.15);
+        padding-bottom: 18px;
+        margin-bottom: 24px;
+    }
+
+    .form-title-compact {
+        margin: 0;
+        font-size: 24px; /* Scaled up text prominence */
+        font-weight: 800;
+        color: var(--dark-navy);
+        letter-spacing: -0.5px;
+    }
+
+    .user-greeting-pill {
+        background: #f1f5f9;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 14px;
+        color: var(--dark-navy);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .user-greeting-pill p { margin: 0; }
+    .v-counter-tag { font-size: 12px; color: #64748b; font-weight: 600; }
+
+    /* ROW SPLIT SYSTEM GRID */
+    .payment-split-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr; /* Optimized proportion balancing */
+        gap: 28px;
+        flex: 1;
+        align-items: stretch;
+    }
+
+    .panel-column {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        justify-content: space-between;
+    }
+
+    /* AMOUNT STRIP DATA */
+    .amount-summary-strip {
+        display: flex;
+        background: #f8fafc;
+        border: var(--border-thick);
+        border-radius: 10px;
+    }
+
+    .strip-item {
+        flex: 1;
+        padding: 14px 18px;
+        display: flex;
+        flex-direction: column;
+    }
+    .strip-item:first-child { border-right: var(--border-thick); }
+    .strip-item .lbl { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 600; letter-spacing: 0.5px; }
+    .strip-item .val { font-size: 16px; color: var(--dark-navy); font-weight: 700; margin-top: 4px; }
+    
+    .active-amount { background: #fffbeb; }
+    .highlight-kes { color: #b45309 !important; font-size: 19px !important; }
+
+    /* INSTRUCTIONS SYSTEM COMPRESSION */
+    .instructions-section-compact {
+        background: #fafafa;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .section-heading {
+        margin: 0 0 14px 0;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--dark-navy);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .paybill-info-compact {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        background: var(--dark-navy);
+        color: #ffffff;
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    .info-item-box { text-align: center; }
+    .info-item-box span { display: block; font-size: 11px; opacity: 0.75; margin-bottom: 2px; }
+    .info-item-box strong { font-size: 14px; font-weight: 700; letter-spacing: 0.5px; }
+
+    .step-list-compact {
+        margin: 12px 0 0 0;
+        padding-left: 20px;
+        font-size: 13.5px;
+        color: #334155;
+        line-height: 1.6;
+    }
+    .step-list-compact li { margin-bottom: 6px; }
+    .step-list-compact li:last-child { margin-bottom: 0; }
+
+    /* RIGHT SIDE DETAILS CONTAINER */
+    .verification-panel {
+        background: #fff;
+        border-left: 1px dashed rgba(0, 28, 61, 0.15);
+        padding-left: 28px;
+    }
+
+    .verification-section-compact {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .verification-helper {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.6;
+        margin: 0 0 20px 0;
+    }
+
+    .compact-form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    /* INLINE FLOATING LABELS ENGINE */
+    .form-group-floating {
+        position: relative;
+        width: 100%;
+    }
+
+    .form-group-floating input {
+        width: 100%;
+        padding: 20px 16px 8px 16px; /* Expanded interaction fields footprint */
+        border: var(--border-thick);
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--dark-navy);
+        background: #ffffff;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+
+    .form-group-floating label {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #94a3b8;
+        pointer-events: none;
+        transition: all 0.2s ease;
+    }
+
+    .form-group-floating input:focus {
+        outline: none;
+        border-color: #6A2B91;
+        box-shadow: 0 0 0 4px rgba(106, 43, 145, 0.08);
+    }
+
+    .form-group-floating input:focus ~ label,
+    .form-group-floating input:not(:placeholder-shown) ~ label {
+        top: 11px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #6A2B91;
+        text-transform: uppercase;
+    }
+
+    /* ACTION FLUID BUTTONS */
+    .submit-btn-fluid {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 8px;
+        background: var(--dark-navy);
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: background 0.2s ease, transform 0.1s ease;
+    }
+
+    .submit-btn-fluid:hover {
+        background: #002e64;
+    }
+    .submit-btn-fluid:active {
+        transform: scale(0.995);
+    }
+
+    /* MEDIA OVERRIDES FOR MID-RANGE TABLETS */
+    @media (max-width: 840px) {
+        .payment-page-viewport { height: auto; padding: 20px; }
+        .payment-card-tight { max-height: none; }
+        .payment-split-grid { grid-template-columns: 1fr; gap: 20px; }
+        .verification-panel { border-left: none; padding-left: 0; border-top: 1px dashed rgba(0, 28, 61, 0.15); padding-top: 20px; }
+        .card-header-zone { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+</style>
 {% endblock %}

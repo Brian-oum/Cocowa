@@ -1,4 +1,4 @@
-```html
+
 {% extends 'System/base.html' %}
 {% load static %}
 
@@ -9,15 +9,15 @@
     <div class="form-container">
 
         <h1 class="form-title">
-            Membership Registration
+            Login to Your Account
         </h1>
 
         <p class="form-subtitle">
-            Create your account to continue
+            Access your dashboard and manage your membership
         </p>
 
         <!-- =========================
-             MESSAGES
+             ERROR / SUCCESS MESSAGES
         ========================== -->
         {% if messages %}
             {% for message in messages %}
@@ -28,72 +28,16 @@
         {% endif %}
 
         <!-- =========================
-             FORM
+             LOGIN FORM
         ========================== -->
         <form method="POST">
 
             {% csrf_token %}
 
-            <!-- =========================
-                 MEMBER TYPE
-            ========================== -->
+            <!-- EMAIL -->
             <div class="form-row">
 
                 <div class="form-group full-width">
-
-                    <select
-                        name="member_type"
-                        class="form-control"
-                        required
-                    >
-
-                        <option value="">
-                            Select Member Type
-                        </option>
-
-                        <option value="individual">
-                            Individual
-                        </option>
-
-                        <option value="sacco">
-                            Sacco
-                        </option>
-
-                        <option value="partner">
-                            Partner / Donor
-                        </option>
-
-                    </select>
-
-                    <label>
-                        Member Type
-                    </label>
-
-                </div>
-
-            </div>
-
-            <!-- =========================
-                 PHONE + EMAIL
-            ========================== -->
-            <div class="form-row">
-
-                <div class="form-group">
-
-                    <input
-                        type="text"
-                        name="phone_number"
-                        class="form-control"
-                        required
-                    >
-
-                    <label>
-                        Phone Number
-                    </label>
-
-                </div>
-
-                <div class="form-group">
 
                     <input
                         type="email"
@@ -102,20 +46,16 @@
                         required
                     >
 
-                    <label>
-                        Email Address
-                    </label>
+                    <label>Email Address</label>
 
                 </div>
 
             </div>
 
-            <!-- =========================
-                 PASSWORDS
-            ========================== -->
+            <!-- PASSWORD -->
             <div class="form-row">
 
-                <div class="form-group">
+                <div class="form-group full-width">
 
                     <input
                         type="password"
@@ -124,47 +64,24 @@
                         required
                     >
 
-                    <label>
-                        Password
-                    </label>
-
-                </div>
-
-                <div class="form-group">
-
-                    <input
-                        type="password"
-                        name="confirm_password"
-                        class="form-control"
-                        required
-                    >
-
-                    <label>
-                        Confirm Password
-                    </label>
+                    <label>Password</label>
 
                 </div>
 
             </div>
 
-            <!-- =========================
-                 SUBMIT BUTTON
-            ========================== -->
+            <!-- SUBMIT -->
             <button type="submit" class="submit-btn">
-
-                Create Account
-
+                Login
             </button>
 
-            <!-- =========================
-                 LOGIN LINK
-            ========================== -->
+            <!-- LINKS -->
             <div class="login-link">
 
-                Already have an account?
+                Don't have an account?
 
-                <a href="{% url 'login' %}">
-                    Login Here
+                <a href="{% url 'join' %}">
+                    Register here
                 </a>
 
             </div>
@@ -175,6 +92,9 @@
 
 </div>
 
+<!-- =========================
+     SAME STYLING AS REGISTER PAGE
+========================== -->
 <style>
 
 .membership-page{
@@ -194,7 +114,7 @@
 .form-container{
 
     width:100%;
-    max-width:700px;
+    max-width:600px;
 
     background:white;
 
@@ -207,7 +127,7 @@
 
 .form-title{
 
-    font-size:32px;
+    font-size:30px;
     font-weight:700;
 
     color:#001C3D;
@@ -223,17 +143,16 @@
 
     color:#666;
 
-    margin-bottom:40px;
+    margin-bottom:35px;
 }
 
 .form-row{
 
     display:flex;
+
     gap:20px;
 
-    margin-bottom:25px;
-
-    flex-wrap:wrap;
+    margin-bottom:20px;
 }
 
 .form-group{
@@ -261,8 +180,6 @@
     outline:none;
 
     font-size:15px;
-
-    background:white;
 }
 
 .form-control:focus{
@@ -333,22 +250,16 @@
 
     color:#c62828;
 
-    padding:15px;
+    padding:12px;
 
     border-radius:10px;
 
-    margin-bottom:20px;
+    margin-bottom:15px;
 }
 
 @media(max-width:768px){
 
-    .form-row{
-
-        flex-direction:column;
-    }
-
     .form-container{
-
         padding:25px;
     }
 }

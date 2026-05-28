@@ -1,0 +1,367 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="membership-page">
+
+    <div class="form-container fade-in-up">
+
+        {% if not is_complete %}
+            <div class="state-header animate-header">
+                <div class="header-icon pulse-blue"><i class="fa-solid fa-user-plus"></i></div>
+                <h1 class="form-title">Complete Your Profile</h1>
+                <p class="form-subtitle">Finish setting up your membership to activate your dashboard</p>
+            </div>
+
+        {% else %}
+            
+            <div id="profileViewMode" class="profile-view-wrapper {% if edit_mode %}hidden-state{% endif %}">
+                <div class="state-header">
+                    <div class="header-icon check-green"><i class="fa-solid fa-id-card"></i></div>
+                    <h1 class="form-title">My Profile</h1>
+                    <p class="form-subtitle">Your verified account and subscription settings</p>
+                </div>
+
+                <div class="profile-details-grid">
+                    <div class="detail-strip">
+                        <span class="strip-lbl"><i class="fa-solid fa-circle-user"></i> Full Name</span>
+                        <h4 class="strip-val">{{ member.first_name }} {{ member.second_name }}</h4>
+                    </div>
+                    <div class="detail-strip">
+                        <span class="strip-lbl"><i class="fa-solid fa-passport"></i> ID / Passport Number</span>
+                        <h4 class="strip-val">{{ member.id_number }}</h4>
+                    </div>
+                    <div class="detail-strip">
+                        <span class="strip-lbl"><i class="fa-solid fa-phone"></i> Mobile Contact</span>
+                        <h4 class="strip-val">{{ member.phone_number|default:"Not Provided" }}</h4>
+                    </div>
+                    <div class="detail-strip">
+                        <span class="strip-lbl"><i class="fa-solid fa-envelope"></i> Email Address</span>
+                        <h4 class="strip-val">{{ member.email }}</h4>
+                    </div>
+                    <div class="detail-strip full-width-strip">
+                        <span class="strip-lbl"><i class="fa-solid fa-cubes"></i> Subscription Plan</span>
+                        <span class="badge-plan">{{ member.package }}</span>
+                    </div>
+                </div>
+
+                <button type="button" id="enableEditBtn" class="action-btn secondary-btn ripple-effect">
+                    <i class="fa-solid fa-pen-to-square"></i> Modify Account Details
+                </button>
+            </div>
+
+            <div id="profileEditHeader" class="state-header hidden-state">
+                <div class="header-icon amber-edit"><i class="fa-solid fa-user-gear"></i></div>
+                <h1 class="form-title">Modify Profile Details</h1>
+                <p class="form-subtitle">Update your personal documentation information below</p>
+            </div>
+
+        {% endif %}
+
+        <form method="POST" id="profileForm" class="{% if is_complete and not edit_mode %}hidden-state form-slide-down{% endif %}">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group floating-label-group">
+                    <input type="text" name="first_name" id="first_name"
+                        value="{{ member.first_name|default:'' }}"
+                        class="form-control" placeholder=" " required>
+                    <label for="first_name">First Name</label>
+                </div>
+
+                <div class="form-group floating-label-group">
+                    <input type="text" name="second_name" id="second_name"
+                        value="{{ member.second_name|default:'' }}"
+                        class="form-control" placeholder=" " required>
+                    <label for="second_name">Second Name</label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group floating-label-group">
+                    <input type="text" name="phone_number" id="phone_number"
+                        value="{{ member.phone_number|default:'' }}"
+                        class="form-control" placeholder=" ">
+                    <label for="phone_number">Phone Number</label>
+                </div>
+
+                <div class="form-group floating-label-group">
+                    <input type="email" name="email" id="email"
+                        value="{{ member.email|default:'' }}"
+                        class="form-control" placeholder=" ">
+                    <label for="email">Email Address</label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group floating-label-group">
+                    <input type="text" name="id_number" id="id_number"
+                        value="{{ member.id_number|default:'' }}"
+                        class="form-control" placeholder=" " required>
+                    <label for="id_number">ID Number</label>
+                </div>
+
+                <div class="form-group floating-label-group active-select-group">
+                    <select name="package" id="package" class="form-control" required>
+                        <option value="" disabled {% if not member.package %}selected{% endif %}>Select Package</option>
+                        <option value="Standard" {% if member.package == "Standard" %}selected{% endif %}>Standard</option>
+                        <option value="Super Subscription" {% if member.package == "Super Subscription" %}selected{% endif %}>Super Subscription</option>
+                    </select>
+                    <label for="package">Membership Package</label>
+                </div>
+            </div>
+
+            <div class="interactive-info-box {% if is_complete %}info-update{% else %}info-create{% endif %}">
+                <div class="info-icon"><i class="fa-solid fa-circle-info"></i></div>
+                <div class="info-text">
+                    {% if not is_complete %}
+                        <p>Completing your profile unlocks the automated secure billing gateway integrations.</p>
+                    {% else %}
+                        <p>Note: Modifying identity or premium package attributes might recalculate active processing invoices.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-actions-wrapper">
+                {% if is_complete %}
+                    <button type="button" id="cancelEditBtn" class="action-btn cancel-btn">Cancel</button>
+                {% endif %}
+                <button type="submit" class="action-btn submit-btn ripple-effect">
+                    {% if not is_complete %} <i class="fa-solid fa-arrow-right-to-bracket"></i> Save & Proceed {% else %} <i class="fa-solid fa-cloud-arrow-up"></i> Update Account {% endif %}
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const enableEditBtn = document.getElementById('enableEditBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const profileViewMode = document.getElementById('profileViewMode');
+    const profileEditHeader = document.getElementById('profileEditHeader');
+    const profileForm = document.getElementById('profileForm');
+
+    if (enableEditBtn && profileForm) {
+        enableEditBtn.addEventListener('click', function() {
+            // Smoothly collapse and hide view block
+            profileViewMode.classList.add('hidden-state');
+            
+            // Wait for display transition state block step
+            setTimeout(() => {
+                profileEditHeader.classList.remove('hidden-state');
+                profileForm.classList.remove('hidden-state');
+            }, 200);
+        });
+    }
+
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', function() {
+            profileEditHeader.classList.add('hidden-state');
+            profileForm.classList.add('hidden-state');
+            
+            setTimeout(() => {
+                profileViewMode.classList.remove('hidden-state');
+            }, 200);
+        });
+    }
+});
+</script>
+
+<style>
+    :root {
+        --primary-brand: #001C3D;
+        --secondary-hover: #002d62;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --bg-glass: #f8fafc;
+        --border-fluid: #e2e8f0;
+        --emerald-success: #10b981;
+        --amber-warning: #f59e0b;
+    }
+
+    .membership-page {
+        width: 100%;
+        min-height: 60vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px 10px;
+        background: #f1f5f9;
+    }
+
+    .form-container {
+        width: 100%;
+        max-width: 760px;
+        background: #ffffff;
+        border-radius: 24px;
+        padding: 10px;
+        box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.06);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* VIEW AND EDIT STATE RULES */
+    .hidden-state {
+        display: none !important;
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    .state-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 35px;
+        animation: fadeIn 0.4s ease forwards;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+    .pulse-blue { background: #eff6ff; color: var(--primary-brand); }
+    .check-green { background: #ecfdf5; color: var(--emerald-success); }
+    .amber-edit { background: #fffbeb; color: var(--amber-warning); }
+
+    .form-title { font-size: 26px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; margin: 0 0 6px 0; }
+    .form-subtitle { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+    /* PROFILE VIEWS GRID SYSTEM */
+    .profile-details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 30px;
+        animation: fadeIn 0.4s ease forwards;
+    }
+
+    .detail-strip {
+        background: var(--bg-glass);
+        border: 1px solid var(--border-fluid);
+        padding: 16px 20px;
+        border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .full-width-strip { grid-column: span 2; flex-direction: row; justify-content: space-between; align-items: center; }
+
+    .strip-lbl { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+    .strip-lbl i { color: #94a3b8; }
+    .strip-val { margin: 0; font-size: 15px; font-weight: 600; color: var(--text-dark); }
+    .badge-plan { background: #eff6ff; color: var(--primary-brand); font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 20px; border: 1px solid #dbeafe; }
+
+    /* INPUT FLOATING FIELDS CODE SETUP */
+    .form-row { display: flex; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+    .form-group { flex: 1; min-width: 250px; position: relative; }
+
+    .floating-label-group { position: relative; }
+    .floating-label-group input, .floating-label-group select {
+        width: 80%;
+        padding: 18px 16px 8px 16px;
+        border: 1px solid var(--border-fluid);
+        border-radius: 14px;
+        background: #ffffff;
+        font-size: 15px;
+        color: var(--text-dark);
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .floating-label-group label {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 15px;
+        pointer-events: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Animation on focus state logic wrappers */
+    .floating-label-group input:focus, .floating-label-group select:focus {
+        border-color: var(--primary-brand);
+        box-shadow: 0 0 0 4px rgba(0, 28, 61, 0.04);
+        outline: none;
+    }
+
+    .floating-label-group input:focus ~ label,
+    .floating-label-group input:not(:placeholder-shown) ~ label,
+    .active-select-group select ~ label {
+        top: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--primary-brand);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* TEXT BOX WARNING DECORATIONS */
+    .interactive-info-box {
+        display: flex;
+        gap: 14px;
+        padding: 16px 20px;
+        border-radius: 14px;
+        margin-bottom: 30px;
+        align-items: center;
+    }
+    .info-create { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .info-update { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+    .info-icon { font-size: 18px; }
+    .info-text p { margin: 0; font-size: 13px; line-height: 1.4; font-weight: 500; }
+
+    /* BUTTON WRAPPERS CONFIG */
+    .form-actions-wrapper { display: flex; gap: 14px; justify-content: flex-end; }
+    .action-btn {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .submit-btn { background: var(--primary-brand); color: #ffffff; width: auto; }
+    .submit-btn:hover { background: var(--secondary-hover); transform: translateY(-1px); }
+    
+    .secondary-btn { background: #ffffff; border: 1px solid var(--border-fluid); color: var(--text-dark); width: 100%; justify-content: center; padding: 16px; }
+    .secondary-btn:hover { background: var(--bg-glass); border-color: #cbd5e1; }
+
+    .cancel-btn { background: #f1f5f9; color: #475569; }
+    .cancel-btn:hover { background: #e2e8f0; color: var(--text-dark); }
+
+    /* ENGINE KEYFRAME VISUAL ANIMATIONS */
+    .fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .form-slide-down { animation: fadeIn 0.3s ease-out forwards; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; } to { opacity: 1; }
+    }
+
+    @media (max-width: 640px) {
+        .profile-details-grid { grid-template-columns: 1fr; }
+        .full-width-strip { grid-column: span 1; }
+        .form-container { padding: 25px; }
+        .form-actions-wrapper { flex-direction: column-reverse; }
+        .action-btn { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
