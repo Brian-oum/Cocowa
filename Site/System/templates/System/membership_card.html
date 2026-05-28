@@ -1,0 +1,473 @@
+<!-- templates/System/membership_card.html -->
+
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="card-page">
+
+    <div class="membership-card-wrapper">
+
+        <!-- =========================
+             CARD HEADER
+        ========================== -->
+        <div class="card-header">
+
+            <div class="logo-section">
+                <img
+                    src="{% static 'images/cocowalogo.png' %}"
+                    alt="COCOWA Logo"
+                >
+            </div>
+
+            <div class="title-section">
+                <h1>MEMBERSHIP CARD</h1>
+                <p>COCOWA Official Member Identification</p>
+            </div>
+
+        </div>
+
+        <!-- =========================
+             STATUS BADGE
+        ========================== -->
+        <div class="status-wrapper">
+
+            {% if member.payment_status == "paid" %}
+                <span class="status-badge active-badge">
+                    ACTIVE
+                </span>
+            {% else %}
+                <span class="status-badge inactive-badge">
+                    PENDING
+                </span>
+            {% endif %}
+
+        </div>
+
+        <!-- =========================
+             MEMBER INFO
+        ========================== -->
+        <div class="member-info">
+
+            {% if role == "individual" %}
+
+                <div class="info-row">
+                    <span class="label">Full Name</span>
+                    <span class="value">
+                        {{ member.first_name }}
+                        {{ member.second_name }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Membership No</span>
+                    <span class="value">
+                        {{ member.membership_number }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Package</span>
+                    <span class="value">
+                        {{ member.package }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Phone</span>
+                    <span class="value">
+                        {{ member.phone_number }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Email</span>
+                    <span class="value">
+                        {{ member.email }}
+                    </span>
+                </div>
+
+            {% elif role == "sacco" %}
+
+                <div class="info-row">
+                    <span class="label">Sacco Name</span>
+                    <span class="value">
+                        {{ member.sacco_name }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Membership No</span>
+                    <span class="value">
+                        {{ member.membership_number }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Registration No</span>
+                    <span class="value">
+                        {{ member.sacco_registration_number }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Phone</span>
+                    <span class="value">
+                        {{ member.phone_number }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Email</span>
+                    <span class="value">
+                        {{ member.email }}
+                    </span>
+                </div>
+
+            {% elif role == "partner" %}
+
+                <div class="info-row">
+                    <span class="label">Organization</span>
+                    <span class="value">
+                        {{ member.organization_name }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Membership No</span>
+                    <span class="value">
+                        {{ member.membership_number }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Donation Amount</span>
+                    <span class="value">
+                        KES {{ member.donation_amount }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Phone</span>
+                    <span class="value">
+                        {{ member.phone_number }}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Email</span>
+                    <span class="value">
+                        {{ member.email }}
+                    </span>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        <!-- =========================
+             FOOTER
+        ========================== -->
+        <div class="card-footer">
+
+            <div class="footer-left">
+                Generated:
+                {{ member.created_at|date:"Y-m-d" }}
+            </div>
+
+            <div class="footer-right">
+                Verification Required
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+         ACTION BUTTONS
+    ========================== -->
+    <div class="action-buttons">
+
+        <a
+            href="{% url 'download_membership_card' %}"
+            class="download-btn"
+        >
+            <i class="fa-solid fa-download"></i>
+            Download Card
+        </a>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     STYLING
+========================== -->
+<style>
+
+.card-page{
+
+    width:100%;
+
+    min-height:100vh;
+
+    padding:40px 20px;
+
+    background:#f5f7fb;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+}
+
+.membership-card-wrapper{
+
+    width:100%;
+
+    max-width:750px;
+
+    background:#fffdf8;
+
+    border-radius:24px;
+
+    padding:35px;
+
+    border:2px solid #001C3D;
+
+    box-shadow:0 15px 40px rgba(0,0,0,0.08);
+
+    position:relative;
+
+    overflow:hidden;
+}
+
+.card-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding-bottom:20px;
+
+    border-bottom:1px solid #ddd;
+}
+
+.logo-section img{
+
+    width:80px;
+
+    height:80px;
+
+    object-fit:contain;
+}
+
+.title-section{
+
+    text-align:right;
+}
+
+.title-section h1{
+
+    margin:0;
+
+    color:#001C3D;
+
+    font-size:30px;
+
+    font-weight:700;
+}
+
+.title-section p{
+
+    margin-top:5px;
+
+    color:#666;
+
+    font-size:14px;
+}
+
+.status-wrapper{
+
+    margin-top:25px;
+
+    display:flex;
+
+    justify-content:flex-end;
+}
+
+.status-badge{
+
+    padding:10px 20px;
+
+    border-radius:30px;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    letter-spacing:1px;
+}
+
+.active-badge{
+
+    background:#28a745;
+
+    color:white;
+}
+
+.inactive-badge{
+
+    background:#dc3545;
+
+    color:white;
+}
+
+.member-info{
+
+    margin-top:30px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+}
+
+.info-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding-bottom:12px;
+
+    border-bottom:1px dashed #ddd;
+}
+
+.label{
+
+    color:#666;
+
+    font-size:14px;
+
+    font-weight:600;
+}
+
+.value{
+
+    color:#001C3D;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    text-align:right;
+}
+
+.card-footer{
+
+    margin-top:35px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    color:#888;
+
+    font-size:12px;
+}
+
+.action-buttons{
+
+    margin-top:30px;
+}
+
+.download-btn{
+
+    background:#001C3D;
+
+    color:white;
+
+    padding:15px 30px;
+
+    border-radius:12px;
+
+    text-decoration:none;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    transition:0.3s;
+}
+
+.download-btn:hover{
+
+    background:#003b7a;
+
+    transform:translateY(-2px);
+}
+
+@media(max-width:768px){
+
+    .membership-card-wrapper{
+
+        padding:25px;
+    }
+
+    .card-header{
+
+        flex-direction:column;
+
+        gap:20px;
+
+        text-align:center;
+    }
+
+    .title-section{
+
+        text-align:center;
+    }
+
+    .info-row{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:8px;
+    }
+
+    .value{
+
+        text-align:left;
+    }
+
+    .card-footer{
+
+        flex-direction:column;
+
+        gap:10px;
+
+        align-items:flex-start;
+    }
+}
+
+</style>
+
+{% endblock %}
