@@ -1,6 +1,531 @@
-{% extends "dashboard/base_dashboard.html" %}
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
 
 {% block content %}
-<h3>Vehicle Dashboard</h3>
-<p>Name: {{ member.organization_name }}</p>
+
+<div class="dashboard-container">
+
+    <!-- =========================
+         FLOATING ALERTS
+    ========================== -->
+    {% if alerts %}
+    <div class="toast-wrapper" id="toastWrapper">
+        {% for alert in alerts %}
+        <div class="toast-alert animate-slide-in">
+            <div class="toast-icon">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">System Alert</span>
+                <p class="toast-message">{{ alert }}</p>
+            </div>
+            <button class="toast-close-btn" onclick="this.parentElement.remove()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- =========================
+         SUMMARY CARDS
+    ========================== -->
+    <div class="summary-4-grid animate-fade-up" style="--delay: 1;">
+
+        <!-- Impact Score -->
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-blue">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Impact Score</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ impact_score|default:0 }}">0</span>/100
+                </h3>
+            </div>
+        </div>
+
+        <!-- Partner Status -->
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon {% if total_donation > 0 and partner.membership_number %}icon-green{% else %}icon-amber{% endif %}">
+                {% if total_donation > 0 and partner.membership_number %}
+                    <i class="fa-solid fa-circle-check"></i>
+                {% else %}
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                {% endif %}
+            </div>
+
+            <div class="metrics-info">
+                <p class="metrics-label">Partner Status</p>
+                <h3 class="metrics-value">
+                    {% if total_donation > 0 and partner.membership_number %}
+                        <span class="status-active">ACTIVE</span>
+                    {% else %}
+                        <span class="status-pending">REVIEW</span>
+                    {% endif %}
+                </h3>
+            </div>
+        </div>
+
+        <!-- Membership Years -->
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-amber">
+                <i class="fa-solid fa-calendar"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Membership Years</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ membership_years|default:0 }}">0</span> yrs
+                </h3>
+            </div>
+        </div>
+
+        <!-- Renewal -->
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-purple">
+                <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Renewal In</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ days_to_renewal|default:0 }}">0</span> days
+                </h3>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+    <div class="dashboard-main-split">
+
+        <!-- LEFT -->
+        <div class="split-left-column animate-fade-up" style="--delay: 2;">
+
+            <!-- PROFILE PROGRESS -->
+            <div class="ui-card profile-progress-card interactive-hover">
+                <h3 class="card-title">Profile Completion</h3>
+
+                <div class="profile-progress-layout">
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                        <div class="chart-center-label">
+                            <span class="pct-num">
+                                <span class="count-ticker" data-count-target="{{ progress|default:0 }}">0</span>%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="progress-details">
+                        <div class="progress-item-row">
+                            <span class="dot-indicator dot-completed"></span>
+                            <div>
+                                <span class="detail-label">Completed</span>
+                                <h4 class="detail-value">
+                                    <span class="count-ticker" data-count-target="{{ progress|default:0 }}">0</span>%
+                                </h4>
+                            </div>
+                        </div>
+
+                        <div class="progress-item-row">
+                            <span class="dot-indicator dot-remaining"></span>
+                            <div>
+                                <span class="detail-label">Remaining</span>
+                                <h4 class="detail-value">
+                                    <span class="count-ticker" data-count-target="{{ remaining|default:0 }}">0</span>%
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FINANCIAL SUMMARY -->
+            <div class="ui-card financial-card interactive-hover">
+                <h3 class="card-title">Financial Summary</h3>
+
+                <div class="financial-row-container">
+
+                    <div class="finance-block">
+                        <span class="fin-lbl">Base Donation</span>
+                        <h3 class="fin-val val-due">
+                            KES KES {{ partner.total_donations|default:0 }}
+                        </h3>
+                    </div>
+
+                    <div class="finance-block">
+                        <span class="fin-lbl">Total Contributed</span>
+                        <h3 class="fin-val val-paid">
+                            KES {{ total_donation|default:0 }}
+                        </h3>
+                    </div>
+
+                    <div class="finance-block">
+                        <span class="fin-lbl">Outstanding</span>
+                        <h3 class="fin-val val-balance">
+                            KES <span class="count-ticker" data-count-target="{{ balance }}">0</span>
+                        </h3>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="split-right-column animate-fade-up" style="--delay: 3;">
+
+            <div class="ui-card membership-overview-card interactive-hover">
+                <h3 class="card-title">Partner Overview</h3>
+
+                <div class="overview-list">
+
+                    <div class="overview-item">
+                        <span class="ov-label">
+                            <i class="fa-solid fa-building"></i> Organization
+                        </span>
+                        <span class="ov-value-highlight">
+                            {{ partner.organization_name }}
+                        </span>
+                    </div>
+
+                    <div class="overview-item">
+                        <span class="ov-label">
+                            <i class="fa-solid fa-address-card"></i> Membership No
+                        </span>
+                        <span class="ov-value">
+                            {{ partner.membership_number }}
+                        </span>
+                    </div>
+
+                    <div class="overview-item">
+                        <span class="ov-label">
+                            <i class="fa-solid fa-envelope"></i> Email
+                        </span>
+                        <span class="ov-value">
+                            {{ partner.email }}
+                        </span>
+                    </div>
+
+                    <div class="overview-item">
+                        <span class="ov-label">
+                            <i class="fa-solid fa-phone"></i> Phone
+                        </span>
+                        <span class="ov-value">
+                            {{ partner.phone_number }}
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="package-info-footer-box">
+                    <h5>Donation Insight</h5>
+                    <p>
+                        Your contributions support community empowerment and development initiatives.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     CHART + ANIMATIONS
+========================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // NUMBER ANIMATION
+    const tickers = document.querySelectorAll('.count-ticker');
+    const duration = 2000;
+
+    tickers.forEach(el => {
+        const target = parseFloat(el.dataset.countTarget) || 0;
+        const start = performance.now();
+
+        function animate(time) {
+            const progress = Math.min((time - start) / duration, 1);
+            const value = target * (1 - Math.pow(1 - progress, 3));
+
+            el.textContent = Math.floor(value).toLocaleString();
+
+            if (progress < 1) requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    });
+
+    // CHART
+    const ctx = document.getElementById('progressChart');
+
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Remaining'],
+                datasets: [{
+                    data: [{{ progress|default:0 }}, {{ remaining|default:0 }}],
+                    backgroundColor: ['#1e3a8a', '#e2e8f0'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '80%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+});
+</script>
+
+
+<!-- =========================
+     COMPACT REFINED SYSTEM CSS
+    ========================== -->
+<style>
+    :root {
+        --c-blue: #1e3a8a;
+        --c-green: #10b981;
+        --c-red: #ef4444;
+        --c-amber: #f59e0b;
+        --c-purple: #8b5cf6;
+        --border-color: #f1f5f9;
+        --shadow-sm: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+    }
+
+    /* GLOBAL ENTRY LOADING STAGGER ANIMATIONS */
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeUpOnLoad 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--delay) * 120ms);
+    }
+
+    @keyframes fadeUpOnLoad {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* SMOOTH HOVER STATES */
+    .interactive-hover {
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease !important;
+    }
+    .interactive-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    /* TOAST STYLE ALERTS */
+    .toast-wrapper {
+        position: fixed;
+        top: 25px;
+        right: 25px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 380px;
+        width: 100%;
+    }
+
+    .toast-alert {
+        background: #ffffff;
+        border-left: 4px solid var(--c-red);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .toast-icon { color: var(--c-red); font-size: 18px; margin-top: 2px; }
+    .toast-content { flex: 1; }
+    .toast-title { display: block; font-weight: 700; font-size: 13px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .toast-message { margin: 0; font-size: 13px; color: #475569; line-height: 1.4; }
+    .toast-close-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 2px; }
+
+    .animate-slide-in { animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
+    .animate-fade-out { opacity: 0; transform: translateY(-15px) scale(0.95); }
+    @keyframes slideIn {
+        from { transform: translateX(120%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* 4-COLUMN SUMMARY GRID */
+    .summary-4-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .metrics-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .metrics-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .icon-blue { background: #eff6ff; color: var(--c-blue); }
+    .icon-green { background: #ecfdf5; color: var(--c-green); }
+    .icon-red { background: #fef2f2; color: var(--c-red); }
+    .icon-amber { background: #fffbeb; color: var(--c-amber); }
+    .icon-purple { background: #f5f3ff; color: var(--c-purple); }
+
+    .metrics-info { flex: 1; }
+    .metrics-label { margin: 0 0 4px 0; font-size: 13px; color: #64748b; font-weight: 500; }
+    .metrics-value { margin: 0; font-size: 20px; font-weight: 700; color: #0f172a; }
+    .val-denominator { font-size: 13px; color: #94a3b8; font-weight: 400; }
+    .status-active { color: var(--c-green); font-size: 16px; }
+    .status-pending { color: var(--c-amber); font-size: 16px; }
+    .KES-value { font-size: 18px; color: #334155; }
+
+    /* LAYOUT CONTENT SPLIT */
+    .dashboard-main-split {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .split-left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .ui-card {
+        background: #ffffff;
+        padding: 26px;
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+    .card-title { margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #1e293b; }
+
+    /* PROFILE INNER CONFIGURATION */
+    .profile-progress-layout {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        flex-shrink: 0;
+    }
+
+    .chart-center-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    .pct-num { font-size: 22px; font-weight: 700; color: var(--c-blue); }
+
+    .progress-details {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        flex: 1;
+    }
+
+    .progress-item-row { display: flex; align-items: center; gap: 12px; }
+    .dot-indicator { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-completed { background: var(--c-blue); }
+    .dot-remaining { background: #e2e8f0; }
+    .detail-label { display: block; font-size: 12px; color: #64748b; font-weight: 500; }
+    .detail-value { margin: 2px 0 0 0; font-size: 15px; font-weight: 600; color: #0f172a; }
+
+    /* FINANCIAL ROW CONFIGURATION */
+    .financial-row-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .finance-block { text-align: left; }
+    .fin-lbl { font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 4px; }
+    .fin-val { margin: 0; font-size: 15px; font-weight: 700; }
+    .val-due { color: #334155; }
+    .val-paid { color: var(--c-green); }
+    .val-balance { color: var(--c-red); }
+
+    /* RIGHT COLUMN OVERVIEW CARD */
+    .overview-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .overview-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+    .overview-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .ov-label { font-size: 13px; color: #475569; display: flex; align-items: center; gap: 8px; }
+    .ov-label i { color: #94a3b8; width: 16px; }
+    .ov-value { font-size: 14px; font-weight: 600; color: #1e293b; text-align: right; word-break: break-all; }
+    .ov-value-highlight { background: #eff6ff; color: var(--c-blue); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 13px; text-align: right; }
+
+    .package-info-footer-box { background: #f1f5f9; padding: 14px 18px; border-radius: 12px; }
+    .package-info-footer-box h5 { margin: 0 0 6px 0; color: #475569; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    .package-info-footer-box p { margin: 0; font-size: 13px; color: #64748b; line-height: 1.4; }
+
+    /* RESPONSIVE RENDERING */
+    @media (max-width: 1100px) {
+        .summary-4-grid { grid-template-columns: repeat(2, 1fr); }
+        .dashboard-main-split { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+        .summary-4-grid { grid-template-columns: 1fr; }
+        .financial-row-container { grid-template-columns: 1fr; gap: 16px; }
+        .profile-progress-layout { flex-direction: column; gap: 20px; align-items: flex-start; }
+    }
+</style>
 {% endblock %}

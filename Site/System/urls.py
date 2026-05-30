@@ -18,7 +18,13 @@ urlpatterns = [
     path("logout/", views.custom_logout, name="logout"),
     path(
     "dashboard-redirect/", views.dashboard_redirect, name="dashboard_redirect"),
-
+path(
+    "partner/donation/",
+    views.partner_donation,
+    name="partner_donation"
+),
+path("partner/report/", views.partner_report, name="partner_report"),
+path('partner/report/pdf/', views.partner_report_pdf, name='partner_report_pdf'),
 path(
     "complete-individual-profile/",
     views.complete_individual_profile,

@@ -4,16 +4,35 @@
 {% block content %}
 <div class="status-page">
     <div class="status-card">
-        
+
+        {# ===================== PENDING ===================== #}
         {% if member.payment_status == 'pending' %}
+
             <div class="status-icon-container">
                 <div class="loader"></div>
             </div>
+
             <h2>Payment Under Review</h2>
-            <p>Hello <strong>{{ member.first_name }}</strong>, your payment is being verified. This may take a few minutes.</p>
+
+            <p>
+                Hello 
+                <strong>
+                    {% if role == "individual" %}
+                        {{ member.first_name }}
+                    {% elif role == "sacco" %}
+                        {{ member.sacco_name }}
+                    {% elif role == "partner" %}
+                        {{ member.organization_name }}
+                    {% endif %}
+                </strong>,
+                your payment is being verified.
+            </p>
+
             <div class="status-badge pending">Pending</div>
 
+        {# ===================== SUCCESS ===================== #}
         {% elif member.payment_status == 'paid' %}
+
             <div class="status-icon-container">
                 <div class="success-checkmark">
                     <div class="check-icon">
@@ -24,17 +43,37 @@
                     </div>
                 </div>
             </div>
+
             <h2>Payment Successful</h2>
-            <p>Welcome to Cocowa, <strong>{{ member.first_name }}</strong>! Your membership is now active.</p>
+
+            <p>
+                Welcome, 
+                <strong>
+                    {% if role == "individual" %}
+                        {{ member.first_name }}
+                    {% elif role == "sacco" %}
+                        {{ member.sacco_name }}
+                    {% elif role == "partner" %}
+                        {{ member.organization_name }}
+                    {% endif %}
+                </strong>!
+            </p>
+
             <p>Your Membership Number:</p>
-            <p>{{ member.membership_number }}</p>
+
+            <p><strong>{{ member.membership_number }}</strong></p>
+
             <div class="status-badge success">Activated</div>
+
             <div class="action-footer">
-            <a href="{% url 'download_card' member.id %}" class="btn-outline">Download Membership Card</a>
-        </div>
+                <a href="{% url 'download_membership_card' %}" class="btn-outline">
+                    Download Membership Card
+                </a>
+            </div>
 
-
+        {# ===================== REJECTED ===================== #}
         {% elif member.payment_status == 'rejected' %}
+
             <div class="status-icon-container">
                 <div class="error-cross">
                     <div class="cross-icon">
@@ -44,14 +83,31 @@
                     </div>
                 </div>
             </div>
+
             <h2>Payment Failed</h2>
-            <p>Sorry <strong>{{ member.first_name }}</strong>, we couldn't verify that transaction. Please double-check your code.</p>
+
+            <p>
+                Sorry 
+                <strong>
+                    {% if role == "individual" %}
+                        {{ member.first_name }}
+                    {% elif role == "sacco" %}
+                        {{ member.sacco_name }}
+                    {% elif role == "partner" %}
+                        {{ member.organization_name }}
+                    {% endif %}
+                </strong>,
+                we couldn't verify your payment.
+            </p>
+
             <div class="status-badge rejected">Rejected</div>
+
         {% endif %}
 
         <div class="action-footer">
             <a href="/" class="btn-outline">Back to Dashboard</a>
         </div>
+
     </div>
 </div>
 <style>
