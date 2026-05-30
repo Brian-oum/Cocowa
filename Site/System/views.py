@@ -9,12 +9,13 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
 from django.contrib.auth import logout
 import json
 import os
-
+from django.db.models import Sum
+from django.utils import timezone
+from datetime import timedelta
+import calendar
 from .models import *
 
 
@@ -30,10 +31,31 @@ def join_membership(request):
         role = request.POST.get("member_type")
         phone = request.POST.get("phone_number")
 
-        if User.objects.filter(username=email).exists():
-            messages.error(request, "Account already exists")
-            return redirect("join_membership")
+        existing_user = User.objects.filter(username=email).first()
 
+        # =========================
+        # HANDLE EXISTING USER
+        # =========================
+        if existing_user:
+
+            profile_exists = UserProfile.objects.filter(
+                user=existing_user
+            ).exists()
+
+            # If user still has a valid profile → block registration
+            if profile_exists:
+                messages.error(
+                    request,
+                    "Account already exists."
+                )
+                return redirect("join")
+
+            # Otherwise it's an orphaned account → delete it
+            existing_user.delete()
+
+        # =========================
+        # CREATE NEW USER
+        # =========================
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -47,15 +69,29 @@ def join_membership(request):
             profile_completed=False
         )
 
-        # create empty member shell
+        # =========================
+        # CREATE MEMBER RECORD
+        # =========================
         if role == "individual":
-            IndividualMember.objects.create(user=user, phone_number=phone, email=email)
+            IndividualMember.objects.create(
+                user=user,
+                phone_number=phone,
+                email=email
+            )
 
         elif role == "sacco":
-            SaccoMember.objects.create(user=user, phone_number=phone, email=email)
+            SaccoMember.objects.create(
+                user=user,
+                phone_number=phone,
+                email=email
+            )
 
         elif role == "partner":
-            PartnerMember.objects.create(user=user, phone_number=phone, email=email)
+            PartnerMember.objects.create(
+                user=user,
+                phone_number=phone,
+                email=email
+            )
 
         messages.success(request, "Account created. Please login.")
 
@@ -232,18 +268,106 @@ def individual_dashboard(request):
 def sacco_dashboard(request):
 
     profile = UserProfile.objects.get(user=request.user)
-    member = SaccoMember.objects.filter(user=request.user).first()
+    member = get_object_or_404(SaccoMember, user=request.user)
 
     if not profile.profile_completed:
         return redirect("complete_sacco_profile")
 
-    vehicles = Vehicle.objects.filter(sacco=member) if member else []
+    vehicles = Vehicle.objects.filter(sacco=member).order_by("-created_at")
+
+    # =========================
+    # TOTAL VEHICLES
+    # =========================
+    total_vehicles = vehicles.count()
+
+    # =========================
+    # MEMBERSHIP DURATION
+    # =========================
+    membership_days = (timezone.now().date() - member.created_at.date()).days
+
+    # =========================
+    # RENEWAL LOGIC (1 YEAR CYCLE)
+    # =========================
+    renewal_date = member.created_at.date() + timedelta(days=365)
+    days_to_renewal = (renewal_date - timezone.now().date()).days
+
+    # =========================
+    # SACCO STATUS
+    # =========================
+    sacco_status = "ACTIVE" if member.payment_status == "paid" else "PENDING"
+    # =========================
+    # PROFILE PROGRESS
+    # =========================
+    fields = [
+        member.sacco_name,
+        member.sacco_registration_number,
+        member.phone_number,
+        member.email
+    ]
+
+    progress = int((sum(1 for f in fields if f) / len(fields)) * 100)
+    remaining = 100 - progress
+
+    # =========================
+    # FINANCIAL SUMMARY (VEHICLE BASED)
+    # =========================
+    total_revenue = vehicles.aggregate(total=Sum("amount"))["total"] or 0
+
+    monthly_labels = []
+    monthly_data = []
+
+    current_year = timezone.now().year
+
+    for m in range(1, 13):
+        month_total = vehicles.filter(
+            created_at__year=current_year,
+            created_at__month=m
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        monthly_labels.append(calendar.month_name[m])
+        monthly_data.append(float(month_total))
+
+    # =========================
+    # RECENT VEHICLES
+    # =========================
+    recent_vehicles = vehicles[:5]
+
+    # =========================
+    # ALERTS
+    # =========================
+    alerts = []
+
+    if not member.membership_number:
+        alerts.append("Membership number pending approval")
+
+    if days_to_renewal <= 30:
+        alerts.append("Renewal is approaching soon")
+
+    if total_vehicles == 0:
+        alerts.append("No vehicles registered yet")
 
     return render(request, "System/sacco.html", {
-        "member": member,
-        "vehicles": vehicles
-    })
 
+        "member": member,
+        "vehicles": vehicles,
+
+        "total_vehicles": total_vehicles,
+        "membership_days": membership_days,
+        "days_to_renewal": days_to_renewal,
+
+        "progress": progress,
+        "remaining": remaining,
+
+        "sacco_status": sacco_status,
+
+        "total_revenue": total_revenue,
+
+        "monthly_labels": json.dumps(monthly_labels),
+        "monthly_data": json.dumps(monthly_data),
+
+        "recent_vehicles": recent_vehicles,
+        "alerts": alerts
+    })
 
 # ==========================================
 # PARTNER DASHBOARD
@@ -251,17 +375,278 @@ def sacco_dashboard(request):
 @login_required
 def partner_dashboard(request):
 
-    profile = UserProfile.objects.get(user=request.user)
-    member = PartnerMember.objects.filter(user=request.user).first()
+    partner = get_object_or_404(
+        PartnerMember,
+        user=request.user
+    )
 
-    if not profile.profile_completed:
-        return redirect("complete_partner_profile")
+    # =========================
+    # TOTAL DONATIONS
+    # =========================
+    total_donation = partner.total_donations
+
+    # =========================
+    # LATEST PENDING DONATION
+    # =========================
+    latest_pending = partner.donations.filter(
+        status="pending"
+    ).order_by('-created_at').first()
+
+    balance = latest_pending.amount if latest_pending else 0
+
+    # =========================
+    # MEMBERSHIP STATS
+    # =========================
+    membership_days = (
+        timezone.now().date() - partner.created_at.date()
+    ).days
+
+    membership_years = membership_days // 365
+
+    # =========================
+    # IMPACT SCORE
+    # =========================
+    impact_score = min(100, int(total_donation / 1000))
+
+    # =========================
+    # PROFILE COMPLETION
+    # =========================
+    fields = [
+        partner.organization_name,
+        partner.phone_number,
+        partner.email,
+    ]
+
+    progress = int(
+        (sum(1 for f in fields if f) / len(fields)) * 100
+    )
+
+    # =========================
+    # RENEWAL
+    # =========================
+    renewal_date = (
+        partner.created_at.date() + timedelta(days=365)
+    )
+
+    days_to_renewal = (
+        renewal_date - timezone.now().date()
+    ).days
+
+    # =========================
+    # ALERTS
+    # =========================
+    alerts = []
+
+    if partner.payment_status != "paid":
+        alerts.append(
+            "⚠ Your account is awaiting donation approval."
+        )
+
+    if progress < 100:
+        alerts.append(
+            "⚠ Complete your profile information."
+        )
+
+    if days_to_renewal <= 30:
+        alerts.append(
+            "⏳ Membership renewal approaching."
+        )
 
     return render(request, "System/partner.html", {
-        "member": member
+
+        "partner": partner,
+        "balance": balance,
+        "total_donation": total_donation,
+
+        "membership_years": membership_years,
+        "membership_days": membership_days,
+
+        "impact_score": impact_score,
+
+        "progress": progress,
+        "remaining": 100 - progress,
+
+        "renewal_date": renewal_date,
+        "days_to_renewal": days_to_renewal,
+
+        "alerts": alerts,
     })
+# ==========================================
+# PARTNER DONATION PAGE
+# ==========================================
+@login_required
+def partner_donation(request):
+
+    partner = get_object_or_404(PartnerMember, user=request.user)
+
+    if request.method == "POST":
+
+        amount = request.POST.get("amount")
+
+        if not amount:
+            messages.error(request, "Please enter a valid amount.")
+            return redirect("partner_donation")
+
+        # CREATE NEW DONATION RECORD
+        PartnerDonation.objects.create(
+            partner=partner,
+            amount=amount,
+            status="pending"
+        )
+
+        messages.success(
+            request,
+            "Donation submitted successfully. Proceed to payment."
+        )
+
+        # redirect to payment page using partner id
+        return redirect("payment", partner.id)
+
+    return render(request, "System/partner_donation.html", {
+        "partner": partner
+    })
+# ==========================================
+# PARTNER REOORT PAGE
+# ==========================================
+from django.db.models import Sum, Count, Avg
+from django.utils import timezone
+import calendar
 
 
+@login_required
+def partner_report(request):
+
+    partner = get_object_or_404(PartnerMember, user=request.user)
+
+    donations = partner.donations.all().order_by("-created_at")
+
+    # =========================
+    # CORE TOTALS
+    # =========================
+    total_donations = donations.filter(status="paid").aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    pending_donations = donations.filter(status="pending").aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    rejected_donations = donations.filter(status="rejected").aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    donation_count = donations.filter(status="paid").count()
+
+    avg_donation = donations.filter(status="paid").aggregate(
+        avg=Avg("amount")
+    )["avg"] or 0
+
+    # =========================
+    # MONTHLY ANALYTICS
+    # =========================
+    current_year = timezone.now().year
+
+    monthly_labels = []
+    monthly_data = []
+    monthly_counts = []
+
+    best_month = {"name": "", "value": 0}
+
+    for month in range(1, 13):
+
+        month_qs = donations.filter(
+            status="paid",
+            created_at__year=current_year,
+            created_at__month=month
+        )
+
+        month_total = month_qs.aggregate(total=Sum("amount"))["total"] or 0
+        month_count = month_qs.count()
+
+        monthly_labels.append(calendar.month_name[month])
+        monthly_data.append(float(month_total))
+        monthly_counts.append(month_count)
+
+        if month_total > best_month["value"]:
+            best_month = {
+                "name": calendar.month_name[month],
+                "value": float(month_total)
+            }
+
+    # =========================
+    # DONUT DATA (STATUS BREAKDOWN)
+    # =========================
+    donut_data = [
+        float(total_donations),
+        float(pending_donations),
+        float(rejected_donations),
+    ]
+
+    # =========================
+    # BAR DATA (MONTHLY COUNT)
+    # =========================
+    bar_data = monthly_counts
+
+    # =========================
+    # RECENT TRANSACTIONS
+    # =========================
+    recent_donations = donations[:10]
+
+    # =========================
+    # INSIGHTS (IMPORTANT UPGRADE)
+    # =========================
+    insights = [
+        f"Total confirmed donations: KES {total_donations:,.0f}",
+        f"Average donation size: KES {avg_donation:,.0f}",
+        f"Best performing month: {best_month['name']} (KES {best_month['value']:,.0f})",
+        f"Total completed transactions: {donation_count}",
+    ]
+
+    return render(request, "System/partner_report.html", {
+        "partner": partner,
+
+        # totals
+        "total_donations": total_donations,
+        "pending_donations": pending_donations,
+        "rejected_donations": rejected_donations,
+        "avg_donation": avg_donation,
+        "donation_count": donation_count,
+
+        # charts
+        "monthly_labels": json.dumps(monthly_labels),
+        "monthly_data": json.dumps(monthly_data),
+        "bar_data": bar_data,
+        "donut_data": donut_data,
+
+        # tables
+        "recent_donations": recent_donations,
+
+        # insights
+        "insights": insights,
+    })
+@login_required
+def partner_report_pdf(request):
+    partner = PartnerMember.objects.get(user=request.user)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="partner_report.pdf"'
+
+    p = canvas.Canvas(response)
+
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, 800, "Partner Donation Report")
+
+    p.setFont("Helvetica", 12)
+    p.drawString(50, 770, f"Organization: {partner.organization_name}")
+    p.drawString(50, 750, f"Email: {partner.email}")
+    p.drawString(50, 730, f"Phone: {partner.phone_number}")
+
+    p.drawString(50, 700, f"Donation Amount: {partner.total_donations}")
+
+    p.showPage()
+    p.save()
+
+    return response
 # ==========================================
 # COMPLETE INDIVIDUAL PROFILE
 # ==========================================
@@ -310,21 +695,64 @@ def complete_individual_profile(request):
 @login_required
 def complete_sacco_profile(request):
 
-    member = SaccoMember.objects.get(user=request.user)
-    profile = UserProfile.objects.get(user=request.user)
+    member, _ = SaccoMember.objects.get_or_create(
+        user=request.user
+    )
+
+    profile, _ = UserProfile.objects.get_or_create(
+        user=request.user
+    )
+
+    edit_mode = request.GET.get("edit") == "1"
+
+    # =========================
+    # EXISTING VEHICLES
+    # =========================
+    existing_vehicles = Vehicle.objects.filter(
+        sacco=member
+    )
 
     if request.method == "POST":
 
-        member.sacco_name = request.POST.get("sacco_name")
-        member.sacco_registration_number = request.POST.get("sacco_registration_number")
+        # =========================
+        # SACCO DETAILS
+        # =========================
+        member.sacco_name = request.POST.get(
+            "sacco_name"
+        )
+
+        member.sacco_registration_number = request.POST.get(
+            "sacco_registration_number"
+        )
+
+        member.phone_number = request.POST.get(
+            "phone_number"
+        )
+
+        member.email = request.POST.get(
+            "email"
+        )
+
         member.save()
 
-        vehicles_json = request.POST.get("vehicles_data")
+        # =========================
+        # REMOVE OLD VEHICLES
+        # =========================
+        member.vehicles.all().delete()
+
+        # =========================
+        # SAVE NEW VEHICLES
+        # =========================
+        vehicles_json = request.POST.get(
+            "vehicles_data"
+        )
 
         if vehicles_json:
+
             vehicles = json.loads(vehicles_json)
 
             for v in vehicles:
+
                 Vehicle.objects.create(
                     sacco=member,
                     vehicle_type=v.get("vehicle_type"),
@@ -332,15 +760,44 @@ def complete_sacco_profile(request):
                     route=v.get("route"),
                 )
 
-        profile.profile_completed = True
-        profile.save()
+        # =========================
+        # FIRST COMPLETION
+        # =========================
+        if not profile.profile_completed:
+
+            profile.profile_completed = True
+            profile.save()
+
+            messages.success(
+                request,
+                "SACCO profile completed successfully!"
+            )
+
+            return redirect("sacco_dashboard")
+
+        # =========================
+        # UPDATE MODE
+        # =========================
+        messages.success(
+            request,
+            "SACCO profile updated successfully!"
+        )
 
         return redirect("sacco_dashboard")
 
-    return render(request, "profiles/complete_sacco.html", {
-        "member": member
-    })
+    context = {
+        "member": member,
+        "profile": profile,
+        "vehicles": existing_vehicles,
+        "is_complete": profile.profile_completed,
+        "edit_mode": edit_mode
+    }
 
+    return render(
+        request,
+        "System/sacco_profile.html",
+        context
+    )
 
 # ==========================================
 # COMPLETE PARTNER PROFILE
@@ -348,66 +805,151 @@ def complete_sacco_profile(request):
 @login_required
 def complete_partner_profile(request):
 
-    member = PartnerMember.objects.get(user=request.user)
-    profile = UserProfile.objects.get(user=request.user)
+    member, _ = PartnerMember.objects.get_or_create(
+        user=request.user
+    )
+
+    profile, _ = UserProfile.objects.get_or_create(
+        user=request.user
+    )
+
+    edit_mode = request.GET.get("edit") == "1"
 
     if request.method == "POST":
 
-        member.organization_name = request.POST.get("organization_name")
-        member.donation_amount = request.POST.get("donation_amount") or 0
+        member.organization_name = request.POST.get(
+            "organization_name"
+        )
+
+        member.phone_number = request.POST.get(
+            "phone_number"
+        )
+
+        member.email = request.POST.get(
+            "email"
+        )
+
         member.save()
 
-        profile.profile_completed = True
-        profile.save()
+        # FIRST COMPLETION
+        if not profile.profile_completed:
+
+            profile.profile_completed = True
+            profile.save()
+
+            messages.success(
+                request,
+                "Partner profile completed successfully!"
+            )
+
+            return redirect("partner_dashboard")
+
+        # UPDATE MODE
+        messages.success(
+            request,
+            "Partner profile updated successfully!"
+        )
 
         return redirect("partner_dashboard")
 
-    return render(request, "profiles/complete_partner.html", {
-        "member": member
-    })
+    context = {
+        "member": member,
+        "profile": profile,
+        "is_complete": profile.profile_completed,
+        "edit_mode": edit_mode
+    }
 
+    return render(
+        request,
+        "System/partner_profile.html",
+        context
+    )
 
-# ==========================================
-# PAYMENT PAGE (MANUAL FROM DASHBOARD)
-# ==========================================
+@login_required
 def payment_page(request, member_id):
 
     member = None
     member_type = None
     amount = 0
 
+    # =========================
+    # INDIVIDUAL
+    # =========================
     try:
         member = IndividualMember.objects.get(id=member_id)
         member_type = "individual"
-        amount = member.amount
-    except:
+        amount = 0 if member.payment_status == "paid" else member.amount
+
+    except IndividualMember.DoesNotExist:
         pass
 
+    # =========================
+    # SACCO
+    # =========================
     if not member:
         try:
             member = SaccoMember.objects.get(id=member_id)
             member_type = "sacco"
-            amount = sum(v.amount for v in member.vehicles.all())
-        except:
+
+            total_vehicle_amount = sum(v.amount for v in member.vehicles.all())
+
+            amount = 0 if member.payment_status == "paid" else total_vehicle_amount
+
+        except SaccoMember.DoesNotExist:
             pass
 
+    # =========================
+    # PARTNER (FIXED)
+    # =========================
     if not member:
         try:
             member = PartnerMember.objects.get(id=member_id)
             member_type = "partner"
-            amount = member.donation_amount or 0
-        except:
+
+            # GET latest pending donation
+            pending_donation = PartnerDonation.objects.filter(
+                partner=member,
+                status="pending"
+            ).order_by('-created_at').first()
+
+            amount = pending_donation.amount if pending_donation else 0
+
+        except PartnerMember.DoesNotExist:
             pass
 
     if not member:
         raise Http404("Member not found")
 
+    # =========================
+    # PAYMENT SUBMISSION
+    # =========================
     if request.method == "POST":
-        member.transaction_code = request.POST.get("transaction_code")
-        member.payment_status = "pending"
-        member.save()
 
-        return redirect("payment_status", member_id=member.id)
+        transaction_code = request.POST.get("transaction_code")
+
+        if member_type in ["individual", "sacco"]:
+
+            if member.payment_status == "paid":
+                messages.success(request, "Already paid.")
+                return redirect("payment_status", member.id)
+
+            member.transaction_code = transaction_code
+            member.payment_status = "pending"
+            member.save()
+
+        elif member_type == "partner":
+
+            pending = PartnerDonation.objects.filter(
+                partner=member,
+                status="pending"
+            ).order_by('-created_at').first()
+
+            if pending:
+                pending.transaction_code = transaction_code
+                pending.status = "pending"  # WAITING ADMIN APPROVAL
+                pending.save()
+
+        return redirect("payment_status", member.id)
 
     return render(request, "System/payment.html", {
         "member": member,
@@ -415,18 +957,26 @@ def payment_page(request, member_id):
         "amount": amount
     })
 
-
 # ==========================================
 # PAYMENT STATUS
 # ==========================================
 def payment_status(request, member_id):
 
-    member = get_object_or_404(IndividualMember, id=member_id)
+    role = request.user.userprofile.role
+
+    if role == "individual":
+        member = get_object_or_404(IndividualMember, id=member_id)
+
+    elif role == "sacco":
+        member = get_object_or_404(SaccoMember, id=member_id)
+
+    else:
+        member = get_object_or_404(PartnerMember, id=member_id)
 
     return render(request, "System/payment_status.html", {
-        "member": member
+        "member": member,
+        "role": role
     })
-
 
 # ==========================================
 # HOME PAGES
@@ -703,7 +1253,7 @@ def download_membership_card(request):
         details = [
             ("ORGANIZATION:", member.organization_name),
             ("MEMBER NO:", member.membership_number),
-            ("DONATION:", f"KES {member.donation_amount}"),
+            ("DONATION:", f"KES {member.total_donations}"),
             ("PHONE:", member.phone_number),
             ("EMAIL:", member.email),
         ]

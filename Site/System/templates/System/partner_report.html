@@ -1,0 +1,392 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="report-container fade-in-up">
+
+    <!-- ==========================================
+         REPORT DASHBOARD HEADER
+         ========================================== -->
+    <div class="report-header">
+        <div class="header-left">
+            <h2 class="report-title">Partner Analytics Dashboard</h2>
+            <p class="report-subtitle">Real-time tracking of contributions, financial ledgers, and transaction metrics.</p>
+        </div>
+        <a href="{% url 'partner_report_pdf' %}" class="download-btn ripple-effect">
+            <i class="fa-solid fa-file-pdf"></i> Download Report PDF
+        </a>
+    </div>
+
+    <!-- ==========================================
+         TOP ROW: HIGHLIGHT CARDS
+         ========================================== -->
+    <div class="insight-grid delay-1">
+        <div class="insight-card border-brand">
+            <span class="meta-label">Total Contributions</span>
+            <h2 class="stat-value">KES {{ total_donations|floatformat:0 }}</h2>
+            <div class="card-footer-metric">Aggregated platform deposits</div>
+        </div>
+        <div class="insight-card border-brand">
+            <span class="meta-label">Average Donation</span>
+            <h2 class="stat-value">KES {{ avg_donation|floatformat:0 }}</h2>
+            <div class="card-footer-metric">Mean performance value per batch</div>
+        </div>
+        <div class="insight-card border-brand">
+            <span class="meta-label">Total Transactions</span>
+            <h2 class="stat-value">{{ donation_count }}</h2>
+            <div class="card-footer-metric">Successful & pending balance checks</div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MIDDLE ROW: COMPACT DONUT & LEDGER SUMMARY
+         ========================================== -->
+    <div class="middle-layout-row delay-2">
+        
+        <!-- COMPACT DONUT CHART -->
+        <div class="chart-box status-donut-box">
+            <div class="chart-header-inline">
+                <h3><i class="fa-solid fa-chart-pie"></i> Status Verification</h3>
+            </div>
+            <div class="canvas-wrapper compact-donut">
+                <canvas id="donutChart"></canvas>
+            </div>
+        </div>
+
+        <!-- CONDENSED FINANCIAL SUMMARY CARD -->
+        <div class="summary-ledger-card">
+            <div class="chart-header-inline">
+                <h3><i class="fa-solid fa-vault"></i> Financial Balance Sheets</h3>
+            </div>
+            <div class="ledger-strips-holder">
+                <div class="ledger-strip l-paid">
+                    <span class="strip-tag"><i class="fa-solid fa-circle-check"></i> Confirmed Ledger</span>
+                    <strong class="strip-money">KES {{ total_donations|floatformat:0 }}</strong>
+                </div>
+                <div class="ledger-strip l-pending">
+                    <span class="strip-tag"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending Clearing</span>
+                    <strong class="strip-money">KES {{ pending_donations|floatformat:0 }}</strong>
+                </div>
+                <div class="ledger-strip l-rejected">
+                    <span class="strip-tag"><i class="fa-solid fa-circle-xmark"></i> Rejected Records</span>
+                    <strong class="strip-money">KES {{ rejected_donations|floatformat:0 }}</strong>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==========================================
+         BOTTOM ROW: INTERACTIVE CARD & HISTORY TABLE
+         ========================================== -->
+    <div class="bottom-split-grid delay-3">
+        
+        <!-- INTERACTIVE TRIGGER CONTAINER -->
+        <div class="left-interactive-column">
+            <div class="interactive-trigger-card" id="toggleTrendCard" role="button" tabindex="0">
+                <div class="trigger-left">
+                    <div class="trigger-icon-bubble">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                    <div class="trigger-meta">
+                        <span class="trigger-lbl">Peak Velocity Month</span>
+                        <h3 class="trigger-val">{{ best_month.name|default:"No Data Available" }}</h3>
+                    </div>
+                </div>
+                <div class="trigger-action-hint">
+                    <span id="hintText">View Trend Grid</span>
+                    <i class="fa-solid fa-chevron-down" id="arrowIndicator"></i>
+                </div>
+            </div>
+
+            <!-- COLLAPSIBLE CHART CONTAINER -->
+            <div class="collapsible-trend-wrapper" id="trendChartCollapse">
+                <div class="chart-box nested-trend">
+                    <div class="chart-header-inline">
+                        <h3><i class="fa-solid fa-chart-line"></i> Monthly Donation Trend</h3>
+                    </div>
+                    <div class="canvas-wrapper line-trend-canvas">
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECENT TRANSACTION HISTORIES -->
+        <div class="table-box">
+            <div class="table-header-inline">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Transaction Logs</h3>
+            </div>
+            <div class="responsive-table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timeline Date</th>
+                            <th>Verification Status</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in recent_donations %}
+                        <tr>
+                            <td class="font-medium text-dark">{{ d.created_at|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="status status-{{ d.status|lower }}">
+                                    {{ d.status|upper }}
+                                </span>
+                            </td>
+                            <td class="font-bold text-dark text-right">KES {{ d.amount }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="empty-table-state">
+                                <p>No logs found in this sequence loop.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ==========================================
+     CORE INTERACTION CONTROLLER SCRIPTS
+     ========================================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // Chart Default Options Configuration
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.color = '#64748b';
+
+    // 1. COMPACT DONUT INITIALIZATION
+    const donutCtx = document.getElementById('donutChart');
+    if (donutCtx) {
+        new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Paid', 'Pending', 'Rejected'],
+                datasets: [{
+                    data: {{ donut_data|safe }},
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false } // Hidden to fit compact frame footprint
+                },
+                cutout: '75%'
+            }
+        });
+    }
+
+    // 2. TIMELINE TREND EXPANSION INTERACTION LOGIC
+    const toggleBtn = document.getElementById('toggleTrendCard');
+    const collapsible = document.getElementById('trendChartCollapse');
+    const arrow = document.getElementById('arrowIndicator');
+    const hintText = document.getElementById('hintText');
+    let lineChartInstance = null;
+
+    toggleBtn.addEventListener('click', function() {
+        const isExpanded = collapsible.classList.contains('expanded');
+        
+        if (isExpanded) {
+            collapsible.classList.remove('expanded');
+            arrow.style.transform = 'rotate(0deg)';
+            hintText.textContent = 'View Trend Grid';
+        } else {
+            collapsible.classList.add('expanded');
+            arrow.style.transform = 'rotate(180deg)';
+            hintText.textContent = 'Hide Trend Grid';
+            
+            // Lazy load or re-render line chart asset to handle dynamic container sizes cleanly
+            if (!lineChartInstance) {
+                initializeLineChart();
+            }
+        }
+    });
+
+    function initializeLineChart() {
+        const lineCtx = document.getElementById('lineChart');
+        if (!lineCtx) return;
+
+        const monthlyLabels = JSON.parse('{{ monthly_labels|escapejs }}');
+        const monthlyData = JSON.parse('{{ monthly_data|escapejs }}');
+
+        lineChartInstance = new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Monthly Donations',
+                    data: monthlyData,
+                    borderColor: '#001C3D',
+                    borderWidth: 2.5,
+                    backgroundColor: 'rgba(0, 28, 61, 0.04)',
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#001C3D',
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
+                }
+            }
+        });
+    }
+});
+</script>
+
+<!-- ==========================================
+     PREMIUM DASHBOARD CORE STYLESHEET
+     ========================================== -->
+<style>
+    :root {
+        --primary-brand: #001C3D;
+        --secondary-hover: #002d62;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --bg-surface: #ffffff;
+        --border-fluid: #e2e8f0;
+        
+        --emerald-success: #10b981;
+        --amber-warning: #f59e0b;
+        --crimson-danger: #ef4444;
+    }
+
+    .report-container {
+        padding: 40px;
+        background: #f8fafc;
+        min-height: 100vh;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* HEADER STYLES */
+    .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
+    .report-title { font-size: 26px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; margin: 0; }
+    .report-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+    .download-btn {
+        background: var(--primary-brand); color: #ffffff !important; padding: 12px 24px; border-radius: 12px;
+        text-decoration: none !important; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;
+        box-shadow: 0 4px 12px rgba(0, 28, 61, 0.06); transition: all 0.2s ease;
+    }
+    .download-btn:hover { background: var(--secondary-hover); transform: translateY(-1px); }
+
+    /* ROW 1: METRIC CARD LAYOUT */
+    .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+    .insight-card {
+        background: var(--bg-surface); padding: 22px 26px; border-radius: 16px; border: 1px solid var(--border-fluid);
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.01);
+    }
+    .insight-card.border-brand { border-top: 4px solid var(--primary-brand); }
+    .meta-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 24px; font-weight: 800; color: var(--text-dark); margin: 8px 0; letter-spacing: -0.5px; }
+    .card-footer-metric { font-size: 12px; color: var(--text-muted); }
+
+    /* ROW 2: SPLIT MIDDLE PLATFORM */
+    .middle-layout-row { display: grid; grid-template-columns: 320px 1fr; gap: 24px; margin-bottom: 24px; }
+    .chart-box { background: var(--bg-surface); padding: 24px; border-radius: 18px; border: 1px solid var(--border-fluid); }
+    .chart-header-inline h3 { font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; }
+    
+    /* DONUT COMPACT SIZING */
+    .compact-donut { height: 160px !important; position: relative; margin: 0 auto; }
+    
+    /* SUMMARY BALANCE STRIPS */
+    .summary-ledger-card { background: var(--bg-surface); padding: 24px; border-radius: 18px; border: 1px solid var(--border-fluid); display: flex; flex-direction: column; }
+    .ledger-strips-holder { display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }
+    .ledger-strip { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-radius: 12px; font-size: 14px; }
+    
+    .l-paid { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .l-pending { background: #fffbeb; border: 1px solid #fef3c7; color: #92400e; }
+    .l-rejected { background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; }
+    .strip-tag { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .strip-money { font-weight: 700; font-size: 16px; }
+
+    /* ROW 3: REARRANGED BOTTOM SECTION */
+    .bottom-split-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: start; }
+    .left-interactive-column { display: flex; flex-direction: column; gap: 16px; }
+
+    /* CLICKABLE INTERACTIVE HEADER CARD */
+    .interactive-trigger-card {
+        background: var(--primary-brand); color: #ffffff; padding: 20px 24px; border-radius: 16px;
+        display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 8px 24px -6px rgba(0,28,61,0.15);
+    }
+    .interactive-trigger-card:hover { background: var(--secondary-hover); transform: translateY(-2px); }
+    .trigger-left { display: flex; align-items: center; gap: 16px; }
+    .trigger-icon-bubble { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .trigger-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; font-weight: 600; }
+    .trigger-val { font-size: 20px; font-weight: 700; margin: 2px 0 0 0; }
+    
+    .trigger-action-hint { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #cbd5e1; }
+    .trigger-action-hint i { transition: transform 0.3s ease; }
+
+    /* ANIMATED COLLAPSE LOGIC */
+    .collapsible-trend-wrapper {
+        max-height: 0; overflow: hidden; opacity: 0;
+        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+    .collapsible-trend-wrapper.expanded { max-height: 400px; opacity: 1; }
+    .nested-trend { margin-top: 4px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.03); }
+    .line-trend-canvas { height: 250px !important; }
+
+    /* HISTORY LEDGER RECORD TABLE */
+    .table-box { background: var(--bg-surface); padding: 24px; border-radius: 18px; border: 1px solid var(--border-fluid); }
+    .table-header-inline h3 { font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; }
+    .responsive-table-scroll { width: 100%; }
+    
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 12px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); background: #f8fafc; border-bottom: 1px solid var(--border-fluid); }
+    td { padding: 14px; font-size: 13px; color: #475569; border-bottom: 1px solid #f8fafc; }
+    
+    .status { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; display: inline-block; }
+    .status-paid { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    
+    .font-medium { font-weight: 500; }
+    .font-bold { font-weight: 700; }
+    .text-right { text-align: right; }
+    .empty-table-state { text-align: center; padding: 20px 0; color: var(--text-muted); font-size: 13px; }
+
+    /* ==========================================
+       STAGGERED LOAD MOTION KEYFRAMES
+       ========================================== */
+    .fade-in-up { opacity: 0; animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .insight-grid, .middle-layout-row, .bottom-split-grid { opacity: 0; }
+    
+    .delay-1 { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards; }
+    .delay-2 { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.24s forwards; }
+    .delay-3 { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.36s forwards; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* DEVICE FRAME RESPONSIVE OVERRIDES */
+    @media(max-width: 1024px) {
+        .insight-grid { grid-template-columns: 1fr; }
+        .middle-layout-row { grid-template-columns: 1fr; }
+        .bottom-split-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}

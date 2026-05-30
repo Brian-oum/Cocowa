@@ -3,7 +3,8 @@ from .models import (
     IndividualMember,
     SaccoMember,
     PartnerMember,
-    Vehicle
+    Vehicle,
+    PartnerDonation
 )
 
 @admin.register(IndividualMember)
@@ -109,23 +110,60 @@ class PartnerMemberAdmin(admin.ModelAdmin):
 
     list_display = (
         "id",
-        "user",
         "organization_name",
-        "donation_amount",
+        "user",
         "payment_status",
         "membership_number",
+        "total_donations_display",
         "created_at",
     )
 
+    list_display_links = ("id", "organization_name")
+
     search_fields = (
+        "id",
         "organization_name",
-        "phone_number",
-        "email",
+        "membership_number",
+        "user__email",
     )
 
-    list_filter = ("payment_status", "created_at")
+    list_filter = (
+        "payment_status",
+        "created_at",
+    )
 
-    readonly_fields = ("donation_amount", "membership_number", "created_at")
+    ordering = ("-id",)
 
-    ordering = ("-created_at",)
+    readonly_fields = ("membership_number", "created_at")
+
+    def total_donations_display(self, obj):
+        return obj.total_donations
+
+    total_donations_display.short_description = "Total Donations"
+
+@admin.register(PartnerDonation)
+class PartnerDonationAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "partner",
+        "amount",
+        "status",
+        "transaction_code",
+        "created_at",
+    )
+
+    list_filter = ("status",)
+
+    search_fields = (
+        "partner__organization_name",
+        "transaction_code",
+    )
+
+    actions = ["mark_as_paid"]
+
+    def mark_as_paid(self, request, queryset):
+        queryset.update(status="paid")
+        self.message_user(request, "Selected donations marked as PAID.")
+
+    mark_as_paid.short_description = "Mark selected donations as PAID"
 

@@ -10,24 +10,21 @@ User = get_user_model()
 # ==========================================
 def generate_unique_membership_number():
 
-    from .models import (
+    all_numbers = []
+
+    # ONLY models that actually contain membership_number
+    models_list = [
         IndividualMember,
         SaccoMember,
-        PartnerMember,
-        Vehicle
-    )
+        PartnerMember
+    ]
 
-    all_members = []
-
-    for model in [
-        IndividualMember,
-        SaccoMember,
-        PartnerMember,
-        Vehicle
-    ]:
+    for model in models_list:
 
         last = model.objects.exclude(
             membership_number__isnull=True
+        ).exclude(
+            membership_number__exact=""
         ).order_by('-id').first()
 
         if last and last.membership_number:
@@ -35,9 +32,9 @@ def generate_unique_membership_number():
             numbers = re.findall(r'\d+', last.membership_number)
 
             if numbers:
-                all_members.append(int(numbers[0]))
+                all_numbers.append(int(numbers[0]))
 
-    last_number = max(all_members) if all_members else 0
+    last_number = max(all_numbers) if all_numbers else 0
 
     return f"CMN{str(last_number + 1).zfill(4)}"
 
@@ -130,24 +127,10 @@ class IndividualMember(BaseMember):
         ('Super Subscription', 'Super Subscription'),
     ]
 
-    first_name = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
+    first_name = models.CharField(max_length=100, blank=True, null=True)
+    second_name = models.CharField(max_length=100, blank=True, null=True)
 
-    second_name = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
-    )
-
-    id_number = models.CharField(
-        max_length=20,
-        unique=True,
-        blank=True,
-        null=True
-    )
+    id_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
     package = models.CharField(
         max_length=20,
@@ -156,11 +139,7 @@ class IndividualMember(BaseMember):
         null=True
     )
 
-    amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     membership_number = models.CharField(
         max_length=20,
@@ -171,28 +150,27 @@ class IndividualMember(BaseMember):
 
     def save(self, *args, **kwargs):
 
+        # auto set amount
         if self.package == "Standard":
             self.amount = 550
-
         elif self.package == "Super Subscription":
             self.amount = 3050
+
+        # generate membership number ONLY if missing
+        if not self.membership_number:
+            self.membership_number = generate_unique_membership_number()
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.first_name or ''} {self.second_name or ''}"
 
-
 # ==========================================
 # SACCO MEMBER
 # ==========================================
 class SaccoMember(BaseMember):
 
-    sacco_name = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True
-    )
+    sacco_name = models.CharField(max_length=255, blank=True, null=True)
 
     sacco_registration_number = models.CharField(
         max_length=100,
@@ -208,12 +186,18 @@ class SaccoMember(BaseMember):
         null=True
     )
 
+    def save(self, *args, **kwargs):
+
+    # ONLY generate AFTER payment approval
+        if self.payment_status == "paid" and not self.membership_number:
+            self.membership_number = generate_unique_membership_number()
+
+        super().save(*args, **kwargs)
     def __str__(self):
         return self.sacco_name or "Sacco"
-
-
+    
 # ==========================================
-# PARTNER MEMBER
+# PARTNER MEMBER (UPDATED)
 # ==========================================
 class PartnerMember(BaseMember):
 
@@ -223,12 +207,6 @@ class PartnerMember(BaseMember):
         null=True
     )
 
-    donation_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
     membership_number = models.CharField(
         max_length=20,
         unique=True,
@@ -236,18 +214,99 @@ class PartnerMember(BaseMember):
         null=True
     )
 
+    def save(self, *args, **kwargs):
+
+        # ONLY generate when admin marks payment as PAID
+        if self.payment_status == "paid" and not self.membership_number:
+            self.membership_number = generate_unique_membership_number()
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.organization_name or "Partner"
+
+    # =========================
+    # TOTAL DONATIONS (AUTO)
+    # =========================
+    @property
+    def total_donations(self):
+
+        total = self.donations.filter(
+            status="paid"
+        ).aggregate(
+            total=models.Sum("amount")
+        )["total"]
+
+        return total or 0
+
     def __str__(self):
         return self.organization_name or "Partner"
 
 
+# ==========================================
+# PARTNER DONATIONS (NEW CORE TABLE)
+# ==========================================
+class PartnerDonation(models.Model):
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),   # admin approved
+        ('rejected', 'Rejected'),
+    ]
+
+    partner = models.ForeignKey(
+        PartnerMember,
+        on_delete=models.CASCADE,
+        related_name="donations"
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    transaction_code = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    def save(self, *args, **kwargs):
+
+        super().save(*args, **kwargs)
+
+        # 🔥 THIS IS THE KEY LOGIC
+        if self.status == "paid":
+
+            partner = self.partner
+
+            # activate partner
+            partner.payment_status = "paid"
+
+            # generate membership number ONLY ON FIRST APPROVAL
+            if not partner.membership_number:
+                partner.membership_number = generate_unique_membership_number()
+
+            partner.save()
+    def __str__(self):
+        return f"{self.partner.organization_name} - {self.amount}"
 # ==========================================
 # VEHICLE
 # ==========================================
 class Vehicle(models.Model):
 
     VEHICLE_TYPES = [
-        ('nairobi', 'Nairobi Vehicle'),
-        ('long_distance', 'Long Distance Vehicle'),
+        ('town_service', 'Town Service'),
+        ('long_distance', 'Long Distance'),
     ]
 
     PAYMENT_STATUS = [
