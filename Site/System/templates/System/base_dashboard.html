@@ -405,6 +405,17 @@
                 <a href="{% url 'partner_report' %}"><i class="fa-solid fa-file-invoice-dollar"></i> <span class="link-text">Reports</span></a>
             {% endif %}
 
+            {% if request.user.userprofile.role == "manager" %}
+                <a href=""><i class="fa-solid fa-users"></i><span class="link-text">All Members</span></a>
+                <a href=""><i class="fa-solid fa-user"></i><span class="link-text">Individuals</span></a>
+                <a href=""><i class="fa-solid fa-building"></i><span class="link-text">SACCOs</span></a>
+                <a href=""><i class="fa-solid fa-handshake"></i><span class="link-text">Partners</span></a>
+                <a href=""><i class="fa-solid fa-credit-card"></i><span class="link-text">Payments</span></a>
+                <a href=""><i class="fa-solid fa-bus"></i><span class="link-text">Vehicles</span></a>
+                <a href=""><i class="fa-solid fa-chart-line"></i><span class="link-text">Reports</span></a>
+                <a href=""><i class="fa-solid fa-triangle-exclamation"></i><span class="link-text">Complaints</span></a>
+                <a href=""><i class="fa-solid fa-calendar-check"></i><span class="link-text">Events</span></a>
+            {% endif %}
             <hr>
 
             <a href="{% url 'logout' %}" class="logout-btn">
@@ -425,6 +436,9 @@
             {% endif %}
             {% if request.user.userprofile.role == "partner" %}
                 <h3>Welcome back, {{ member.organization_name }} </h3>
+            {% endif %}
+            {% if request.user.userprofile.role == "manager" %}
+                <h3>Welcome back, {{ request.user.userprofile.role|title }} </h3>
             {% endif %}
             <div class="user-profile-zone">
                 <span class="role-badge role-{{ request.user.userprofile.role }}">

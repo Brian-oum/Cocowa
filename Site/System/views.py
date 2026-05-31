@@ -17,7 +17,7 @@ from django.utils import timezone
 from datetime import timedelta
 import calendar
 from .models import *
-
+from .forms import *
 
 # ==========================================
 # REGISTER
@@ -31,18 +31,36 @@ def join_membership(request):
         role = request.POST.get("member_type")
         phone = request.POST.get("phone_number")
 
-        existing_user = User.objects.filter(username=email).first()
+        # =========================
+        # ALLOWED PUBLIC ROLES
+        # =========================
+        allowed_roles = [
+            "individual",
+            "sacco",
+            "partner",
+        ]
+
+        if role not in allowed_roles:
+            messages.error(
+                request,
+                "Invalid membership type selected."
+            )
+            return redirect("join")
 
         # =========================
-        # HANDLE EXISTING USER
+        # CHECK EXISTING USER
         # =========================
+        existing_user = User.objects.filter(
+            username=email
+        ).first()
+
         if existing_user:
 
             profile_exists = UserProfile.objects.filter(
                 user=existing_user
             ).exists()
 
-            # If user still has a valid profile → block registration
+            # Existing valid account
             if profile_exists:
                 messages.error(
                     request,
@@ -50,11 +68,11 @@ def join_membership(request):
                 )
                 return redirect("join")
 
-            # Otherwise it's an orphaned account → delete it
+            # Orphaned account
             existing_user.delete()
 
         # =========================
-        # CREATE NEW USER
+        # CREATE USER ACCOUNT
         # =========================
         user = User.objects.create_user(
             username=email,
@@ -62,6 +80,9 @@ def join_membership(request):
             password=password
         )
 
+        # =========================
+        # CREATE USER PROFILE
+        # =========================
         UserProfile.objects.create(
             user=user,
             role=role,
@@ -73,6 +94,7 @@ def join_membership(request):
         # CREATE MEMBER RECORD
         # =========================
         if role == "individual":
+
             IndividualMember.objects.create(
                 user=user,
                 phone_number=phone,
@@ -80,6 +102,7 @@ def join_membership(request):
             )
 
         elif role == "sacco":
+
             SaccoMember.objects.create(
                 user=user,
                 phone_number=phone,
@@ -87,17 +110,24 @@ def join_membership(request):
             )
 
         elif role == "partner":
+
             PartnerMember.objects.create(
                 user=user,
                 phone_number=phone,
                 email=email
             )
 
-        messages.success(request, "Account created. Please login.")
+        messages.success(
+            request,
+            "Account created successfully. Please login."
+        )
 
         return redirect("login")
 
-    return render(request, "System/join.html")
+    return render(
+        request,
+        "System/join.html"
+    )
 
 
 # ==========================================
@@ -137,10 +167,113 @@ def dashboard_redirect(request):
 
     elif profile.role == "partner":
         return redirect("partner_dashboard")
+    elif profile.role == "manager":
+        return redirect("manager_dashboard")
 
     return redirect("home")
 
+# ==========================================
+# MANAGER DASHBOARD 
+# ==========================================
+@login_required
+def manager_dashboard(request):
 
+    profile = UserProfile.objects.get(user=request.user)
+
+    if profile.role != "manager":
+        return redirect("home")
+
+    # =========================
+    # MEMBER COUNTS
+    # =========================
+    individual_count = IndividualMember.objects.count()
+    sacco_count = SaccoMember.objects.count()
+    partner_count = PartnerMember.objects.count()
+
+    total_members = individual_count + sacco_count + partner_count
+
+    # =========================
+    # ACTIVE MEMBERS
+    # =========================
+    individual_active = IndividualMember.objects.filter(payment_status="paid").count()
+    sacco_active = SaccoMember.objects.filter(payment_status="paid").count()
+    partner_active = PartnerMember.objects.filter(payment_status="paid").count()
+
+    active_members = individual_active + sacco_active + partner_active
+    recent_complaints = Complaint.objects.order_by("-created_at")[:6]
+    upcoming_events = Event.objects.filter(event_date__gte=timezone.localdate()).order_by("event_date")
+    # =========================
+    # REVENUE
+    # =========================
+    individual_revenue = IndividualMember.objects.filter(payment_status="paid").aggregate(total=Sum("amount"))["total"] or 0
+
+    sacco_revenue = Vehicle.objects.filter(payment_status="paid").aggregate(total=Sum("amount"))["total"] or 0
+
+    partner_revenue = PartnerDonation.objects.filter(status="paid").aggregate(total=Sum("amount"))["total"] or 0
+
+    total_revenue = individual_revenue + sacco_revenue + partner_revenue
+
+    # =========================
+    # INSIGHTS CALCULATIONS
+    # =========================
+
+    # Average revenue per member type
+    avg_individual = individual_revenue / individual_count if individual_count else 0
+    avg_sacco = sacco_revenue / sacco_count if sacco_count else 0
+    avg_partner = partner_revenue / partner_count if partner_count else 0
+
+    # Payment health %
+    payment_rate = (active_members / total_members * 100) if total_members else 0
+
+    # Revenue imbalance detection
+    max_revenue = max(individual_revenue, sacco_revenue, partner_revenue)
+    dominant_sector = (
+        "Individual" if max_revenue == individual_revenue else
+        "Sacco" if max_revenue == sacco_revenue else
+        "Partner"
+    )
+
+    # Risk alerts
+    alerts = []
+
+    if payment_rate < 50:
+        alerts.append("⚠ Low payment compliance across system")
+
+    if sacco_count == 0:
+        alerts.append("⚠ No SACCO registered")
+
+    if partner_revenue < individual_revenue * 0.3:
+        alerts.append("⚠ Partner donations are significantly low")
+
+    context = {
+        # counts
+        "individual_members": individual_count,
+        "sacco_members": sacco_count,
+        "partner_members": partner_count,
+        "total_members": total_members,
+
+        # active
+        "active_members": active_members,
+        "recent_complaints": recent_complaints,
+        "upcoming_events": upcoming_events,
+        # revenue
+        "individual_revenue": individual_revenue,
+        "sacco_revenue": sacco_revenue,
+        "partner_revenue": partner_revenue,
+        "total_revenue": total_revenue,
+
+        # insights
+        "avg_individual": avg_individual,
+        "avg_sacco": avg_sacco,
+        "avg_partner": avg_partner,
+        "payment_rate": round(payment_rate, 1),
+        "dominant_sector": dominant_sector,
+
+        # alerts
+        "alerts": alerts,
+    }
+
+    return render(request, "System/manager_dashboard.html", context)
 # ==========================================
 # INDIVIDUAL DASHBOARD
 # ==========================================
@@ -786,11 +919,13 @@ def complete_sacco_profile(request):
         return redirect("sacco_dashboard")
 
     context = {
+        "vehicle_choices": Vehicle.VEHICLE_TYPES,
         "member": member,
         "profile": profile,
         "vehicles": existing_vehicles,
         "is_complete": profile.profile_completed,
         "edit_mode": edit_mode
+        
     }
 
     return render(
@@ -1358,3 +1493,24 @@ def download_membership_card(request):
     p.save()
 
     return response
+
+# ==========================================
+# COMPLAINTS
+# ==========================================
+@login_required
+def raise_complaint(request):
+
+    if request.method == "POST":
+        form = ComplaintForm(request.POST)
+
+        if form.is_valid():
+            complaint = form.save(commit=False)
+            complaint.user = request.user
+            complaint.save()
+
+            return redirect("complaint_success")
+
+    else:
+        form = ComplaintForm()
+
+    return render(request, "System/complaint.html", {"form": form})

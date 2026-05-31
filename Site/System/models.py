@@ -45,11 +45,11 @@ def generate_unique_membership_number():
 class UserProfile(models.Model):
 
     ROLE_CHOICES = [
-        ('individual', 'Individual'),
-        ('sacco', 'Sacco'),
+        ('individual', 'Individual Member'),
+        ('sacco', 'Sacco Member'),
         ('partner', 'Partner/Donor'),
+        ('manager', 'Manager'),
     ]
-
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE
@@ -348,15 +348,75 @@ class Vehicle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        allowed = dict(self.VEHICLE_TYPES).keys()
 
-        self.amount = (
-            1000
-            if self.vehicle_type == "nairobi"
-            else 5000
-        )
+        if self.vehicle_type not in allowed:
+            raise ValueError(f"Invalid vehicle_type: {self.vehicle_type}")
+
+        self.amount = 1000 if self.vehicle_type == "town_service" else 5000
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.number_plate
 
+class Complaint(models.Model):
+
+    STATUS_CHOICES = [
+        ("open", "Open"),
+        ("in_progress", "In Progress"),
+        ("resolved", "Resolved"),
+        ("closed", "Closed"),
+    ]
+
+    PRIORITY_CHOICES = [
+        ("low", "Low"),
+        ("medium", "Medium"),
+        ("high", "High"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="open"
+    )
+
+    priority = models.CharField(
+        max_length=10,
+        choices=PRIORITY_CHOICES,
+        default="medium"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+class Event(models.Model):
+
+    title = models.CharField(max_length=255)
+
+    description = models.TextField()
+
+    event_date = models.DateField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class EventParticipant(models.Model):
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    registered_at = models.DateTimeField(auto_now_add=True)

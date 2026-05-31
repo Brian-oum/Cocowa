@@ -4,9 +4,29 @@ from .models import (
     SaccoMember,
     PartnerMember,
     Vehicle,
-    PartnerDonation
+    PartnerDonation, UserProfile
 )
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
 
+    list_display = ("user", "role", "phone_number", "profile_completed")
+
+    list_filter = ("role", "profile_completed")
+
+    search_fields = ("user__username", "user__email", "phone_number")
+
+    def get_readonly_fields(self, request, obj=None):
+        # Prevent normal admins from changing roles of existing users
+        if not request.user.is_superuser:
+            return ("role",)
+        return ()
+    def save_model(self, request, obj, form, change):
+
+    # Only superuser can assign manager role
+        if obj.role == "manager" and not request.user.is_superuser:
+            raise PermissionError("Only superuser can assign manager role")
+
+        super().save_model(request, obj, form, change)
 @admin.register(IndividualMember)
 class IndividualMemberAdmin(admin.ModelAdmin):
 
@@ -101,7 +121,6 @@ class VehicleAdmin(admin.ModelAdmin):
         "sacco__sacco_name",
     )
 
-    readonly_fields = ("amount", "created_at")
 
     ordering = ("-created_at",)
 
