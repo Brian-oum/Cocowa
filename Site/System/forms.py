@@ -7,7 +7,8 @@ from .models import (
     SaccoMember,
     PartnerMember,
     Vehicle,
-    UserProfile
+    UserProfile,
+    Complaint
 )
 
 
@@ -252,6 +253,26 @@ class VehicleForm(forms.ModelForm):
             }),
 
             "route": forms.TextInput(attrs={
+                "class": "form-control"
+            }),
+        }
+
+class ComplaintForm(forms.ModelForm):
+
+    class Meta:
+        model = Complaint
+        fields = ["title", "description", "priority"]
+        widgets = {
+            "title": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter complaint title"
+            }),
+            "description": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Describe your issue"
+            }),
+            "priority": forms.Select(attrs={
                 "class": "form-control"
             }),
         }

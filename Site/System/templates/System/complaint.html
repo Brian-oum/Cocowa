@@ -1,0 +1,32 @@
+{% extends 'System/base_dashboard.html' %}
+
+{% block content %}
+<div class="ui-card">
+
+    <h2>Raise a Complaint</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div style="margin-bottom: 15px;">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            {{ form.priority.label_tag }}
+            {{ form.priority }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Submit Ticket
+        </button>
+    </form>
+
+</div>
+{% endblock %}

@@ -1,0 +1,383 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- =========================
+         SUMMARY CARDS
+    ========================== -->
+    <div class="summary-4-grid animate-fade-up" style="--delay: 1;">
+
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-blue">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Total Members</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ total_members|default:0 }}">0</span>
+                </h3>
+            </div>
+        </div>
+
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-green">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Active Members</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ active_members|default:0 }}">0</span>
+                </h3>
+            </div>
+        </div>
+
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-amber">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Total Revenue</p>
+                <h3 class="metrics-value">
+                    <span class="val-denominator">KES</span> <span class="count-ticker" data-count-target="{{ total_revenue|default:0 }}">0</span>
+                </h3>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================
+         MIDDLE SECTION
+    ========================== -->
+    <div class="dashboard-main-split">
+
+        <!-- PIE CHART -->
+        <div class="ui-card animate-fade-up" style="--delay: 2;">
+            <h3 class="card-title">Member Distribution</h3>
+            <div class="chart-wrapper">
+                <canvas id="memberPieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- RECENT COMPLAINTS -->
+        <div class="ui-card animate-fade-up" style="--delay: 3;">
+            <h3 class="card-title">Recent Complaints</h3>
+
+            <div class="scroll-list">
+                {% for c in recent_complaints %}
+                    <div class="list-item">
+                        <div class="item-icon">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="item-body">
+                            <p class="item-title">{{ c.title }}</p>
+                            <span class="item-meta">
+                                {{ c.status }} &middot; {{ c.created_at|date:"M d, Y" }}
+                            </span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <span class="detail-label">No complaints found.</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================
+         BOTTOM SECTION
+    ========================== -->
+    <div class="dashboard-main-split">
+
+        <!-- UPCOMING EVENTS -->
+        <div class="ui-card animate-fade-up" style="--delay: 4;">
+            <h3 class="card-title">Upcoming Events</h3>
+
+            <div class="scroll-list">
+                {% for e in upcoming_events %}
+                    <div class="list-item">
+                        <div class="item-icon">
+                            <i class="fa-solid fa-calendar"></i>
+                        </div>
+                        <div class="item-body">
+                            <p class="item-title">{{ e.name }}</p>
+                            <span class="item-meta">
+                                {{ e.date }} &middot; {{ e.location }}
+                            </span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <span class="detail-label">No upcoming events.</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- BAR CHART -->
+        <div class="ui-card animate-fade-up" style="--delay: 5;">
+            <h3 class="card-title">Payments by Member Type</h3>
+            <div class="chart-wrapper">
+                <canvas id="paymentBarChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     CHART JS & ANIMATIONS
+========================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // REFINED EASING NUMBER ANIMATION ENGINE (FROM SACCO DASHBOARD)
+    const tickers = document.querySelectorAll('.count-ticker');
+    const duration = 2000;
+
+    tickers.forEach(el => {
+        const target = parseFloat(el.dataset.countTarget) || 0;
+        const start = performance.now();
+
+        function animate(time) {
+            const progress = Math.min((time - start) / duration, 1);
+            const value = target * (1 - Math.pow(1 - progress, 3)); // Cubic ease-out curve
+
+            el.textContent = Math.floor(value).toLocaleString();
+
+            if (progress < 1) requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    });
+
+    // =========================
+    // PIE CHART
+    // =========================
+    const pieCtx = document.getElementById("memberPieChart");
+    if (pieCtx) {
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Individual', 'Sacco', 'Partner'],
+                datasets: [{
+                    data: [
+                        {{ individual_members|default:0 }},
+                        {{ sacco_members|default:0 }},
+                        {{ partner_members|default:0 }}
+                    ],
+                    backgroundColor: ['#1e3a8a', '#f59e0b', '#8b5cf6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                plugins: { 
+                    legend: { position: 'bottom' } 
+                }
+            }
+        });
+    }
+
+    // =========================
+    // BAR CHART
+    // =========================
+    const barCtx = document.getElementById("paymentBarChart");
+    if (barCtx) {
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Individual', 'Sacco', 'Partner'],
+                datasets: [{
+                    label: 'Payments (KES)',
+                    data: [
+                        {{ individual_revenue|default:0 }},
+                        {{ sacco_revenue|default:0 }},
+                        {{ partner_revenue|default:0 }}
+                    ],
+                    backgroundColor: ['#1e3a8a', '#f59e0b', '#8b5cf6'],
+                    borderRadius: 6,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+});
+</script>
+
+<!-- =========================
+     COMPACT REFINED SYSTEM CSS
+========================== -->
+<style>
+    :root {
+        --c-blue: #1e3a8a;
+        --c-green: #10b981;
+        --c-red: #ef4444;
+        --c-amber: #f59e0b;
+        --c-purple: #8b5cf6;
+        --border-color: #f1f5f9;
+        --shadow-sm: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+    }
+
+    /* GLOBAL ENTRY LOADING STAGGER ANIMATIONS */
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeUpOnLoad 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--delay) * 120ms);
+    }
+
+    @keyframes fadeUpOnLoad {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* SMOOTH HOVER STATES */
+    .interactive-hover {
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease !important;
+    }
+    .interactive-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    /* 4-COLUMN SUMMARY GRID */
+    .summary-4-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .metrics-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .metrics-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .icon-blue { background: #eff6ff; color: var(--c-blue); }
+    .icon-green { background: #ecfdf5; color: var(--c-green); }
+    .icon-amber { background: #fffbeb; color: var(--c-amber); }
+
+    .metrics-info { flex: 1; }
+    .metrics-label { margin: 0 0 4px 0; font-size: 13px; color: #64748b; font-weight: 500; }
+    .metrics-value { margin: 0; font-size: 20px; font-weight: 700; color: #0f172a; }
+    .val-denominator { font-size: 14px; color: #475569; font-weight: 600; }
+
+    /* LAYOUT CONTENT SPLIT */
+    .dashboard-main-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .ui-card {
+        background: #ffffff;
+        padding: 26px;
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+    .card-title { margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #1e293b; }
+
+    .chart-wrapper {
+        position: relative;
+        width: 100%;
+        max-height: 320px;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* SCROLL LIST & ITEMS UNIFICATION */
+    .scroll-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .list-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #ffffff;
+        border-bottom: 1px dashed #e2e8f0;
+        transition: background 0.2s ease;
+    }
+    .list-item:last-child { border-bottom: none; }
+    .list-item:hover {
+        background: #f8fafc;
+    }
+
+    .item-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--c-blue);
+        flex-shrink: 0;
+        font-size: 14px;
+    }
+
+    .item-body { flex: 1; }
+    .item-title { margin: 0 0 2px 0; font-weight: 600; font-size: 14px; color: #1e293b; }
+    .item-meta { font-size: 12px; color: #64748b; display: block; }
+    
+    .empty-state {
+        display: flex;
+        justify-content: center;
+        padding: 30px 0;
+    }
+    .detail-label { display: block; font-size: 13px; color: #94a3b8; font-weight: 500; }
+
+    /* RESPONSIVE RENDERING */
+    @media (max-width: 1100px) {
+        .summary-4-grid { grid-template-columns: repeat(2, 1fr); }
+        .dashboard-main-split { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+        .summary-4-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
