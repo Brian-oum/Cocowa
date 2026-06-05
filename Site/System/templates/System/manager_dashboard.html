@@ -5,6 +5,28 @@
 <div class="dashboard-container">
 
     <!-- =========================
+         FLOATING ALERTS (SACCO STYLE)
+    ========================== -->
+    {% if alerts %}
+    <div class="toast-wrapper" id="toastWrapper">
+        {% for alert in alerts %}
+        <div class="toast-alert animate-slide-in">
+            <div class="toast-icon">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">System Alert</span>
+                <p class="toast-message">{{ alert }}</p>
+            </div>
+            <button class="toast-close-btn" onclick="this.parentElement.remove()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- =========================
          SUMMARY CARDS
     ========================== -->
     <div class="summary-4-grid animate-fade-up" style="--delay: 1;">
@@ -40,7 +62,20 @@
             <div class="metrics-info">
                 <p class="metrics-label">Total Revenue</p>
                 <h3 class="metrics-value">
-                    <span class="val-denominator">KES</span> <span class="count-ticker" data-count-target="{{ total_revenue|default:0 }}">0</span>
+                    <span class="val-denominator" style="font-size: 14px; font-weight: 600; color: #0f172a;">KES</span> 
+                    <span class="count-ticker" data-count-target="{{ total_revenue|default:0 }}">0</span>
+                </h3>
+            </div>
+        </div>
+
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-red">
+                <i class="fa-solid fa-ticket"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Total Complaints</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ complaint_count|default:0 }}">0</span>
                 </h3>
             </div>
         </div>
@@ -48,81 +83,135 @@
     </div>
 
     <!-- =========================
-         MIDDLE SECTION
+         MAIN SPLIT LAYOUT
     ========================== -->
     <div class="dashboard-main-split">
 
-        <!-- PIE CHART -->
-        <div class="ui-card animate-fade-up" style="--delay: 2;">
-            <h3 class="card-title">Member Distribution</h3>
-            <div class="chart-wrapper">
-                <canvas id="memberPieChart"></canvas>
-            </div>
-        </div>
+        <!-- LEFT COLUMN: CHARTS & FINANCIAL OVERVIEWS -->
+        <div class="split-left-column animate-fade-up" style="--delay: 2;">
 
-        <!-- RECENT COMPLAINTS -->
-        <div class="ui-card animate-fade-up" style="--delay: 3;">
-            <h3 class="card-title">Recent Complaints</h3>
-
-            <div class="scroll-list">
-                {% for c in recent_complaints %}
-                    <div class="list-item">
-                        <div class="item-icon">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+            <!-- PIE CHART / DISTRIBUTION -->
+            <div class="ui-card distribution-card interactive-hover">
+                <h3 class="card-title">Member Distribution</h3>
+                <div class="profile-progress-layout">
+                    <div class="chart-container">
+                        <canvas id="memberPieChart"></canvas>
+                    </div>
+                    <div class="progress-details">
+                        <div class="progress-item-row">
+                            <span class="dot-indicator" style="background: #1e3a8a;"></span>
+                            <div>
+                                <span class="detail-label">Individual</span>
+                                <h4 class="detail-value">
+                                    <span class="count-ticker" data-count-target="{{ individual_members|default:0 }}">0</span>
+                                </h4>
+                            </div>
                         </div>
-                        <div class="item-body">
-                            <p class="item-title">{{ c.title }}</p>
-                            <span class="item-meta">
-                                {{ c.status }} &middot; {{ c.created_at|date:"M d, Y" }}
-                            </span>
+                        <div class="progress-item-row">
+                            <span class="dot-indicator" style="background: #f59e0b;"></span>
+                            <div>
+                                <span class="detail-label">Sacco Members</span>
+                                <h4 class="detail-value">
+                                    <span class="count-ticker" data-count-target="{{ sacco_members|default:0 }}">0</span>
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="progress-item-row">
+                            <span class="dot-indicator" style="background: #8b5cf6;"></span>
+                            <div>
+                                <span class="detail-label">Partners</span>
+                                <h4 class="detail-value">
+                                    <span class="count-ticker" data-count-target="{{ partner_members|default:0 }}">0</span>
+                                </h4>
+                            </div>
                         </div>
                     </div>
-                {% empty %}
-                    <div class="empty-state">
+                </div>
+            </div>
+
+            <!-- COMPLAINT STATUS MICRO GRID -->
+            <div class="ui-card status-overview-card interactive-hover" style="margin-top: 15px;">
+                <h3 class="card-title">Complaint Status Overview</h3>
+                <div class="financial-row-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 15px;">
+                    <div class="finance-block" style="background: #fef2f2; border-radius: 12px; padding: 12px; text-align: center;">
+                        <span class="fin-lbl" style="color: #ef4444; font-weight: 600;">Open</span>
+                        <h4 class="fin-val" style="margin: 4px 0 0 0; font-size: 18px; color: #991b1b;">
+                            <span class="count-ticker" data-count-target="{{ complaint_open|default:0 }}">0</span>
+                        </h4>
+                    </div>
+                    <div class="finance-block" style="background: #fffbeb; border-radius: 12px; padding: 12px; text-align: center;">
+                        <span class="fin-lbl" style="color: #f59e0b; font-weight: 600;">Progress</span>
+                        <h4 class="fin-val" style="margin: 4px 0 0 0; font-size: 18px; color: #92400e;">
+                            <span class="count-ticker" data-count-target="{{ complaints_in_progress|default:0 }}">0</span>
+                        </h4>
+                    </div>
+                    <div class="finance-block" style="background: #ecfdf5; border-radius: 12px; padding: 12px; text-align: center;">
+                        <span class="fin-lbl" style="color: #10b981; font-weight: 600;">Resolved</span>
+                        <h4 class="fin-val" style="margin: 4px 0 0 0; font-size: 18px; color: #065f46;">
+                            <span class="count-ticker" data-count-target="{{ complaint_resolved|default:0 }}">0</span>
+                        </h4>
+                    </div>
+                    <div class="finance-block" style="background: #eff6ff; border-radius: 12px; padding: 12px; text-align: center;">
+                        <span class="fin-lbl" style="color: #3b82f6; font-weight: 600;">Closed</span>
+                        <h4 class="fin-val" style="margin: 4px 0 0 0; font-size: 18px; color: #1e40af;">
+                            <span class="count-ticker" data-count-target="{{ complaint_closed|default:0 }}">0</span>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: LISTS & RECENT DATA -->
+        <div class="split-right-column animate-fade-up" style="--delay: 3;">
+
+            <!-- RECENT COMPLAINTS -->
+            <div class="ui-card list-feed-card interactive-hover">
+                <h3 class="card-title">Recent Complaints</h3>
+                <div class="overview-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+                    {% for c in recent_complaints %}
+                    <div class="overview-item" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border-color, #f1f5f9);">
+                        <span class="ov-label" style="font-weight: 500; color: #334155;">
+                            <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; margin-right: 8px;"></i> {{ c.title|truncatechars:28 }}
+                        </span>
+                        <span class="ov-value" style="font-size: 12px; color: #64748b;">
+                            {{ c.created_at|date:"M d, Y" }} &middot; <span class="status-badge-micro">{{ c.status }}</span>
+                        </span>
+                    </div>
+                    {% empty %}
+                    <div class="overview-item" style="justify-content: center; padding: 20px 0;">
                         <span class="detail-label">No complaints found.</span>
                     </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
-        </div>
 
-    </div>
-
-    <!-- =========================
-         BOTTOM SECTION
-    ========================== -->
-    <div class="dashboard-main-split">
-
-        <!-- UPCOMING EVENTS -->
-        <div class="ui-card animate-fade-up" style="--delay: 4;">
-            <h3 class="card-title">Upcoming Events</h3>
-
-            <div class="scroll-list">
-                {% for e in upcoming_events %}
-                    <div class="list-item">
-                        <div class="item-icon">
-                            <i class="fa-solid fa-calendar"></i>
-                        </div>
-                        <div class="item-body">
-                            <p class="item-title">{{ e.name }}</p>
-                            <span class="item-meta">
-                                {{ e.date }} &middot; {{ e.location }}
-                            </span>
-                        </div>
+            <!-- REPORTED CASES LIST -->
+            <div class="ui-card list-feed-card interactive-hover" style="margin-top: 20px;">
+                <h3 class="card-title">Reported Cases (Latest Details)</h3>
+                <div class="overview-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+                    {% for c in reported_cases %}
+                    <div class="overview-item" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border-color, #f1f5f9);">
+                        <span class="ov-label" style="font-weight: 500; color: #334155;">
+                            <i class="fa-solid fa-file-circle-exclamation" style="color: #3b82f6; margin-right: 8px;"></i> {{ c.title|truncatechars:24 }}
+                        </span>
+                        <span class="ov-value" style="font-size: 12px; color: #64748b; text-align: right;">
+                            <span class="priority-lbl" style="font-weight: 600; text-transform: uppercase; font-size: 11px;">{{ c.priority|default:"Normal" }}</span>
+                            <br><small style="color:#94a3b8;">{{ c.created_at|date:"M d, Y" }}</small>
+                        </span>
                     </div>
-                {% empty %}
-                    <div class="empty-state">
-                        <span class="detail-label">No upcoming events.</span>
+                    {% empty %}
+                    <div class="overview-item" style="justify-content: center; padding: 20px 0;">
+                        <span class="detail-label">No reported cases.</span>
                     </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
+                <div class="package-info-footer-box" style="margin-top: 14px; padding: 10px 14px; background: #f8fafc; border-radius: 8px;">
+                    <h5 style="margin: 0 0 4px 0; font-size: 13px; color: #1e3a8a;">System Insight</h5>
+                    <p style="margin: 0; font-size: 12px; color: #64748b;">Review trends often to balance service requests across operational zones.</p>
+                </div>
             </div>
-        </div>
 
-        <!-- BAR CHART -->
-        <div class="ui-card animate-fade-up" style="--delay: 5;">
-            <h3 class="card-title">Payments by Member Type</h3>
-            <div class="chart-wrapper">
-                <canvas id="paymentBarChart"></canvas>
-            </div>
         </div>
 
     </div>
@@ -130,14 +219,14 @@
 </div>
 
 <!-- =========================
-     CHART JS & ANIMATIONS
+     SCRIPTS & REFINED ANIMATION ENGINE
 ========================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 
-    // REFINED EASING NUMBER ANIMATION ENGINE (FROM SACCO DASHBOARD)
+    // SACCO CUBIC EASE-OUT TICKER ENGINE
     const tickers = document.querySelectorAll('.count-ticker');
     const duration = 2000;
 
@@ -147,7 +236,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         function animate(time) {
             const progress = Math.min((time - start) / duration, 1);
-            const value = target * (1 - Math.pow(1 - progress, 3)); // Cubic ease-out curve
+            const value = target * (1 - Math.pow(1 - progress, 3)); 
 
             el.textContent = Math.floor(value).toLocaleString();
 
@@ -157,13 +246,11 @@ document.addEventListener("DOMContentLoaded", function() {
         requestAnimationFrame(animate);
     });
 
-    // =========================
-    // PIE CHART
-    // =========================
+    // PIE / DONUT STYLING ALIGNED WITH COMPACT VIEWPORTS
     const pieCtx = document.getElementById("memberPieChart");
     if (pieCtx) {
         new Chart(pieCtx, {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: ['Individual', 'Sacco', 'Partner'],
                 datasets: [{
@@ -177,47 +264,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 }]
             },
             options: {
-                plugins: { 
-                    legend: { position: 'bottom' } 
+                cutout: '75%',
+                plugins: {
+                    legend: { display: false }
                 }
             }
         });
     }
-
-    // =========================
-    // BAR CHART
-    // =========================
-    const barCtx = document.getElementById("paymentBarChart");
-    if (barCtx) {
-        new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Individual', 'Sacco', 'Partner'],
-                datasets: [{
-                    label: 'Payments (KES)',
-                    data: [
-                        {{ individual_revenue|default:0 }},
-                        {{ sacco_revenue|default:0 }},
-                        {{ partner_revenue|default:0 }}
-                    ],
-                    backgroundColor: ['#1e3a8a', '#f59e0b', '#8b5cf6'],
-                    borderRadius: 6,
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    }
-
 });
 </script>
 
 <!-- =========================
-     COMPACT REFINED SYSTEM CSS
+     COMPACT STYLING EXTENSIONS
 ========================== -->
 <style>
     :root {
@@ -227,7 +285,6 @@ document.addEventListener("DOMContentLoaded", function() {
         --c-amber: #f59e0b;
         --c-purple: #8b5cf6;
         --border-color: #f1f5f9;
-        --shadow-sm: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
     }
 
     .dashboard-container {
@@ -236,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function() {
         gap: 28px;
     }
 
-    /* GLOBAL ENTRY LOADING STAGGER ANIMATIONS */
+    /* LOADING TRANSITIONS */
     .animate-fade-up {
         opacity: 0;
         transform: translateY(20px);
@@ -245,13 +302,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     @keyframes fadeUpOnLoad {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    /* SMOOTH HOVER STATES */
     .interactive-hover {
         transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease !important;
     }
@@ -260,13 +313,46 @@ document.addEventListener("DOMContentLoaded", function() {
         box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
     }
 
-    /* 4-COLUMN SUMMARY GRID */
-    .summary-4-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
+    /* SYSTEM ALERTS */
+    .toast-wrapper {
+        position: fixed;
+        top: 25px;
+        right: 25px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 380px;
+        width: 100%;
+    }
+    .toast-alert {
+        background: #ffffff;
+        border-left: 4px solid var(--c-red);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .toast-icon { color: var(--c-red); font-size: 18px; margin-top: 2px; }
+    .toast-content { flex: 1; }
+    .toast-title { display: block; font-weight: 700; font-size: 13px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+    .toast-message { margin: 0; font-size: 13px; color: #475569; }
+    .toast-close-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; }
+
+    .animate-slide-in { animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
+    @keyframes slideIn {
+        from { transform: translateX(120%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
     }
 
+    /* SPLIT SYSTEM GRID */
+    .summary-4-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
     .metrics-card {
         background: #ffffff;
         padding: 20px;
@@ -274,10 +360,8 @@ document.addEventListener("DOMContentLoaded", function() {
         display: flex;
         align-items: center;
         gap: 16px;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
     }
-
     .metrics-icon {
         width: 48px;
         height: 48px;
@@ -285,99 +369,70 @@ document.addEventListener("DOMContentLoaded", function() {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
+        font-size: 20px;
     }
     .icon-blue { background: #eff6ff; color: var(--c-blue); }
     .icon-green { background: #ecfdf5; color: var(--c-green); }
     .icon-amber { background: #fffbeb; color: var(--c-amber); }
+    .icon-red { background: #fef2f2; color: var(--c-red); }
 
     .metrics-info { flex: 1; }
-    .metrics-label { margin: 0 0 4px 0; font-size: 13px; color: #64748b; font-weight: 500; }
-    .metrics-value { margin: 0; font-size: 20px; font-weight: 700; color: #0f172a; }
-    .val-denominator { font-size: 14px; color: #475569; font-weight: 600; }
+    .metrics-label { font-size: 13px; color: #64748b; margin: 0 0 4px 0; font-weight: 500; }
+    .metrics-value { font-size: 24px; font-weight: 700; color: #0f172a; margin: 0; }
 
-    /* LAYOUT CONTENT SPLIT */
     .dashboard-main-split {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1.2fr 1fr;
         gap: 24px;
         align-items: start;
     }
-
     .ui-card {
         background: #ffffff;
-        padding: 26px;
         border-radius: 16px;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border-color);
+        padding: 24px;
+        box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
     }
-    .card-title { margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #1e293b; }
+    .card-title { font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0; }
 
-    .chart-wrapper {
-        position: relative;
-        width: 100%;
-        max-height: 320px;
+    /* LAYOUT PATTERNS */
+    .profile-progress-layout {
         display: flex;
-        justify-content: center;
+        align-items: center;
+        gap: 24px;
+        margin-top: 20px;
     }
-
-    /* SCROLL LIST & ITEMS UNIFICATION */
-    .scroll-list {
+    .chart-container {
+        width: 130px;
+        height: 130px;
+        position: relative;
+    }
+    .progress-details {
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        max-height: 320px;
-        overflow-y: auto;
-        padding-right: 6px;
+        gap: 12px;
+        flex: 1;
     }
-
-    .list-item {
+    .progress-item-row {
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 12px;
-        border-radius: 12px;
-        background: #ffffff;
-        border-bottom: 1px dashed #e2e8f0;
-        transition: background 0.2s ease;
+        gap: 12px;
     }
-    .list-item:last-child { border-bottom: none; }
-    .list-item:hover {
-        background: #f8fafc;
+    .dot-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
     }
+    .detail-label { font-size: 12px; color: #64748b; display: block; }
+    .detail-value { font-size: 15px; font-weight: 700; color: #0f172a; margin: 2px 0 0 0; }
 
-    .item-icon {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 10px;
-        background: #eff6ff;
-        color: var(--c-blue);
-        flex-shrink: 0;
-        font-size: 14px;
-    }
-
-    .item-body { flex: 1; }
-    .item-title { margin: 0 0 2px 0; font-weight: 600; font-size: 14px; color: #1e293b; }
-    .item-meta { font-size: 12px; color: #64748b; display: block; }
-    
-    .empty-state {
-        display: flex;
-        justify-content: center;
-        padding: 30px 0;
-    }
-    .detail-label { display: block; font-size: 13px; color: #94a3b8; font-weight: 500; }
-
-    /* RESPONSIVE RENDERING */
-    @media (max-width: 1100px) {
-        .summary-4-grid { grid-template-columns: repeat(2, 1fr); }
-        .dashboard-main-split { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 600px) {
-        .summary-4-grid { grid-template-columns: 1fr; }
+    .status-badge-micro {
+        background: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
     }
 </style>
 {% endblock %}

@@ -1,32 +1,518 @@
 {% extends 'System/base_dashboard.html' %}
+{% load static %}
 
 {% block content %}
-<div class="ui-card">
+<div class="dashboard-panel-view animate-fade-up" style="--delay: 1;">
 
-    <h2>Raise a Complaint</h2>
-
-    <form method="POST">
-        {% csrf_token %}
-
-        <div style="margin-bottom: 15px;">
-            {{ form.title.label_tag }}
-            {{ form.title }}
+    <div class="panel-header-card">
+        <div class="header-main-flex">
+            <div class="header-icon-badge">
+                <i class="fa-solid fa-shield-heart"></i>
+            </div>
+            <div class="header-title-text">
+                <h2>Complaint Management</h2>
+                <p class="panel-subtitle">Review corporate service inquiries, update ticket status lifecycles, and monitor priority accounts.</p>
+            </div>
         </div>
 
-        <div style="margin-bottom: 15px;">
-            {{ form.description.label_tag }}
-            {{ form.description }}
-        </div>
+        <hr class="panel-divider">
 
-        <div style="margin-bottom: 15px;">
-            {{ form.priority.label_tag }}
-            {{ form.priority }}
-        </div>
+        <div class="filter-pills-deck">
+            <a href="{% url 'manager_complaints' %}" class="filter-pill-link {% if not status_filter %}active-pill{% endif %}">
+                <span class="pill-title">All Tickets</span>
+                <span class="pill-counter-bubble">{{ total }}</span>
+            </a>
 
-        <button type="submit" class="btn btn-primary">
-            Submit Ticket
-        </button>
-    </form>
+            <a href="?status=open" class="filter-pill-link {% if status_filter == 'open' %}active-pill{% endif %}">
+                <span class="pill-title">Open</span>
+                <span class="pill-counter-bubble status-bubble-open">{{ open_count }}</span>
+            </a>
+
+            <a href="?status=in_progress" class="filter-pill-link {% if status_filter == 'in_progress' %}active-pill{% endif %}">
+                <span class="pill-title">In Progress</span>
+                <span class="pill-counter-bubble status-bubble-progress">{{ progress_count }}</span>
+            </a>
+
+            <a href="?status=resolved" class="filter-pill-link {% if status_filter == 'resolved' %}active-pill{% endif %}">
+                <span class="pill-title">Resolved</span>
+                <span class="pill-counter-bubble status-bubble-resolved">{{ resolved_count }}</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="registry-table-card">
+        <div class="table-scroll-container">
+            <table class="premium-management-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">#</th>
+                        <th>Complaint Details</th>
+                        <th style="width: 140px;">Filed By</th>
+                        <th style="width: 120px;">Priority</th>
+                        <th style="width: 130px;">Live Status</th>
+                        <th style="width: 150px;">Timestamp</th>
+                        <th style="width: 210px; text-align: right;">State Transition</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in complaints %}
+                    <tr class="interactive-table-row">
+                        <td style="text-align: center;">
+                            <span class="row-index-counter">{{ forloop.counter }}</span>
+                        </td>
+                        <td>
+                            <div class="complaint-profile-cell">
+                                <span class="complaint-headline-text">{{ c.title }}</span>
+                                <p class="complaint-description-truncate" title="{{ c.description }}">
+                                    {{ c.description|truncatechars:65 }}
+                                </p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-account-badge">
+                                <i class="fa-solid fa-circle-user user-avatar-inline"></i>
+                                <span class="username-string">{{ c.user.username }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="priority-indicator-pill priority-{{ c.priority|lower }}">
+                                <span class="priority-accent-bar"></span>
+                                {{ c.priority|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-indicator-badge status-{{ c.status|lower }}">
+                                <span class="status-core-dot"></span>
+                                {{ c.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="timestamp-calendar-text">
+                                <i class="fa-regular fa-calendar-lines-pen time-icon"></i>
+                                {{ c.created_at|date:"Y-m-d H:i" }}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <form method="POST" action="{% url 'update_complaint_status' c.id %}" class="inline-transition-form">
+                                {% csrf_token %}
+                                <div class="action-select-group">
+                                    <select name="status" class="action-control-dropdown" required>
+                                        <option value="open" {% if c.status == "open" %}selected{% endif %}>Open</option>
+                                        <option value="in_progress" {% if c.status == "in_progress" %}selected{% endif %}>In Progress</option>
+                                        <option value="resolved" {% if c.status == "resolved" %}selected{% endif %}>Resolved</option>
+                                        <option value="closed" {% if c.status == "closed" %}selected{% endif %}>Closed</option>
+                                    </select>
+                                    <button type="submit" class="btn-action-submit" title="Commit State Change">
+                                        <i class="fa-solid fa-floppy-disk"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="empty-registry-state">
+                        <td colspan="7">
+                            <div class="empty-view-wrapper">
+                                <div class="empty-icon-cloud">
+                                    <i class="fa-solid fa-clipboard-check"></i>
+                                </div>
+                                <h3>Clear Operational Queue</h3>
+                                <p>No tickets correspond to the active filter configuration.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 </div>
+
+<style>
+    :root {
+        --c-blue: #1e3a8a;
+        --c-blue-glow: #2563eb;
+        --border-color: #f1f5f9;
+        --border-field: #cbd5e1;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.02), 0 4px 12px -2px rgba(0, 0, 0, 0.01);
+    }
+
+    /* CONTAINER CONFIGURATIONS */
+    .dashboard-panel-view {
+        width: 100%;
+        margin: 0 auto;
+        padding-bottom: 60px;
+    }
+
+    /* VIEW ANIMATION STAGGERING */
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(14px);
+        animation: panelSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--delay) * 100ms);
+    }
+
+    @keyframes panelSlideIn {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HEADER CONTROLS PLACEMENT */
+    .panel-header-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-premium);
+    }
+
+    .header-main-flex {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .header-icon-badge {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(30, 58, 138, 0.06);
+        color: var(--c-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .header-title-text h2 {
+        margin: 0 0 4px 0;
+        font-size: 21px;
+        font-weight: 700;
+        color: var(--text-main);
+        letter-spacing: -0.02em;
+    }
+
+    .panel-subtitle {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--text-muted);
+    }
+
+    .panel-divider {
+        border: 0;
+        border-top: 1px solid #f1f5f9;
+        margin: 20px 0;
+    }
+
+    /* PREMIUM NAVIGATION TABS SEGMENTS */
+    .filter-pills-deck {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .filter-pill-link:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: var(--text-main);
+    }
+
+    .filter-pill-link.active-pill {
+        background: var(--c-blue);
+        border-color: var(--c-blue);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+    }
+
+    .pill-counter-bubble {
+        font-size: 11px;
+        padding: 2px 7px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        color: #475569;
+        font-weight: 700;
+    }
+
+    .filter-pill-link.active-pill .pill-counter-bubble {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    /* DATA REGISTRY GRID AND TABLE LAYOUTS */
+    .registry-table-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: var(--shadow-premium);
+        overflow: hidden;
+    }
+
+    .table-scroll-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .premium-management-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        text-align: left;
+    }
+
+    .premium-management-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        font-size: 12.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .premium-management-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .interactive-table-row:hover td {
+        background-color: #fafafa;
+    }
+
+    .row-index-counter {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #94a3b8;
+    }
+
+    /* COMPLAINT INFO LAYOUT */
+    .complaint-profile-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .complaint-headline-text {
+        font-weight: 600;
+        color: var(--text-main);
+        font-size: 14px;
+    }
+
+    .complaint-description-truncate {
+        margin: 0;
+        font-size: 12.5px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    /* INLINE SYSTEM DATA TOKENS */
+    .user-account-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .user-avatar-inline {
+        color: #cbd5e1;
+        font-size: 14px;
+    }
+
+    .timestamp-calendar-text {
+        color: #475569;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .time-icon {
+        color: #94a3b8;
+    }
+
+    /* COMPONENT CONFIGURATIONS: PRIORITY CAPSULES */
+    .priority-indicator-pill {
+        display: inline-flex;
+        align-items: center;
+        position: relative;
+        padding: 4px 10px 4px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .priority-accent-bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+    }
+
+    .priority-indicator-pill.priority-low { color: #16a34a; }
+    .priority-indicator-pill.priority-low .priority-accent-bar { background: #16a34a; }
+
+    .priority-indicator-pill.priority-medium { color: #d97706; }
+    .priority-indicator-pill.priority-medium .priority-accent-bar { background: #d97706; }
+
+    .priority-indicator-pill.priority-high { color: #dc2626; }
+    .priority-indicator-pill.priority-high .priority-accent-bar { background: #dc2626; }
+
+    /* COMPONENT CONFIGURATIONS: STATUS INDICATORS */
+    .status-indicator-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-core-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .status-indicator-badge.status-open { background: #eff6ff; color: #1e40af; }
+    .status-indicator-badge.status-open .status-core-dot { background: #1e40af; }
+
+    .status-indicator-badge.status-in_progress { background: #fffbeb; color: #b45309; }
+    .status-indicator-badge.status-in_progress .status-core-dot { background: #b45309; }
+
+    .status-indicator-badge.status-resolved { background: #f0fdf4; color: #166534; }
+    .status-indicator-badge.status-resolved .status-core-dot { background: #166534; }
+
+    .status-indicator-badge.status-closed { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+    .status-indicator-badge.status-closed .status-core-dot { background: #475569; }
+
+    /* STATE TRANSITION ACTION ROW COMPONENT */
+    .inline-transition-form {
+        display: inline-block;
+    }
+
+    .action-select-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: #ffffff;
+    }
+
+    .action-control-dropdown {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border-field);
+        font-size: 12.5px;
+        color: var(--text-main);
+        outline: none;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: border-color 0.15s ease;
+    }
+
+    .action-control-dropdown:focus {
+        border-color: var(--c-blue);
+    }
+
+    .btn-action-submit {
+        width: 30px;
+        height: 30px;
+        border: none;
+        background: var(--c-blue);
+        color: #ffffff;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-action-submit:hover {
+        background: var(--c-blue-glow);
+        transform: translateY(-0.5px);
+    }
+
+    .btn-action-submit:active {
+        transform: translateY(0);
+    }
+
+    /* EMPTY STATES STYLING SECTIONS */
+    .empty-registry-state td {
+        padding: 65px 20px !important;
+        text-align: center;
+    }
+
+    .empty-view-wrapper {
+        max-width: 300px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .empty-icon-cloud {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: #f8fafc;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 12px;
+        border: 1px dashed #cbd5e1;
+    }
+
+    .empty-view-wrapper h3 {
+        margin: 0 0 4px 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .empty-view-wrapper p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    /* RESPONSIVE LAYOUT CONSTRAINTS */
+    @media (max-width: 992px) {
+        .premium-management-table th:nth-child(6),
+        .premium-management-table td:nth-child(6) {
+            display: none; /* Auto-collapse timestamp to secure operational width */
+        }
+    }
+</style>
 {% endblock %}

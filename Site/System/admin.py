@@ -75,7 +75,6 @@ class SaccoMemberAdmin(admin.ModelAdmin):
         "id",
         "user",
         "sacco_name",
-        "sacco_registration_number",
         "payment_status",
         "membership_number",
         "created_at",
@@ -83,7 +82,6 @@ class SaccoMemberAdmin(admin.ModelAdmin):
 
     search_fields = (
         "sacco_name",
-        "sacco_registration_number",
         "phone_number",
         "email",
     )

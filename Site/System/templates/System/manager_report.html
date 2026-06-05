@@ -1,0 +1,505 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="dashboard-container">
+
+    <div class="page-header-row animate-fade-up" style="--delay: 1;">
+        <h1 class="page-title">Manager Executive Report</h1>
+        <p class="page-subtitle">Real-time organizational compliance, financial health, and systems logistics.</p>
+    </div>
+
+    <div class="summary-4-grid animate-fade-up" style="--delay: 2;">
+
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-blue">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Total Members</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ total_members|default:0 }}">0</span>
+                </h3>
+            </div>
+        </div>
+
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-green">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Active Members</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ active_members|default:0 }}">0</span>
+                </h3>
+            </div>
+        </div>
+
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-purple">
+                <i class="fa-solid fa-percent"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Payment Compliance</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ payment_rate|default:0 }}">0</span><span style="font-size: 18px; color: var(--c-purple);">%</span>
+                </h3>
+            </div>
+        </div>
+
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-amber">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Total Revenue</p>
+                <h3 class="metrics-value">
+                    <span class="val-denominator" style="font-size: 14px; font-weight: 600; color: #0f172a; margin-right: 2px;">KES</span> 
+                    <span class="count-ticker" data-count-target="{{ total_revenue|default:0 }}">0</span>
+                </h3>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="ui-card insight-card animate-fade-up interactive-hover" style="--delay: 3;">
+        <div class="insight-header">
+            <i class="fa-solid fa-lightbulb"></i>
+            <h3 class="card-title" style="margin: 0;">Management Insights</h3>
+        </div>
+        <ul class="insight-list">
+            {% for insight in insights %}
+                <li>{{ insight }}</li>
+            {% empty %}
+                <li>No critical anomalies or system alerts detected in this operational cycle.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="brick-masonry-grid animate-fade-up" style="--delay: 4;">
+
+        <div class="ui-card interactive-hover brick-hero">
+            <h3 class="card-title">Revenue Trend</h3>
+            <div class="chart-wrapper line-chart-wrapper">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <div class="ui-card interactive-hover brick-medium">
+            <h3 class="card-title">Membership Distribution</h3>
+            <div class="profile-progress-layout">
+                <div class="chart-container">
+                    <canvas id="membershipChart"></canvas>
+                </div>
+                <div class="progress-details">
+                    <div class="progress-item-row">
+                        <span class="dot-indicator" style="background: #1e3a8a;"></span>
+                        <div>
+                            <span class="detail-label">Individuals</span>
+                            <h4 class="detail-value"><span class="count-ticker" data-count-target="{{ individual_count|default:0 }}">0</span></h4>
+                        </div>
+                    </div>
+                    <div class="progress-item-row">
+                        <span class="dot-indicator" style="background: #f59e0b;"></span>
+                        <div>
+                            <span class="detail-label">SACCOs</span>
+                            <h4 class="detail-value"><span class="count-ticker" data-count-target="{{ sacco_count|default:0 }}">0</span></h4>
+                        </div>
+                    </div>
+                    <div class="progress-item-row">
+                        <span class="dot-indicator" style="background: #8b5cf6;"></span>
+                        <div>
+                            <span class="detail-label">Partners</span>
+                            <h4 class="detail-value"><span class="count-ticker" data-count-target="{{ partner_count|default:0 }}">0</span></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui-card table-card interactive-hover brick-tall">
+            <div class="table-header-box">
+                <h3 class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color: var(--c-red); margin-right: 8px;"></i> Recent Complaints</h3>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket No</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in recent_complaints %}
+                            <tr>
+                                <td class="text-bold">#{{ complaint.ticket_number }}</td>
+                                <td>{{ complaint.subject }}</td>
+                                <td><span class="badge {{ complaint.status }}">{{ complaint.status }}</span></td>
+                                <td class="text-muted">{{ complaint.created_at|date:"d M Y" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="table-empty-state">No open customer complaints registered.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="ui-card interactive-hover brick-medium">
+            <h3 class="card-title">Complaint Analytics</h3>
+            <div class="chart-wrapper">
+                <canvas id="complaintChart"></canvas>
+            </div>
+        </div>
+
+        <div class="ui-card table-card interactive-hover brick-wide-span">
+            <div class="table-header-box">
+                <h3 class="card-title"><i class="fa-solid fa-shield-halved" style="color: var(--c-blue); margin-right: 8px;"></i> Recent Incident Reports</h3>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Incident Type</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in recent_cases %}
+                            <tr>
+                                <td class="text-bold"><i class="fa-solid fa-car" style="font-size:12px; margin-right:4px; color:#64748b;"></i> {{ case.number_plate }}</td>
+                                <td>{{ case.get_incident_type_display }}</td>
+                                <td><span class="badge {{ case.status }}">{{ case.status }}</span></td>
+                                <td class="text-muted">{{ case.created_at|date:"d M Y" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="table-empty-state">No field incident records submitted.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="ui-card interactive-hover brick-medium">
+            <h3 class="card-title">Incident Analytics</h3>
+            <div class="chart-wrapper donut-fix">
+                <canvas id="incidentChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // SACCO CUBIC EASE-OUT TICKER ENGINE
+    const tickers = document.querySelectorAll('.count-ticker');
+    const duration = 2000;
+
+    tickers.forEach(el => {
+        const target = parseFloat(el.dataset.countTarget) || 0;
+        const start = performance.now();
+
+        function animate(time) {
+            const progress = Math.min((time - start) / duration, 1);
+            const value = target * (1 - Math.pow(1 - progress, 3)); 
+
+            el.textContent = Math.floor(value).toLocaleString();
+
+            if (progress < 1) requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    });
+
+    // REVENUE CHART INITIALIZER
+    const revCtx = document.getElementById("revenueChart");
+    if(revCtx) {
+        new Chart(revCtx, {
+            type: "line",
+            data: {
+                labels: {{ months|safe }},
+                datasets: [{
+                    label: "Revenue (KES)",
+                    data: {{ revenue_data|safe }},
+                    borderColor: '#1e3a8a',
+                    backgroundColor: 'rgba(30, 58, 138, 0.04)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#1e3a8a'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+    }
+
+    // MEMBERSHIP PIE CHART (UPGRADED TO LUXE DOUGHNUT)
+    const memCtx = document.getElementById("membershipChart");
+    if(memCtx) {
+        new Chart(memCtx, {
+            type: "doughnut",
+            data: {
+                labels: ["Individuals", "SACCOs", "Partners"],
+                datasets: [{
+                    data: [
+                        {{ individual_count|default:0 }},
+                        {{ sacco_count|default:0 }},
+                        {{ partner_count|default:0 }}
+                    ],
+                    backgroundColor: ['#1e3a8a', '#f59e0b', '#8b5cf6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '75%',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // COMPLAINTS STATUS CHART
+    const compCtx = document.getElementById("complaintChart");
+    if(compCtx) {
+        new Chart(compCtx, {
+            type: "bar",
+            data: {
+                labels: ["Open", "In Progress", "Resolved", "Closed"],
+                datasets: [{
+                    label: "Complaints Grid",
+                    data: [
+                        {{ complaint_open|default:0 }},
+                        {{ complaint_progress|default:0 }},
+                        {{ complaint_resolved|default:0 }},
+                        {{ complaint_closed|default:0 }}
+                    ],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#1e3a8a'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#f1f5f9' }, ticks: { beginAtZero: true, color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+    }
+
+    // INCIDENT TRACKING ANALYTICS
+    const incCtx = document.getElementById("incidentChart");
+    if(incCtx) {
+        new Chart(incCtx, {
+            type: "doughnut",
+            data: {
+                labels: ["Open", "Investigating", "Resolved", "Closed"],
+                datasets: [{
+                    data: [
+                        {{ open_cases|default:0 }},
+                        {{ investigating_cases|default:0 }},
+                        {{ resolved_cases|default:0 }},
+                        {{ closed_cases|default:0 }}
+                    ],
+                    backgroundColor: ['#ef4444', '#3b82f6', '#10b981', '#64748b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '70%',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, color: '#64748b', font: { size: 11 } } } }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+    :root {
+        --c-blue: #1e3a8a;
+        --c-green: #10b981;
+        --c-red: #ef4444;
+        --c-amber: #f59e0b;
+        --c-purple: #8b5cf6;
+        --border-color: #f1f5f9;
+        --bg-luxury: #ffffff;
+    }
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding: 10px 0;
+    }
+
+    /* HEADER CSS */
+    .page-header-row { margin-bottom: 4px; }
+    .page-title { font-size: 26px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0; letter-spacing: -0.5px; }
+    .page-subtitle { font-size: 14px; color: #64748b; margin: 0; }
+
+    /* LOADING TRANSITIONS SETUP */
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(18px);
+        animation: fadeUpOnLoad 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--delay) * 100ms);
+    }
+    @keyframes fadeUpOnLoad {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CARDS ARCHITECTURE */
+    .ui-card {
+        background: var(--bg-luxury);
+        border-radius: 16px;
+        padding: 22px;
+        box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0,0,0,0.01);
+        border: 1px solid rgba(241, 245, 249, 0.7);
+        display: flex;
+        flex-direction: column;
+    }
+    .interactive-hover {
+        transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.35s ease !important;
+    }
+    .interactive-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.07), 0 4px 12px -2px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 18px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* TOP SUMMARY GRID */
+    .summary-4-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    .metrics-card {
+        background: var(--bg-luxury);
+        padding: 20px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(241, 245, 249, 0.6);
+    }
+    .metrics-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .icon-blue { background: #eff6ff; color: var(--c-blue); }
+    .icon-green { background: #ecfdf5; color: var(--c-green); }
+    .icon-amber { background: #fffbeb; color: var(--c-amber); }
+    .icon-purple { background: #f5f3ff; color: var(--c-purple); }
+
+    .metrics-info { flex: 1; }
+    .metrics-label { font-size: 12px; color: #64748b; margin: 0 0 4px 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .metrics-value { font-size: 23px; font-weight: 700; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
+
+    /* MANAGEMENT INSIGHT BOX */
+    .insight-card { border-left: 4px solid var(--c-blue); background: #f8fafc; }
+    .insight-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--c-blue); font-size: 16px; }
+    .insight-list { margin: 0; padding-left: 20px; color: #334155; font-size: 13.5px; line-height: 1.6; }
+    .insight-list li { margin-bottom: 8px; }
+
+    /* ==================================
+       BRICK STRUCTURE ENGINE (CSS GRID)
+    ==================================== */
+    .brick-masonry-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+    
+    /* Spanning configuration rules */
+    .brick-hero { grid-column: span 2; }
+    .brick-tall { grid-row: span 2; display: flex; flex-direction: column; justify-content: space-between; }
+    .brick-wide-span { grid-column: span 1; }
+    .brick-medium { grid-column: span 1; }
+
+    .chart-wrapper { position: relative; height: 210px; width: 100%; margin: auto 0; }
+    .line-chart-wrapper { height: 260px; }
+    .donut-fix { height: 230px; }
+
+    /* MEMBERSHIP INTERNAL DISTRIBUTION SLOTS */
+    .profile-progress-layout { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
+    .chart-container { width: 140px; height: 140px; position: relative; }
+    .progress-details { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .progress-item-row { display: flex; align-items: center; gap: 12px; }
+    .dot-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .detail-label { font-size: 12px; color: #64748b; display: block; font-weight: 500; }
+    .detail-value { font-size: 16px; font-weight: 700; color: #0f172a; margin: 1px 0 0 0; }
+
+    /* TABLES LAYOUT SCHEMES */
+    .table-responsive { width: 100%; overflow-x: auto; flex: 1; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    table th { background: #f8fafc; color: #475569; padding: 12px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); }
+    table td { padding: 13px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid var(--border-color); }
+    table tr:last-child td { border-bottom: none; }
+
+    .text-bold { font-weight: 600; color: #0f172a; }
+    .text-muted { font-size: 12px; color: #64748b; }
+    .table-empty-state { text-align: center; color: #94a3b8; padding: 30px 0 !important; font-style: italic; }
+
+    /* BADGE MANAGEMENT SYNC RULES */
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        display: inline-block;
+    }
+    .badge.open, .badge.Open { background: #fef2f2; color: var(--c-red); }
+    .badge.progress, .badge.investigating, .badge.Investigating { background: #fffbeb; color: var(--c-amber); }
+    .badge.resolved, .badge.Resolved { background: #ecfdf5; color: var(--c-green); }
+    .badge.closed, .badge.Closed { background: #f1f5f9; color: #475569; }
+
+    /* VIEWPORT RESPONSIVENESS */
+    @media(max-width: 1150px) {
+        .summary-4-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .brick-masonry-grid { grid-template-columns: 1fr; }
+        .brick-hero, .brick-tall, .brick-wide-span, .brick-medium { grid-column: span 1; grid-row: auto; }
+    }
+    @media(max-width: 650px) {
+        .summary-4-grid { grid-template-columns: 1fr; }
+        .profile-progress-layout { flex-direction: column; height: auto; gap: 15px; align-items: start; }
+        .chart-container { margin: 0 auto; }
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,288 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid px-4 py-4 main-dashboard-wrapper">
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        
+        <div class="card-header bg-white border-bottom border-slate-100 py-4 px-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <h4 class="mb-0 fw-bold text-slate-900 d-flex align-items-center">
+                <i class="fa-solid fa-folder-open me-2.5 text-primary fs-5"></i>
+                My Incident Reports
+            </h4>
+            <a href="{% url 'report_cases' %}" class="btn btn-primary px-4 py-2 rounded-3 fw-semibold shadow-sm transition-all text-decoration-none">
+                <i class="fa-solid fa-plus me-2"></i>Report Incident
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 premium-dashboard-table">
+                <thead>
+                    <tr>
+                        <th style="width: 18%;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-car-rear text-slate-400"></i>
+                                <span>Vehicle</span>
+                            </div>
+                        </th>
+                        <th style="width: 25%;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-building text-slate-400"></i>
+                                <span>SACCO</span>
+                            </div>
+                        </th>
+                        <th style="width: 25%;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-slate-400"></i>
+                                <span>Incident</span>
+                            </div>
+                        </th>
+                        <th style="width: 14%;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-circle-info text-slate-400"></i>
+                                <span>Status</span>
+                            </div>
+                        </th>
+                        <th style="width: 18%;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-calendar-days text-slate-400"></i>
+                                <span>Date Reported</span>
+                            </div>
+                        </th>
+                        <th style="width: 10%;" class="text-end pe-4">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for incident in incidents %}
+                    <tr class="incident-row">
+                        <td>
+                            {% if incident.number_plate %}
+                                <span class="vehicle-badge">{{ incident.number_plate }}</span>
+                            {% elif incident.vehicle %}
+                                <span class="vehicle-badge">{{ incident.vehicle.number_plate }}</span>
+                            {% else %}
+                                <span class="text-slate-400 fst-italic fs-7">Unknown</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-slate-700 fw-medium">
+                            {% if incident.sacco %}
+                                {{ incident.sacco.sacco_name }}
+                            {% elif incident.external_sacco_name %}
+                                {{ incident.external_sacco_name }}
+                            {% else %}
+                                <span class="text-slate-400 fst-italic fs-7">Unknown SACCO</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-slate-900 fw-semibold">
+                            {{ incident.get_incident_type_display }}
+                        </td>
+
+                        <td>
+                            <span class="badge-pill pill-{{ incident.status }}">
+                                <span class="pill-indicator-dot"></span>
+                                {{ incident.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td class="text-slate-500 fs-7">
+                            {{ incident.created_at|date:"d M Y" }}
+                        </td>
+
+                        <td class="text-end pe-4">
+                            <a href="#" class="btn-action-view text-decoration-none">
+                                <span>View Details</span>
+                                <i class="fa-solid fa-chevron-right ms-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 bg-slate-25">
+                            <div class="empty-state py-5">
+                                <div class="empty-icon shadow-sm mb-3">
+                                    <i class="fa-regular fa-folder-open"></i>
+                                </div>
+                                <h5 class="fw-bold text-slate-800 mb-2">No Incident Reports Found</h5>
+                                <p class="text-slate-500 mb-4 mx-auto" style="max-width: 340px; font-size: 14px;">
+                                    You haven't submitted any incident reports yet. New reports will cleanly catalog here.
+                                </p>
+                                <a href="{% url 'report_cases' %}" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-semibold">
+                                    <i class="fa-solid fa-plus me-2"></i> Report First Incident
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Design System Palettes */
+:root {
+    --primary-color: #4f46e5;       /* Premium Indigo Accent */
+    --primary-hover: #4338ca;
+    --slate-25: #f8fafc;
+    --slate-50: #f1f5f9;
+    --slate-100: #e2e8f0;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+}
+
+.main-dashboard-wrapper {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Custom Overrides for Base Dashboard Components */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.bg-slate-25 { background-color: var(--slate-25); }
+.text-slate-900 { color: var(--slate-900); }
+.text-slate-700 { color: var(--slate-700); }
+.text-slate-500 { color: var(--slate-500); }
+.text-slate-400 { color: var(--slate-400); }
+.border-slate-100 { border-color: var(--slate-100) !important; }
+.fs-7 { font-size: 0.875rem; }
+.transition-all { transition: all 0.2s ease-in-out; }
+
+/* Premium Data Table Layout Architectures */
+.premium-dashboard-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.premium-dashboard-table th {
+    background-color: var(--slate-25);
+    color: var(--slate-500);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--slate-100) !important;
+    white-space: nowrap;
+}
+
+.premium-dashboard-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--slate-100);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Row Hovers */
+.incident-row {
+    transition: background-color 0.15s ease;
+}
+.incident-row:hover {
+    background-color: #fafbfc !important;
+}
+
+/* Kenyan License Plate Style Badge */
+.vehicle-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    background: #fffdf5;
+    border: 1.5px solid #eab308; /* Subtle amber border */
+    border-radius: 6px;
+    font-family: 'SFMono-Regular', Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #1e1b4b;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* Action view interactive button */
+.btn-action-view {
+    color: var(--primary-color);
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.15s ease;
+}
+.btn-action-view:hover {
+    color: var(--primary-hover);
+}
+.btn-action-view i {
+    font-size: 10px;
+    transition: transform 0.15s ease;
+}
+.btn-action-view:hover i {
+    transform: translateX(2px);
+}
+
+/* Pill Badge Design Tokens */
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+}
+.pill-indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+/* Open Status Theme */
+.pill-open, .pill- { background: #fef3c7; color: #b45309; }
+.pill-open .pill-indicator-dot, .pill- .pill-indicator-dot { background: #d97706; }
+
+/* Investigating Status Theme */
+.pill-investigating { background: #e0f2fe; color: #0369a1; }
+.pill-investigating .pill-indicator-dot { background: #0284c7; }
+
+/* Resolved Status Theme */
+.pill-resolved { background: #dcfce7; color: #15803d; }
+.pill-resolved .pill-indicator-dot { background: #16a34a; }
+
+/* Closed Status Theme */
+.pill-closed { background: #f1f5f9; color: #475569; }
+.pill-closed .pill-indicator-dot { background: #64748b; }
+
+/* Empty state styling */
+.empty-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid var(--slate-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    font-size: 24px;
+    color: var(--slate-400);
+}
+</style>
+{% endblock %}

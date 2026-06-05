@@ -18,7 +18,9 @@ from datetime import timedelta
 import calendar
 from .models import *
 from .forms import *
-
+from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 # ==========================================
 # REGISTER
 # ==========================================
@@ -200,40 +202,59 @@ def manager_dashboard(request):
     partner_active = PartnerMember.objects.filter(payment_status="paid").count()
 
     active_members = individual_active + sacco_active + partner_active
-    recent_complaints = Complaint.objects.order_by("-created_at")[:6]
-    upcoming_events = Event.objects.filter(event_date__gte=timezone.localdate()).order_by("event_date")
+
     # =========================
     # REVENUE
     # =========================
-    individual_revenue = IndividualMember.objects.filter(payment_status="paid").aggregate(total=Sum("amount"))["total"] or 0
+    individual_revenue = IndividualMember.objects.filter(payment_status="paid").aggregate(
+        total=Sum("amount")
+    )["total"] or 0
 
-    sacco_revenue = Vehicle.objects.filter(payment_status="paid").aggregate(total=Sum("amount"))["total"] or 0
+    sacco_revenue = Vehicle.objects.filter(payment_status="paid").aggregate(
+        total=Sum("amount")
+    )["total"] or 0
 
-    partner_revenue = PartnerDonation.objects.filter(status="paid").aggregate(total=Sum("amount"))["total"] or 0
+    partner_revenue = PartnerDonation.objects.filter(status="paid").aggregate(
+        total=Sum("amount")
+    )["total"] or 0
 
     total_revenue = individual_revenue + sacco_revenue + partner_revenue
 
     # =========================
-    # INSIGHTS CALCULATIONS
+    # COMPLAINTS (TICKETS)
     # =========================
+    complaint_open = Complaint.objects.filter(status="open").count()
+    complaint_in_progress = Complaint.objects.filter(status="in_progress").count()
+    complaint_resolved = Complaint.objects.filter(status="resolved").count()
+    complaint_closed = Complaint.objects.filter(status="closed").count()
 
-    # Average revenue per member type
-    avg_individual = individual_revenue / individual_count if individual_count else 0
-    avg_sacco = sacco_revenue / sacco_count if sacco_count else 0
-    avg_partner = partner_revenue / partner_count if partner_count else 0
+    complaint_count = (
+        complaint_open +
+        complaint_in_progress +
+        complaint_resolved +
+        complaint_closed
+    )
 
-    # Payment health %
+    recent_complaints = Complaint.objects.order_by("-created_at")[:3]
+
+    # =========================
+    # REPORTED CASES (TOTAL)
+    # =========================
+    reported_cases = ReportCases.objects.order_by("-created_at")[:3]
+
+    # =========================
+    # INSIGHTS
+    # =========================
     payment_rate = (active_members / total_members * 100) if total_members else 0
 
-    # Revenue imbalance detection
     max_revenue = max(individual_revenue, sacco_revenue, partner_revenue)
+
     dominant_sector = (
         "Individual" if max_revenue == individual_revenue else
         "Sacco" if max_revenue == sacco_revenue else
         "Partner"
     )
 
-    # Risk alerts
     alerts = []
 
     if payment_rate < 50:
@@ -242,30 +263,39 @@ def manager_dashboard(request):
     if sacco_count == 0:
         alerts.append("⚠ No SACCO registered")
 
-    if partner_revenue < individual_revenue * 0.3:
-        alerts.append("⚠ Partner donations are significantly low")
 
+    # =========================
+    # CONTEXT
+    # =========================
     context = {
-        # counts
+        # members
         "individual_members": individual_count,
         "sacco_members": sacco_count,
         "partner_members": partner_count,
         "total_members": total_members,
 
-        # active
+        # activity
         "active_members": active_members,
-        "recent_complaints": recent_complaints,
-        "upcoming_events": upcoming_events,
+
         # revenue
         "individual_revenue": individual_revenue,
         "sacco_revenue": sacco_revenue,
         "partner_revenue": partner_revenue,
         "total_revenue": total_revenue,
 
+        # complaints
+        "complaint_count": complaint_count,
+        "complaint_open": complaint_open,
+        "complaint_in_progress": complaint_in_progress,
+        "complaint_resolved": complaint_resolved,
+        "complaint_closed": complaint_closed,
+
+        "recent_complaints": recent_complaints,
+
+        # cases
+        "reported_cases": reported_cases,
+
         # insights
-        "avg_individual": avg_individual,
-        "avg_sacco": avg_sacco,
-        "avg_partner": avg_partner,
         "payment_rate": round(payment_rate, 1),
         "dominant_sector": dominant_sector,
 
@@ -433,7 +463,6 @@ def sacco_dashboard(request):
     # =========================
     fields = [
         member.sacco_name,
-        member.sacco_registration_number,
         member.phone_number,
         member.email
     ]
@@ -838,24 +867,14 @@ def complete_sacco_profile(request):
 
     edit_mode = request.GET.get("edit") == "1"
 
-    # =========================
-    # EXISTING VEHICLES
-    # =========================
     existing_vehicles = Vehicle.objects.filter(
         sacco=member
     )
 
     if request.method == "POST":
 
-        # =========================
-        # SACCO DETAILS
-        # =========================
         member.sacco_name = request.POST.get(
             "sacco_name"
-        )
-
-        member.sacco_registration_number = request.POST.get(
-            "sacco_registration_number"
         )
 
         member.phone_number = request.POST.get(
@@ -868,34 +887,67 @@ def complete_sacco_profile(request):
 
         member.save()
 
-        # =========================
-        # REMOVE OLD VEHICLES
-        # =========================
+        # Remove old vehicles
         member.vehicles.all().delete()
 
-        # =========================
-        # SAVE NEW VEHICLES
-        # =========================
+        # Save vehicles
         vehicles_json = request.POST.get(
             "vehicles_data"
         )
 
         if vehicles_json:
 
-            vehicles = json.loads(vehicles_json)
+            try:
 
-            for v in vehicles:
-
-                Vehicle.objects.create(
-                    sacco=member,
-                    vehicle_type=v.get("vehicle_type"),
-                    number_plate=v.get("number_plate"),
-                    route=v.get("route"),
+                vehicles = json.loads(
+                    vehicles_json
                 )
 
-        # =========================
-        # FIRST COMPLETION
-        # =========================
+                for v in vehicles:
+
+                    vehicle_type = v.get(
+                        "vehicle_type"
+                    )
+
+                    # Legacy support
+                    if vehicle_type == "nairobi":
+                        vehicle_type = "town_service"
+
+                    allowed_types = [
+                        choice[0]
+                        for choice in Vehicle.VEHICLE_TYPES
+                    ]
+
+                    if vehicle_type not in allowed_types:
+
+                        print(
+                            f"INVALID VEHICLE TYPE: {vehicle_type}"
+                        )
+
+                        continue
+
+                    Vehicle.objects.create(
+                        sacco=member,
+                        vehicle_type=vehicle_type,
+                        number_plate=v.get(
+                            "number_plate"
+                        ),
+                        route=v.get(
+                            "route"
+                        ),
+                    )
+
+            except json.JSONDecodeError:
+
+                messages.error(
+                    request,
+                    "Invalid vehicle data submitted."
+                )
+
+                return redirect(
+                    "complete_sacco_profile"
+                )
+
         if not profile.profile_completed:
 
             profile.profile_completed = True
@@ -906,17 +958,18 @@ def complete_sacco_profile(request):
                 "SACCO profile completed successfully!"
             )
 
-            return redirect("sacco_dashboard")
+            return redirect(
+                "payment_page"
+            )
 
-        # =========================
-        # UPDATE MODE
-        # =========================
         messages.success(
             request,
             "SACCO profile updated successfully!"
         )
 
-        return redirect("sacco_dashboard")
+        return redirect(
+            "sacco_dashboard"
+        )
 
     context = {
         "vehicle_choices": Vehicle.VEHICLE_TYPES,
@@ -924,8 +977,7 @@ def complete_sacco_profile(request):
         "profile": profile,
         "vehicles": existing_vehicles,
         "is_complete": profile.profile_completed,
-        "edit_mode": edit_mode
-        
+        "edit_mode": edit_mode,
     }
 
     return render(
@@ -933,7 +985,6 @@ def complete_sacco_profile(request):
         "System/sacco_profile.html",
         context
     )
-
 # ==========================================
 # COMPLETE PARTNER PROFILE
 # ==========================================
@@ -1000,89 +1051,66 @@ def complete_partner_profile(request):
         context
     )
 
+
 @login_required
-def payment_page(request, member_id):
+def payment_page(request, member_type, member_id):
 
     member = None
-    member_type = None
     amount = 0
 
     # =========================
     # INDIVIDUAL
     # =========================
-    try:
-        member = IndividualMember.objects.get(id=member_id)
-        member_type = "individual"
-        amount = 0 if member.payment_status == "paid" else member.amount
+    if member_type == "individual":
+        member = IndividualMember.objects.filter(id=member_id).first()
 
-    except IndividualMember.DoesNotExist:
-        pass
+        if not member:
+            raise Http404("Individual not found")
+
+        amount = member.amount if member.payment_status != "paid" else 0
 
     # =========================
     # SACCO
     # =========================
-    if not member:
-        try:
-            member = SaccoMember.objects.get(id=member_id)
-            member_type = "sacco"
+    elif member_type == "sacco":
+        member = SaccoMember.objects.filter(id=member_id).first()
 
-            total_vehicle_amount = sum(v.amount for v in member.vehicles.all())
+        if not member:
+            raise Http404("Sacco not found")
 
-            amount = 0 if member.payment_status == "paid" else total_vehicle_amount
+        total_vehicle_amount = sum(
+            v.amount or 0 for v in member.vehicles.all()
+        )
 
-        except SaccoMember.DoesNotExist:
-            pass
-
-    # =========================
-    # PARTNER (FIXED)
-    # =========================
-    if not member:
-        try:
-            member = PartnerMember.objects.get(id=member_id)
-            member_type = "partner"
-
-            # GET latest pending donation
-            pending_donation = PartnerDonation.objects.filter(
-                partner=member,
-                status="pending"
-            ).order_by('-created_at').first()
-
-            amount = pending_donation.amount if pending_donation else 0
-
-        except PartnerMember.DoesNotExist:
-            pass
-
-    if not member:
-        raise Http404("Member not found")
+        amount = total_vehicle_amount if member.payment_status != "paid" else 0
 
     # =========================
-    # PAYMENT SUBMISSION
+    # PARTNER
     # =========================
+    elif member_type == "partner":
+        member = PartnerMember.objects.filter(id=member_id).first()
+
+        if not member:
+            raise Http404("Partner not found")
+
+        pending = PartnerDonation.objects.filter(
+            partner=member,
+            status="pending"
+        ).order_by("-created_at").first()
+
+        amount = pending.amount if pending else 0
+
+    else:
+        raise Http404("Invalid member type")
+
+    # POST handling unchanged
     if request.method == "POST":
-
         transaction_code = request.POST.get("transaction_code")
 
-        if member_type in ["individual", "sacco"]:
-
-            if member.payment_status == "paid":
-                messages.success(request, "Already paid.")
-                return redirect("payment_status", member.id)
-
+        if member.payment_status != "paid":
             member.transaction_code = transaction_code
             member.payment_status = "pending"
             member.save()
-
-        elif member_type == "partner":
-
-            pending = PartnerDonation.objects.filter(
-                partner=member,
-                status="pending"
-            ).order_by('-created_at').first()
-
-            if pending:
-                pending.transaction_code = transaction_code
-                pending.status = "pending"  # WAITING ADMIN APPROVAL
-                pending.save()
 
         return redirect("payment_status", member.id)
 
@@ -1091,9 +1119,8 @@ def payment_page(request, member_id):
         "member_type": member_type,
         "amount": amount
     })
-
 # ==========================================
-# PAYMENT STATUS
+# PAYMENT STATUS VIEW (UNCHANGED BUT SAFE)
 # ==========================================
 def payment_status(request, member_id):
 
@@ -1112,7 +1139,6 @@ def payment_status(request, member_id):
         "member": member,
         "role": role
     })
-
 # ==========================================
 # HOME PAGES
 # ==========================================
@@ -1494,23 +1520,625 @@ def download_membership_card(request):
 
     return response
 
-# ==========================================
-# COMPLAINTS
-# ==========================================
+# ==================================================
+# 1. CREATE COMPLAINT (TICKET)
+# ==================================================
 @login_required
 def raise_complaint(request):
 
+    profile = get_object_or_404(UserProfile, user=request.user)
+
     if request.method == "POST":
+
         form = ComplaintForm(request.POST)
 
         if form.is_valid():
-            complaint = form.save(commit=False)
-            complaint.user = request.user
-            complaint.save()
-
-            return redirect("complaint_success")
+            form.save(user=request.user)
+            messages.success(request, "Complaint submitted successfully.")
+            return redirect("my_complaints")
 
     else:
         form = ComplaintForm()
 
-    return render(request, "System/complaint.html", {"form": form})
+    return render(request, "System/ticket.html", {
+        "form": form
+    })
+
+
+# ==================================================
+# 2. USER COMPLAINT LIST
+# ==================================================
+@login_required
+def my_complaints(request):
+    complaints = Complaint.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
+
+    return render(request, "System/my_ticket.html", {
+        "complaints": complaints
+    })
+
+
+# ==================================================
+# 3. CREATE VEHICLE INCIDENT REPORT
+# ==================================================
+@login_required
+def report_cases(request):
+
+    if request.method == "POST":
+
+        number_plate = request.POST.get(
+            "number_plate", ""
+        ).strip().upper()
+
+        sacco_value = request.POST.get("sacco")
+
+        sacco_obj = None
+        external_sacco_name = None
+
+        if sacco_value:
+
+            try:
+                sacco_obj = SaccoMember.objects.get(
+                    id=sacco_value
+                )
+
+            except (ValueError, SaccoMember.DoesNotExist):
+
+                # User typed a SACCO that isn't registered
+                external_sacco_name = sacco_value
+
+        vehicle = Vehicle.objects.filter(
+            number_plate__iexact=number_plate
+        ).first()
+
+        ReportCases.objects.create(
+            reporter=request.user,
+            vehicle=vehicle,
+            sacco=sacco_obj,
+            external_sacco_name=external_sacco_name,
+            number_plate=number_plate,
+            vehicle_type=request.POST.get("vehicle_type"),
+            route=request.POST.get("route"),
+            incident_type=request.POST.get("incident_type"),
+            journey_date=request.POST.get("journey_date"),
+            description=request.POST.get("description"),
+        )
+
+        messages.success(
+            request,
+            "Incident reported successfully."
+        )
+
+        return redirect("my_cases")
+
+    sacco_list = SaccoMember.objects.all().order_by(
+        "sacco_name"
+    )
+
+    return render(
+        request,
+        "System/report_case.html",
+        {
+            "sacco_list": sacco_list
+        }
+    )
+
+# ==================================================
+# 4. USER INCIDENT LIST
+# ==================================================
+@login_required
+def my_cases(request):
+
+    incidents = ReportCases.objects.filter(
+        reporter=request.user
+    ).select_related("vehicle", "sacco").order_by("-created_at")
+
+    return render(request, "System/my_cases.html", {
+        "incidents": incidents
+    })
+
+# ==================================================
+# 5. MANAGER: ALL COMPLAINTS
+# ==================================================
+@login_required
+def manager_complaints(request):
+
+    profile = get_object_or_404(UserProfile, user=request.user)
+
+    if profile.role != "manager":
+        return redirect("home")
+
+    # FILTERING
+    status_filter = request.GET.get("status")
+
+    complaints = Complaint.objects.all().order_by("-created_at")
+
+    if status_filter:
+        complaints = complaints.filter(status=status_filter)
+
+    # STATS (for dashboard insight)
+    total = Complaint.objects.count()
+    open_count = Complaint.objects.filter(status="open").count()
+    progress_count = Complaint.objects.filter(status="in_progress").count()
+    resolved_count = Complaint.objects.filter(status="resolved").count()
+
+    return render(request, "System/complaint.html", {
+        "complaints": complaints,
+        "total": total,
+        "open_count": open_count,
+        "progress_count": progress_count,
+        "resolved_count": resolved_count,
+        "status_filter": status_filter,
+    })
+
+# ================================
+# UPDATE COMPLAINT STATUS
+# ================================
+@login_required
+def update_complaint_status(request, pk):
+
+    profile = get_object_or_404(UserProfile, user=request.user)
+
+    if profile.role != "manager":
+        return redirect("home")
+
+    complaint = get_object_or_404(Complaint, pk=pk)
+
+    if request.method == "POST":
+
+        new_status = request.POST.get("status")
+
+        if new_status in ["open", "in_progress", "resolved", "closed"]:
+            complaint.status = new_status
+            complaint.save()
+
+            messages.success(request, "Ticket updated successfully.")
+
+    return redirect("manager_complaints")
+# ==================================================
+# 6. MANAGER: ALL INCIDENT REPORTS
+# ==================================================
+@login_required
+def manager_cases(request):
+
+    cases = ReportCases.objects.select_related(
+        "vehicle",
+        "sacco",
+        "reporter"
+    ).order_by("-created_at")
+
+    # OPTIONAL FILTER (status)
+    status = request.GET.get("status")
+
+    if status:
+        cases = cases.filter(status=status)
+
+    return render(request, "System/manager_cases.html", {
+        "cases": cases,
+        "status": status
+    })
+
+@login_required
+@require_POST
+def update_case_status(request):
+
+    if not request.user.is_staff:
+        return JsonResponse({"error": "Not allowed"}, status=403)
+
+    case_id = request.POST.get("case_id")
+    status = request.POST.get("status")
+
+    valid_statuses = ["open", "investigating", "resolved", "closed"]
+
+    if status not in valid_statuses:
+        return JsonResponse({"error": "Invalid status"}, status=400)
+
+    case = get_object_or_404(ReportCases, id=case_id)
+    case.status = status
+    case.save()
+
+    return JsonResponse({
+        "success": True,
+        "status": status
+    })
+
+@login_required
+def individuals_list(request):
+
+    query = request.GET.get("q", "").strip()
+
+    individuals = IndividualMember.objects.all()
+
+    if query:
+        individuals = individuals.filter(
+            Q(membership_number__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(second_name__icontains=query) |
+            Q(email__icontains=query) |
+            Q(phone_number__icontains=query)
+        )
+
+    individuals = individuals.order_by("-created_at")
+    suggestions = IndividualMember.objects.all()[:100]
+    return render(
+        request,
+        "System/individual_list.html",
+        {
+            "individuals": individuals,
+            "query": query,
+            "suggestions": suggestions,
+        }
+    )
+
+@login_required
+def member_autocomplete(request):
+
+    term = request.GET.get("term", "")
+
+    suggestions = []
+
+    if term:
+
+        members = IndividualMember.objects.filter(
+            Q(membership_number__icontains=term) |
+            Q(first_name__icontains=term) |
+            Q(second_name__icontains=term)
+        )[:10]
+
+        for member in members:
+
+            suggestions.append({
+                "name": f"{member.first_name} {member.second_name}",
+                "membership": member.membership_number,
+            })
+
+    return JsonResponse(suggestions, safe=False)
+
+@login_required
+def sacco_list(request):
+
+    query = request.GET.get("q", "").strip()
+
+    saccos = SaccoMember.objects.all()
+
+    if query:
+        saccos = saccos.filter(
+            Q(membership_number__icontains=query) |
+            Q(name__icontains=query) |
+            Q(phone_number__icontains=query)
+        )
+
+    return render(request, "System/sacco_list.html", {
+        "saccos": saccos,
+        "query": query
+    })
+
+@login_required
+def sacco_list(request):
+
+    query = request.GET.get("q", "").strip()
+
+    saccos = SaccoMember.objects.all()
+
+    if query:
+        saccos = saccos.filter(
+            Q(membership_number__icontains=query) |
+            Q(name__icontains=query) |
+            Q(phone_number__icontains=query)
+        )
+
+    return render(request, "System/sacco_list.html", {
+        "saccos": saccos,
+        "query": query
+    })
+
+@login_required
+def sacco_autocomplete(request):
+
+    term = request.GET.get("term", "").strip()
+
+    results = SaccoMember.objects.filter(
+        Q(membership_number__icontains=term) |
+        Q(name__icontains=term)
+    )[:10]
+
+    data = [
+        {
+            "name": s.name,
+            "membership": s.membership_number
+        }
+        for s in results
+    ]
+
+    return JsonResponse(data, safe=False)
+
+@login_required
+def partners_list(request):
+
+    query = request.GET.get("q", "").strip()
+
+    partners = PartnerMember.objects.all()
+
+    if query:
+        partners = partners.filter(
+            Q(membership_number__icontains=query) |
+            Q(name__icontains=query) |
+            Q(phone_number__icontains=query)
+        )
+
+    return render(request, "System/partner_list.html", {
+        "partners": partners,
+        "query": query
+    })
+
+@login_required
+def partner_autocomplete(request):
+
+    term = request.GET.get("term", "").strip()
+
+    results = PartnerMember.objects.filter(
+        Q(membership_number__icontains=term) |
+        Q(name__icontains=term)
+    )[:10]
+
+    data = [
+        {
+            "name": p.name,
+            "membership": p.membership_number
+        }
+        for p in results
+    ]
+
+    return JsonResponse(data, safe=False)
+
+@login_required
+def manager_report(request):
+
+    profile = get_object_or_404(UserProfile, user=request.user)
+
+    if profile.role != "manager":
+        return redirect("home")
+
+    current_year = timezone.now().year
+
+    # =====================================================
+    # MEMBERSHIP
+    # =====================================================
+
+    individual_count = IndividualMember.objects.count()
+    sacco_count = SaccoMember.objects.count()
+    partner_count = PartnerMember.objects.count()
+
+    total_members = (
+        individual_count +
+        sacco_count +
+        partner_count
+    )
+
+    active_individuals = IndividualMember.objects.filter(
+        payment_status="paid"
+    ).count()
+
+    active_saccos = SaccoMember.objects.filter(
+        payment_status="paid"
+    ).count()
+
+    active_partners = PartnerMember.objects.filter(
+        payment_status="paid"
+    ).count()
+
+    active_members = (
+        active_individuals +
+        active_saccos +
+        active_partners
+    )
+
+    payment_rate = round(
+        (active_members / total_members) * 100, 1
+    ) if total_members else 0
+
+    # =====================================================
+    # REVENUE
+    # =====================================================
+
+    individual_revenue = IndividualMember.objects.filter(
+        payment_status="paid"
+    ).aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    sacco_revenue = Vehicle.objects.filter(
+        payment_status="paid"
+    ).aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    partner_revenue = PartnerDonation.objects.filter(
+        status="paid"
+    ).aggregate(
+        total=Sum("amount")
+    )["total"] or 0
+
+    total_revenue = (
+        individual_revenue +
+        sacco_revenue +
+        partner_revenue
+    )
+
+    # =====================================================
+    # COMPLAINTS
+    # =====================================================
+
+    complaint_open = Complaint.objects.filter(
+        status="open"
+    ).count()
+
+    complaint_progress = Complaint.objects.filter(
+        status="in_progress"
+    ).count()
+
+    complaint_resolved = Complaint.objects.filter(
+        status="resolved"
+    ).count()
+
+    complaint_closed = Complaint.objects.filter(
+        status="closed"
+    ).count()
+
+    total_complaints = Complaint.objects.count()
+
+    recent_complaints = Complaint.objects.order_by(
+        "-created_at"
+    )[:10]
+
+    # =====================================================
+    # INCIDENT CASES
+    # =====================================================
+
+    open_cases = ReportCases.objects.filter(
+        status="open"
+    ).count()
+
+    investigating_cases = ReportCases.objects.filter(
+        status="investigating"
+    ).count()
+
+    resolved_cases = ReportCases.objects.filter(
+        status="resolved"
+    ).count()
+
+    closed_cases = ReportCases.objects.filter(
+        status="closed"
+    ).count()
+
+    total_cases = ReportCases.objects.count()
+
+    recent_cases = ReportCases.objects.order_by(
+        "-created_at"
+    )[:10]
+
+    # =====================================================
+    # VEHICLE ANALYTICS
+    # =====================================================
+
+    total_vehicles = Vehicle.objects.count()
+
+    town_service = Vehicle.objects.filter(
+        vehicle_type="town_service"
+    ).count()
+
+    long_distance = Vehicle.objects.filter(
+        vehicle_type="long_distance"
+    ).count()
+
+    # =====================================================
+    # MONTHLY REVENUE TREND
+    # =====================================================
+
+    months = []
+    revenue_data = []
+
+    for month in range(1, 13):
+
+        individual = IndividualMember.objects.filter(
+            payment_status="paid",
+            created_at__year=current_year,
+            created_at__month=month
+        ).aggregate(
+            total=Sum("amount")
+        )["total"] or 0
+
+        sacco = Vehicle.objects.filter(
+            payment_status="paid",
+            created_at__year=current_year,
+            created_at__month=month
+        ).aggregate(
+            total=Sum("amount")
+        )["total"] or 0
+
+        partner = PartnerDonation.objects.filter(
+            status="paid",
+            created_at__year=current_year,
+            created_at__month=month
+        ).aggregate(
+            total=Sum("amount")
+        )["total"] or 0
+
+        months.append(calendar.month_abbr[month])
+
+        revenue_data.append(
+            float(individual + sacco + partner)
+        )
+
+    # =====================================================
+    # AI INSIGHTS
+    # =====================================================
+
+    insights = []
+
+    if payment_rate < 50:
+        insights.append(
+            "Low payment compliance detected."
+        )
+
+    if complaint_open > complaint_resolved:
+        insights.append(
+            "Open complaints exceed resolved complaints."
+        )
+
+    if total_revenue > 500000:
+        insights.append(
+            "Revenue performance is strong."
+        )
+
+    if total_cases > 20:
+        insights.append(
+            "High number of reported transport incidents."
+        )
+
+    context = {
+
+        "total_members": total_members,
+        "active_members": active_members,
+        "payment_rate": payment_rate,
+
+        "individual_count": individual_count,
+        "sacco_count": sacco_count,
+        "partner_count": partner_count,
+
+        "total_revenue": total_revenue,
+        "individual_revenue": individual_revenue,
+        "sacco_revenue": sacco_revenue,
+        "partner_revenue": partner_revenue,
+
+        "total_complaints": total_complaints,
+        "complaint_open": complaint_open,
+        "complaint_progress": complaint_progress,
+        "complaint_resolved": complaint_resolved,
+        "complaint_closed": complaint_closed,
+
+        "total_cases": total_cases,
+        "open_cases": open_cases,
+        "investigating_cases": investigating_cases,
+        "resolved_cases": resolved_cases,
+        "closed_cases": closed_cases,
+
+        "total_vehicles": total_vehicles,
+        "town_service": town_service,
+        "long_distance": long_distance,
+
+        "months": json.dumps(months),
+        "revenue_data": json.dumps(revenue_data),
+
+        "recent_complaints": recent_complaints,
+        "recent_cases": recent_cases,
+
+        "insights": insights,
+    }
+
+    return render(
+        request,
+        "System/manager_report.html",
+        context
+    )

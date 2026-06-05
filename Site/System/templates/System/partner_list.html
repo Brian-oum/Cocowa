@@ -1,0 +1,472 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-0 py-2 animate-fade-in">
+
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-4">
+
+        <!-- PREMIUM HEADER DESIGN -->
+        <div class="card-header bg-white border-bottom border-slate-100 py-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h4 class="mb-1 fw-bold text-slate-900 d-flex align-items-center">
+                    <i class="fa-solid fa-handshake me-3 text-violet-600 fs-5"></i>
+                    Partner Members Registry
+                </h4>
+                <p class="text-slate-400 small mb-0 fs-7.5">
+                    Managing and auditing activated platform corporate partnerships. Total entries verified: 
+                    <span class="badge bg-violet-50 text-violet-700 fw-bold border border-violet-100 px-2 py-1 ms-1 rounded-pill">{{ partners|length }}</span>
+                </p>
+            </div>
+
+            <!-- PILL SHAPED SIDE-BY-SIDE SEARCH CONTROL -->
+            <form method="GET" id="searchForm" class="custom-search-form d-flex align-items-center gap-2">
+
+                <div class="search-box d-flex align-items-center position-relative">
+                    <div class="search-icon">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+
+                    <input type="text"
+                           id="liveSearch"
+                           name="q"
+                           value="{{ query|default:'' }}"
+                           class="search-input"
+                           placeholder="Search partner name or ID..."
+                           autocomplete="off">
+
+                    <!-- AUTOSUGGEST DROPDOWN MAPPED CONTAINER -->
+                    <div id="suggestions" class="suggestions-dropdown"></div>
+                </div>
+
+                {% if query %}
+                <a href="." class="reset-btn">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Reset
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- PREMIUM REGISTRY TABLE LAYOUT -->
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table class="table align-middle mb-0 premium-registry-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;" class="text-center">#</th>
+                        <th style="width: 25%;">Partner Name</th>
+                        <th style="width: 20%;">Membership No</th>
+                        <th style="width: 25%;">Email Address</th>
+                        <th style="width: 25%;">Phone Contact</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for p in partners %}
+                    <tr class="table-row-hover">
+                        
+                        <td class="text-center text-slate-400 fw-semibold tabular-index">
+                            {{ forloop.counter }}
+                        </td>
+
+                        <td class="text-slate-800 fw-bold fs-7.5">
+                            <div class="d-flex align-items-center gap-2.5">
+                                <div class="avatar-circle-ui">
+                                    {{ p.name|slice:":1"|upper }}
+                                </div>
+                                <span>{{ p.name }}</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if p.membership_number %}
+                                <span class="membership-badge-code">
+                                    {{ p.membership_number }}
+                                </span>
+                            {% else %}
+                                <span class="text-slate-300 fst-italic fs-8">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-slate-600 fs-7.5 font-fallback-clean">
+                            {{ p.email|default:"<span class='text-slate-300 fst-italic'>—</span>" }}
+                        </td>
+
+                        <td class="text-slate-600 fs-7.5 tracking-wide">
+                            {{ p.phone_number|default:"<span class='text-slate-300 fst-italic'>—</span>" }}
+                        </td>
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 bg-slate-25">
+                            <div class="py-5 max-w-md mx-auto text-center animate-fade-in">
+                                <div class="empty-vector-wrapper mb-3">
+                                    <i class="fa-solid fa-users-slash text-slate-200 fs-0"></i>
+                                </div>
+                                <h6 class="fw-bold text-slate-700 mb-1">No Registered Partner Members Found</h6>
+                                <p class="text-slate-400 small mb-0 px-4">We couldn't track any records matching those values. Adjust your dashboard queries or verify active database fields.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("liveSearch");
+    const searchForm = document.getElementById("searchForm");
+    const suggestions = document.getElementById("suggestions");
+
+    let timer;
+
+    searchInput.addEventListener("keyup", function () {
+
+        clearTimeout(timer);
+
+        const query = this.value.trim();
+
+        /* ============================
+           AUTO SEARCH
+        ============================ */
+        timer = setTimeout(function () {
+
+            if (query.length >= 2 || query.length === 0) {
+
+                const currentUrl = new URL(window.location);
+
+                if (query) {
+                    currentUrl.searchParams.set("q", query);
+                } else {
+                    currentUrl.searchParams.delete("q");
+                }
+
+                window.history.replaceState({}, "", currentUrl);
+
+                searchForm.submit();
+            }
+
+        }, 500);
+
+        /* ============================
+           AUTOCOMPLETE
+        ============================ */
+        if (query.length >= 2) {
+
+            fetch("{% url 'member_autocomplete' %}?term=" + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+
+                    suggestions.innerHTML = "";
+
+                    if (data.length > 0) {
+
+                        suggestions.style.display = "block";
+
+                        data.forEach(item => {
+
+                            const suggestion = document.createElement("div");
+
+                            suggestion.classList.add("suggestion-item");
+
+                            suggestion.innerHTML = `
+                                <div class="suggestion-name">
+                                    ${item.name}
+                                </div>
+
+                                <div class="suggestion-membership">
+                                    ${item.membership}
+                                </div>
+                            `;
+
+                            suggestion.addEventListener("click", function () {
+
+                                searchInput.value = item.membership;
+
+                                suggestions.style.display = "none";
+
+                                searchForm.submit();
+
+                            });
+
+                            suggestions.appendChild(suggestion);
+
+                        });
+
+                    } else {
+
+                        suggestions.style.display = "none";
+
+                    }
+
+                })
+                .catch(error => {
+
+                    console.error("Autocomplete Error:", error);
+
+                    suggestions.style.display = "none";
+
+                });
+
+        } else {
+
+            suggestions.style.display = "none";
+
+        }
+
+    });
+
+    /* ============================
+       HIDE SUGGESTIONS
+    ============================ */
+    document.addEventListener("click", function (e) {
+
+        if (
+            !e.target.closest(".search-box") &&
+            !e.target.closest("#suggestions")
+        ) {
+            suggestions.style.display = "none";
+        }
+
+    });
+
+});
+</script>
+
+<style>
+/* Color variables synced with luxury base layout system */
+:root {
+    --violet-600: #6d28d9;
+    --violet-700: #5b21b6;
+    --slate-25: #f8fafc;
+    --slate-100: #e2e8f0;
+    --slate-200: #cbd5e1;
+    --slate-300: #94a3b8;
+    --slate-400: #64748b;
+    --slate-500: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+}
+
+/* Custom Base Utility Overrides */
+.btn-violet {
+    background-color: var(--violet-600) !important;
+    border-color: var(--violet-600) !important;
+    transition: all 0.15s ease;
+}
+.btn-violet:hover {
+    background-color: var(--violet-700) !important;
+    border-color: var(--violet-700) !important;
+}
+.bg-violet-50 { background-color: #f5f3ff !important; }
+.text-violet-700 { color: #6d28d9 !important; }
+.border-violet-100 { border-color: #ddd6fe !important; }
+.border-slate-100 { border-color: var(--slate-100) !important; }
+.border-slate-200 { border-color: var(--slate-200) !important; }
+.bg-slate-25 { background-color: var(--slate-25) !important; }
+.text-slate-900 { color: var(--slate-900); }
+.text-slate-700 { color: var(--slate-700); }
+.text-slate-600 { color: var(--slate-600); }
+.text-slate-500 { color: var(--slate-500); }
+.text-slate-400 { color: var(--slate-400); }
+.text-slate-300 { color: var(--slate-300); }
+.fs-7.5 { font-size: 0.84rem; }
+.fs-7.5 .text-slate-300 { font-size: 0.84rem; }
+.fs-8 { font-size: 0.75rem; }
+.fs-0 { font-size: 3.5rem; }
+.shadow-xs { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+
+/* Typography Constraints */
+.tabular-index, .tabular-numeric, .membership-badge-code {
+    font-family: 'SFMono-Regular', Consolas, "Liberation Mono", Menlo, monospace;
+}
+.font-fallback-clean {
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+.style-placeholder::placeholder {
+    color: var(--slate-300);
+    font-weight: 400;
+}
+
+/* Form Interactivity */
+.custom-search-form input:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Premium Table Row Architectures */
+.premium-registry-table th {
+    background-color: var(--slate-25);
+    color: var(--slate-400);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--slate-100) !important;
+}
+
+.premium-registry-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--slate-100);
+    white-space: nowrap;
+}
+
+.table-row-hover {
+    transition: background-color 0.15s ease;
+}
+.table-row-hover:hover {
+    background-color: rgba(248, 250, 252, 0.8) !important;
+}
+
+/* Corporate Mini Profile Avatar Frame */
+.avatar-circle-ui {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #f3e8ff;
+    color: var(--violet-600);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e9d5ff;
+    flex-shrink: 0;
+}
+
+/* Outline Tag Architectures */
+.membership-badge-code {
+    display: inline-block;
+    padding: 3px 8px;
+    background: #fafafa;
+    border: 1px solid var(--slate-200);
+    color: var(--slate-900);
+    font-weight: 600;
+    font-size: 12px;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+}
+
+/* Suggestion Box Layer Styling */
+#suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-top: 5px;
+    z-index: 999;
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    display: none;
+    overflow: hidden;
+}
+
+.suggestion-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: #f8fafc;
+}
+
+.suggestion-name {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.suggestion-membership {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Custom Micro Entrance Animations */
+.animate-fade-in {
+    animation: simpleFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes simpleFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   PILL SHAPED SEARCH OVERHAUL INTERFACE
+   ========================================================================== */
+.custom-search-form {
+    background: transparent;
+}
+
+/* SEARCH INPUT AREA PILL */
+.search-box {
+    display: inline-flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px; 
+    padding: 6px 18px;    
+    min-width: 290px;
+    height: 40px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-box:focus-within {
+    border-color: #6d28d9;
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.08);
+    background: #ffffff;
+}
+
+.search-icon {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+/* RESET BUTTON PILL */
+.reset-btn {
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 999px; 
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.reset-btn:hover {
+    background: #f8fafc;
+    color: #334155;
+    border-color: #cbd5e1;
+}
+</style>
+{% endblock %}

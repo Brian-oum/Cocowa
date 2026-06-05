@@ -1,0 +1,356 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container viewport-lock">
+
+    <div class="form-wrapper animate-fade-up" style="--delay: 1;">
+        <div class="ui-card form-card interactive-hover">
+
+            <div class="form-header-box">
+                <div class="form-header-icon icon-red-tint">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+
+                <div class="form-header-text">
+                    <h2 class="form-main-title">Report Vehicle Incident</h2>
+                    <p class="form-subtitle">
+                        Report misconduct, overloading, reckless driving, fare overcharging, harassment, or unsafe vehicles.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="form-divider">
+
+            <form method="POST" class="premium-form-layout">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                <div style="background:#fee2e2;padding:10px;border-radius:8px;">
+                    {{ form.non_field_errors }}
+                    {% for field in form %}
+                        {{ field.errors }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- SACCO + PLATE -->
+                <div class="form-row-grid column-2">
+
+                    <div class="form-group">
+    <label class="field-label">
+        <i class="fa-solid fa-building"></i>
+        SACCO Name
+    </label>
+
+    <select
+        name="sacco"
+        id="saccoSelect"
+        class="form-control-select">
+
+        <option value="">
+            Select or type SACCO...
+        </option>
+
+        {% for s in sacco_list %}
+            <option value="{{ s.id }}">
+                {{ s.sacco_name }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+
+                    <div class="form-group">
+                        <label class="field-label">
+                            <i class="fa-solid fa-car-rear"></i>
+                            Vehicle Number Plate
+                        </label>
+
+                        <input type="text"
+                               name="number_plate"
+                               class="form-control-input"
+                               placeholder="e.g. KAA 123A"
+                               style="text-transform:uppercase;"
+                               required>
+                    </div>
+
+                </div>
+
+                <!-- INCIDENT + TYPE -->
+                <div class="form-row-grid column-2">
+
+                    <div class="form-group">
+                        <label class="field-label">Incident Type</label>
+                        <select name="incident_type" class="form-control-select" required>
+                            <option value="">Select Incident</option>
+                            <option value="overloading">Overloading</option>
+                            <option value="reckless_driving">Reckless Driving</option>
+                            <option value="misconduct">Crew Misconduct</option>
+                            <option value="fare_overcharge">Fare Overcharge</option>
+                            <option value="harassment">Harassment</option>
+                            <option value="unsafe_vehicle">Unsafe Vehicle</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="field-label">Vehicle Type</label>
+                        <select name="vehicle_type" class="form-control-select" required>
+                            <option value="">Select Vehicle Type</option>
+                            <option value="town_service">Town Service</option>
+                            <option value="long_distance">Long Distance</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- ROUTE + DATE -->
+                <div class="form-row-grid column-2">
+
+                    <div class="form-group">
+                        <label class="field-label">Route</label>
+                        <input type="text" name="route" class="form-control-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="field-label">Date of Incident</label>
+                        <input type="date" name="journey_date" class="form-control-input" required>
+                    </div>
+
+                </div>
+
+                <!-- DESCRIPTION -->
+                <div class="form-group">
+                    <label class="field-label">Description</label>
+                    <textarea name="description"
+                              class="form-control-textarea"
+                              rows="3"
+                              required></textarea>
+                </div>
+
+                <!-- SUBMIT -->
+                <div class="form-actions-box">
+                    <button type="submit" class="btn-submit-premium">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Submit Incident Report
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    $('#saccoSelect').select2({
+        placeholder: "Select or type SACCO",
+        allowClear: true,
+        tags: true,
+        width: '100%',
+
+        createTag: function(params) {
+            return {
+                id: params.term,
+                text: params.term,
+                newTag: true
+            };
+        }
+    });
+
+});
+</script>
+<style>
+:root{
+    --c-blue:#1e3a8a;
+    --c-red:#ef4444;
+    --c-red-hover:#dc2626;
+    --text-main:#0f172a;
+    --text-muted:#64748b;
+    --border-color:#e2e8f0;
+    --shadow:0 4px 18px -4px rgba(0,0,0,.05);
+}
+
+/* Enforce containment to ensure it utilizes space perfectly without spilling */
+.viewport-lock {
+    height: calc(100vh - 40px); /* Adjusts perfectly inside your dashboard pane */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.form-wrapper{
+    width: 100%;
+    max-width:900px;
+    margin:auto;
+}
+
+.ui-card{
+    background:#fff;
+    padding:24px; /* Reduced from 32px to clean up excess padding */
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.form-header-box{
+    display:flex;
+    gap:16px;
+    align-items:center;
+}
+
+.form-header-icon{
+    width:48px;  /* Reduced slightly from 60px */
+    height:48px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#fef2f2;
+    color:var(--c-red);
+    font-size:20px;
+}
+
+.form-main-title{
+    margin:0;
+    font-size:20px; /* Reduced from 24px */
+    font-weight:700;
+}
+
+.form-subtitle{
+    margin: 2px 0 0 0;
+    font-size: 13px;
+    color:var(--text-muted);
+    line-height: 1.4;
+}
+
+.form-divider{
+    margin:15px 0; /* Tightened from 25px */
+    border:none;
+    border-top:1px solid #e2e8f0;
+}
+
+.premium-form-layout{
+    display:flex;
+    flex-direction:column;
+    gap:12px; /* Tightened gap elements from 20px */
+}
+
+.form-row-grid{
+    display:grid;
+    gap:16px;
+}
+
+.column-2{
+    grid-template-columns:repeat(2,1fr);
+}
+
+.field-label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:6px;
+    color:#334155;
+}
+
+.req-star{
+    color:red;
+}
+
+/* Fixed input elements width to scale nicely in grids */
+.form-control-input,
+.form-control-select,
+.form-control-textarea{
+    width: 100%; /* Boosted to full width to prevent lopsided layouts */
+    padding:10px; /* Dropped from 12px for better vertical compacting */
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    font-size:14px;
+    transition:.2s;
+    box-sizing: border-box;
+}
+/* Match Select2 with your design */
+.select2-container--default .select2-selection--single {
+    height: 42px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 3px rgba(30,58,138,.08);
+    outline: none;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px;
+}
+
+.select2-container {
+    width: 100% !important;
+}
+.form-control-input:focus,
+.form-control-select:focus,
+.form-control-textarea:focus{
+    outline:none;
+    border-color:var(--c-blue);
+    box-shadow:0 0 0 3px rgba(30,58,138,.08);
+}
+
+/* Controls the text-area safely */
+.form-control-textarea{
+    resize: none; /* Block arbitrary manual resizing that breaks your screen balance */
+}
+
+.form-actions-box{
+    display:flex;
+    justify-content:flex-end;
+    margin-top: 4px;
+}
+
+.btn-submit-premium{
+    background:var(--c-red);
+    color:white;
+    border:none;
+    padding:11px 22px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn-submit-premium:hover{
+    background:var(--c-red-hover);
+}
+
+@media(max-width:768px){
+    .viewport-lock {
+        height: auto;
+        overflow-y: auto; /* Gracefully fall back to natural scroll on tight phone layouts */
+    }
+    
+    .column-2{
+        grid-template-columns:1fr;
+    }
+
+    .ui-card{
+        padding:20px;
+    }
+}
+</style>
+{% endblock %}
