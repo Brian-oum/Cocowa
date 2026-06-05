@@ -1,0 +1,166 @@
+{% load i18n %}
+{% load socialaccount %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<div class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100 px-3">
+    <div class="auth-card p-4 p-md-5 text-center">
+        
+        <div class="brand-icon mb-4">
+            <div class="icon-glow-wrapper">
+                <i class="bi bi-shield-lock-fill metallic-text fs-1"></i>
+            </div>
+        </div>
+        
+        <h2 class="auth-title mb-2">{% trans "Sign In via Google" %}</h2>
+        
+        <p class="auth-subtitle mb-4 text-muted">
+            {% blocktrans with provider.name as provider_name %}You are about to connect your secure session using {{ provider_name }}.{% endblocktrans %}
+        </p>
+
+        <form method="post" action="{% provider_login_url 'google' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-google-premium w-100 py-3 fw-semibold">
+                <svg class="google-icon me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18px" height="18px">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.5 24c0-1.65-.15-3.22-.42-4.75H24v9h12.75c-.55 2.94-2.22 5.44-4.72 7.12l7.36 5.7C43.69 36.8 46.5 31.07 46.5 24z"/>
+                    <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.98-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.36-5.7c-2.11 1.42-4.81 2.3-8.53 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+                <span>Continue with Google</span>
+            </button>
+        </form>
+
+        <div class="mt-4 pt-2">
+            <a href="{{ login_url }}" class="text-decoration-none small back-link">
+                <i class="bi bi-arrow-left me-2"></i>Return to login options
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Reset structural leakage from naked browser templates */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Changed background to crisp pure white */
+.auth-wrapper {
+    background: #ffffff !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    width: 100%;
+}
+
+/* Clean White Premium Elevation Card */
+.auth-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important; /* Soft border */
+    border-radius: 24px !important;
+    max-width: 440px;
+    width: 100%;
+    /* Soft, modern ambient drop shadow for light interface depth */
+    box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Typography adjusted to high contrast dark colors */
+.auth-title {
+    color: #0f172a !important; /* Deep charcoal slate */
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.auth-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #64748b !important; /* Readable gray Muted slate */
+}
+
+/* Subtle glow behind the gold shield */
+.icon-glow-wrapper {
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+.icon-glow-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: #bf953f;
+    filter: blur(25px);
+    opacity: 0.15; /* Tone down brightness against white background */
+    z-index: -1;
+}
+
+/* Metallic/Gold Text Gradient Effect (Preserved branding) */
+.metallic-text {
+    background: linear-gradient(135deg, #aa771c 0%, #bf953f 50%, #8a5e10 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* Google-Compliant Button Optimized for Light Backgrounds */
+.btn-google-premium {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important; /* Border added to isolate it visually from white card */
+    border-radius: 12px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-google-premium:hover,
+.btn-google-premium:focus {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.btn-google-premium:active {
+    transform: translateY(0);
+}
+
+.google-icon {
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Back Link Interaction Adjusted for Light Themes */
+.back-link {
+    color: #94a3b8 !important;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.back-link:hover {
+    color: #b38728 !important; /* Golden accent shift */
+}
+
+.back-link:hover i {
+    transform: translateX(-3px);
+}
+
+.back-link i {
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+</style>
+{% endblock %}

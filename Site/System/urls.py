@@ -39,5 +39,7 @@ urlpatterns = [
     path("members/partners/", views.partners_list, name="partners_list"),
     path("members/autocomplete/", views.member_autocomplete, name="member_autocomplete"),
     path("saccos/autocomplete/", views.sacco_autocomplete, name="sacco_autocomplete"),
-    path("partners/autocomplete/", views.partner_autocomplete, name="partner_autocomplete"),   
+    path("partners/autocomplete/", views.partner_autocomplete, name="partner_autocomplete"),  
+    path("google-redirect/", views.google_redirect, name="google_redirect"), 
+    path("select-role/", views.select_role, name="select_role"),
 ]

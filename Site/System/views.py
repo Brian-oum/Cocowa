@@ -152,7 +152,50 @@ def custom_login(request):
 
     return render(request, "System/login.html")
 
+@login_required
+def google_redirect(request):
 
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    # STEP 1: NEW USER → must select role
+    if not profile.role:
+        return redirect("select_role")
+
+    # STEP 2: ROLE EXISTS BUT PROFILE NOT COMPLETE
+    if not profile.profile_completed:
+        if profile.role == "individual":
+            return redirect("complete_individual_profile")
+        elif profile.role == "sacco":
+            return redirect("complete_sacco_profile")
+        elif profile.role == "partner":
+            return redirect("complete_partner_profile")
+
+    # STEP 3: FULLY READY USER
+    return redirect("dashboard_redirect")
+@login_required
+def select_role(request):
+
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+
+        role = request.POST.get("role")
+
+        print("ROLE SELECTED:", role)  # DEBUG (check terminal)
+
+        if role not in ["individual", "sacco", "partner"]:
+            return render(request, "System/select_role.html", {
+                "error": "Invalid role selected"
+            })
+
+        profile.role = role
+        profile.save()
+
+        print("ROLE SAVED SUCCESSFULLY")
+
+        return redirect("google_redirect")
+
+    return render(request, "System/select_role.html")
 # ==========================================
 # DASHBOARD REDIRECT (ROLE BASED)
 # ==========================================
