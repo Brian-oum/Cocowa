@@ -1,0 +1,398 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="form-view-container">
+
+    <div class="form-card animate-fade-up" style="--delay: 1;">
+        
+        <!-- HEADER HEADER ZONE -->
+        <div class="form-header-zone">
+            <div class="header-icon-badge">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <div class="header-text-group">
+                <h2>Raise a Ticket</h2>
+                <p class="form-subtitle">
+                    Submit a high-priority ticket regarding membership status, billing anomalies, events, or portal access configurations.
+                </p>
+            </div>
+        </div>
+
+        <hr class="form-divider">
+
+        <!-- PREMIUM FORM LAYOUT -->
+        <form method="POST" class="premium-form-layout">
+            {% csrf_token %}
+
+            <div class="form-group-grid">
+                <!-- CATEGORY SELECTION -->
+                <div class="form-group">
+                    <label class="field-label">Category <span class="required-asterisk">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon-left"><i class="fa-solid fa-layer-group"></i></span>
+                        <select name="category" id="id_category" class="form-control-input" required>
+                            <option value="" disabled selected>Select Category</option>
+                            <option value="membership">Membership</option>
+                            <option value="payment">Payment & Billing</option>
+                            <option value="event">Event Logistics</option>
+                            <option value="account">Account Access</option>
+                            <option value="other">Other Issues</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SUBJECT LINE -->
+                <div class="form-group">
+                    <label class="field-label">Subject <span class="required-asterisk">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon-left"><i class="fa-solid fa-pen-field"></i></span>
+                        <input
+                            type="text"
+                            name="subject"
+                            class="form-control-input"
+                            placeholder="Brief summary of the issue"
+                            required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC SMART CONTEXT HELP BADGE (UX EXPERIENCE UPGRADE) -->
+            <div id="contextHelpPanel" class="context-help-panel hidden-state">
+                <span class="help-badge-icon"><i class="fa-solid fa-circle-info"></i></span>
+                <p id="contextHelpText" class="help-panel-text"></p>
+            </div>
+
+            <!-- DESCRIPTION ARCHITECTURE -->
+            <div class="form-group">
+                <label class="field-label">Detailed Description <span class="required-asterisk">*</span></label>
+                <div class="input-wrapper">
+                    <span class="input-icon-left textarea-icon-align"><i class="fa-solid fa-align-left"></i></span>
+                    <textarea
+                        name="description"
+                        class="form-control-input form-textarea"
+                        rows="5"
+                        placeholder="Please include all relevant timelines, record numbers, or error messages..."
+                        required></textarea>
+                </div>
+            </div>
+
+            <!-- SUBMISSION DECK -->
+            <div class="form-actions-row">
+                <button type="submit" class="btn-submit-premium">
+                    <span class="btn-text">Submit Complaint</span>
+                    <i class="fa-solid fa-paper-plane-top btn-icon-right"></i>
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     SMART CONTEXT LOGIC ENGINE
+========================== -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const categorySelector = document.getElementById('id_category');
+    const helpPanel = document.getElementById('contextHelpPanel');
+    const helpText = document.getElementById('contextHelpText');
+
+    // Contextual hints mappings to elevate input quality
+    const operationalHints = {
+        'membership': '<strong>Membership Hint:</strong> Please specify your Member Number or registered registration ID to speed up verification.',
+        'payment': '<strong>Payment Hint:</strong> Kindly include the M-Pesa Transaction Code, amount, and the precise timestamp of your checkout attempt.',
+        'event': '<strong>Event Hint:</strong> Mention the specific venue location, scheduled date, or event name tracking identifier.',
+        'account': '<strong>Account Hint:</strong> Describe whether you are experiencing credential errors, portal validation failures, or card sync hitches.'
+    };
+
+    categorySelector.addEventListener('change', function() {
+        const selection = this.value;
+        if (operationalHints[selection]) {
+            helpText.innerHTML = operationalHints[selection];
+            helpPanel.classList.remove('hidden-state');
+        } else {
+            helpPanel.classList.add('hidden-state');
+        }
+    });
+});
+</script>
+
+<!-- =========================
+     COMPACT MODERN LUXE CSS
+========================== -->
+<style>
+    :root {
+        --c-blue: #1e3a8a;
+        --c-blue-glow: #1d4ed8;
+        --border-color: #f1f5f9;
+        --border-field: #cbd5e1;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .form-view-container {
+        display: flex;
+        justify-content: center;
+        padding: 15px 0 60px 0;
+        width: 100%;
+    }
+
+    /* ENTRY LOADING ANIMATION */
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(16px);
+        animation: cardSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--delay) * 120ms);
+    }
+
+    @keyframes cardSlideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* CONTAINER ARCHITECTURE */
+    .form-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 800px;
+        padding: 36px;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-premium);
+    }
+
+    /* HEADER BLOCK */
+    .form-header-zone {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .header-icon-badge {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: #fff1f2;
+        color: #f43f5e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .header-text-group h2 {
+        margin: 0 0 4px 0;
+        font-size: 21px;
+        font-weight: 700;
+        color: var(--text-main);
+        letter-spacing: -0.02em;
+    }
+
+    .form-subtitle {
+        margin: 0;
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: var(--text-muted);
+    }
+
+    .form-divider {
+        border: 0;
+        border-top: 1px dashed #e2e8f0;
+        margin: 28px 0;
+    }
+
+    /* INPUT ARCHITECTURE */
+    .premium-form-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+    }
+
+    .form-group-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .field-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .required-asterisk {
+        color: #ef4444;
+        margin-left: 2px;
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .input-icon-left {
+        position: absolute;
+        left: 14px;
+        color: #94a3b8;
+        font-size: 14px;
+        pointer-events: none;
+    }
+
+    .textarea-icon-align {
+        top: 14px;
+    }
+
+    .form-control-input {
+        width: 100%;
+        padding: 12px 14px 12px 42px;
+        font-size: 14px;
+        color: var(--text-main);
+        background-color: #ffffff;
+        border: 1px solid var(--border-field);
+        border-radius: 10px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        outline: none;
+    }
+
+    .form-control-input::placeholder {
+        color: #a1a1aa;
+    }
+
+    .form-control-input:focus {
+        border-color: var(--c-blue);
+        box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.06);
+    }
+
+    /* CUSTOM STYLED SELECT ARROW */
+    select.form-control-input {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        background-size: 13px;
+        padding-right: 40px;
+        cursor: pointer;
+    }
+
+    .form-textarea {
+        resize: vertical;
+        line-height: 1.6;
+        min-height: 110px;
+    }
+
+    /* DYNAMIC CONTEXTUAL HELP DROPDOWN PANEL */
+    .context-help-panel {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        background: #f8fafc;
+        border-left: 3px solid var(--c-blue);
+        padding: 12px 16px;
+        border-radius: 0 10px 10px 0;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        max-height: 100px;
+        opacity: 1;
+        overflow: hidden;
+    }
+
+    .context-help-panel.hidden-state {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        opacity: 0;
+        border-left-width: 0;
+        margin: 0;
+    }
+
+    .help-badge-icon {
+        color: var(--c-blue);
+        font-size: 14px;
+        margin-top: 1px;
+    }
+
+    .help-panel-text {
+        margin: 0;
+        font-size: 13px;
+        color: #475569;
+        line-height: 1.5;
+    }
+
+    /* BUTTON ACTION SETS */
+    .form-actions-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 6px;
+    }
+
+    .btn-submit-premium {
+        background: var(--c-blue);
+        color: #ffffff;
+        border: none;
+        padding: 13px 26px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background 0.2s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s ease;
+        box-shadow: 0 4px 14px rgba(30, 58, 138, 0.12);
+    }
+
+    .btn-submit-premium:hover {
+        background: var(--c-blue-glow);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(30, 58, 138, 0.22);
+    }
+
+    .btn-submit-premium:active {
+        transform: translateY(0);
+    }
+
+    .btn-icon-right {
+        font-size: 13px;
+        transition: transform 0.2s ease;
+    }
+
+    .btn-submit-premium:hover .btn-icon-right {
+        transform: translateX(3px) translateY(-1px);
+    }
+
+    /* BREAKPOINT RULES */
+    @media (max-width: 768px) {
+        .form-group-grid {
+            grid-template-columns: 1fr;
+            gap: 22px;
+        }
+        
+        .form-card {
+            padding: 24px;
+        }
+
+        .form-actions-row {
+            width: 100%;
+        }
+
+        .btn-submit-premium {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

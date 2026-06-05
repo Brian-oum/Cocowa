@@ -5,97 +5,145 @@
 <div class="payment-page-viewport">
     <div class="payment-card-tight payment-card-expanded">
 
+        <!-- =========================
+             HEADER
+        ========================== -->
         <div class="card-header-zone">
             <h1 class="form-title-compact">Complete Your Payment</h1>
-            
+
             <div class="user-greeting-pill">
-                {% if member.first_name and member.second_name %}
+
+                {% if member_type == "individual" %}
                     <p>Hello, <strong>{{ member.first_name }} {{ member.second_name }}</strong></p>
-                {% elif member.sacco_name %}
+
+                {% elif member_type == "sacco" %}
                     <p>Hello, <strong>{{ member.sacco_name }}</strong></p>
-                {% elif member.number_plate %}
-                    <p>Hello, <strong>{{ member.number_plate }}</strong></p>
-                {% elif member.organization_name %}
+
+                {% elif member_type == "partner" %}
                     <p>Hello, <strong>{{ member.organization_name }}</strong></p>
+
                 {% else %}
                     <p>Hello, <strong>Member</strong></p>
                 {% endif %}
-                
-                {% if member.sacco_name %}
-                    <span class="v-counter-tag">({{ member.vehicles.count }} Vehicles)</span>
+
+                {% if member_type == "sacco" %}
+                    <span class="v-counter-tag">
+                        ({{ member.vehicles.count|default:0 }} Vehicles)
+                    </span>
                 {% endif %}
+
             </div>
         </div>
 
+        <!-- =========================
+             BODY GRID
+        ========================== -->
         <div class="payment-split-grid">
-            
+
+            <!-- LEFT PANEL -->
             <div class="panel-column">
+
                 <div class="amount-summary-strip">
+
                     <div class="strip-item">
                         <span class="lbl">Account Type</span>
+
                         <strong class="val">
-                            {% if member.first_name %} Individual
-                            {% elif member.sacco_name %} Sacco
-                            {% elif member.organization_name %} Partner
-                            {% else %} Member {% endif %}
+                            {% if member_type == "individual" %}
+                                Individual
+                            {% elif member_type == "sacco" %}
+                                Sacco
+                            {% elif member_type == "partner" %}
+                                Partner
+                            {% else %}
+                                Member
+                            {% endif %}
                         </strong>
                     </div>
+
                     <div class="strip-item active-amount">
                         <span class="lbl">Total Due</span>
-                        <strong class="val highlight-kes">KES {{ amount }}</strong>
+                        <strong class="val highlight-kes">
+                            KES {{ amount|default:0 }}
+                        </strong>
                     </div>
+
                 </div>
 
                 <div class="instructions-section-compact">
-                    <h3 class="section-heading"><i class="fa-solid fa-mobile-screen"></i> Lipa na M-PESA Paybill</h3>
-                    
+
+                    <h3 class="section-heading">
+                        <i class="fa-solid fa-mobile-screen"></i>
+                        Lipa na M-PESA Paybill
+                    </h3>
+
                     <div class="paybill-info-compact">
+
                         <div class="info-item-box">
                             <span>Business No.</span>
                             <strong>522533</strong>
                         </div>
+
                         <div class="info-item-box">
                             <span>Account No.</span>
                             <strong>9966234</strong>
                         </div>
+
                         <div class="info-item-box">
                             <span>Reference ID</span>
                             <strong>{{ member.id }}</strong>
                         </div>
+
                     </div>
 
                     <ol class="step-list-compact">
-                        <li>Open your phone's M-PESA menu.</li>
-                        <li>Select <strong>Lipa na M-PESA</strong> <i class="fa-solid fa-arrow-right"></i> <strong>Paybill</strong>.</li>
-                        <li>Enter Business Number, Account number, and exactly <strong>KES {{ amount }}</strong>.</li>
+                        <li>Open M-PESA menu.</li>
+                        <li>Select <strong>Lipa na M-PESA → Paybill</strong>.</li>
+                        <li>Enter Business No, Account No, and <strong>KES {{ amount }}</strong>.</li>
                     </ol>
+
                 </div>
+
             </div>
 
+            <!-- RIGHT PANEL -->
             <div class="panel-column verification-panel">
+
                 <div class="verification-section-compact">
-                    <h3 class="section-heading"><i class="fa-solid fa-shield-checkmark"></i> Verify Transaction</h3>
-                    <p class="verification-helper">Enter the official M-PESA alpha-numeric receipt code sent to your mobile device to complete verification.</p>
+
+                    <h3 class="section-heading">
+                        <i class="fa-solid fa-shield"></i>
+                        Verify Transaction
+                    </h3>
+
+                    <p class="verification-helper">
+                        Enter your M-PESA transaction code to complete payment.
+                    </p>
 
                     <form method="POST" class="compact-form">
                         {% csrf_token %}
 
                         <div class="form-group-floating">
-                            <input type="text" 
-                                   name="transaction_code" 
+                            <input type="text"
+                                   name="transaction_code"
                                    id="tx_code"
-                                   placeholder=" " 
+                                   placeholder=" "
                                    autocomplete="off"
                                    style="text-transform: uppercase;"
                                    required>
+
                             <label for="tx_code">M-PESA Transaction Code</label>
                         </div>
 
                         <button type="submit" class="submit-btn-fluid">
-                            <i class="fa-solid fa-circle-check"></i> Verify & Activate Account
+                            <i class="fa-solid fa-circle-check"></i>
+                            Verify & Activate Account
                         </button>
+
                     </form>
+
                 </div>
+
             </div>
 
         </div>

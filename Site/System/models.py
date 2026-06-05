@@ -157,7 +157,7 @@ class IndividualMember(BaseMember):
             self.amount = 3050
 
         # generate membership number ONLY if missing
-        if not self.membership_number:
+        if self.payment_status == "paid" and not self.membership_number:
             self.membership_number = generate_unique_membership_number()
 
         super().save(*args, **kwargs)
@@ -369,14 +369,32 @@ class Complaint(models.Model):
         ("closed", "Closed"),
     ]
 
-    PRIORITY_CHOICES = [
-        ("low", "Low"),
-        ("medium", "Medium"),
-        ("high", "High"),
+    CATEGORY_CHOICES = [
+        ("membership", "Membership"),
+        ("payment", "Payment"),
+        ("event", "Event"),
+        ("account", "Account"),
+        ("other", "Other"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="complaints"
+    )
+
+    ticket_number = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True
+    )
+
+    category = models.CharField(
+        max_length=20,
+        choices=CATEGORY_CHOICES, default="Membership"
+    )
+    subject = models.CharField(max_length=255)
+
     description = models.TextField()
 
     status = models.CharField(
@@ -385,17 +403,23 @@ class Complaint(models.Model):
         default="open"
     )
 
-    priority = models.CharField(
-        max_length=10,
-        choices=PRIORITY_CHOICES,
-        default="medium"
-    )
-
     created_at = models.DateTimeField(auto_now_add=True)
+
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+
+        if not self.ticket_number:
+            last = Complaint.objects.order_by("-id").first()
+
+            next_id = 1 if not last else last.id + 1
+
+            self.ticket_number = f"CMP{str(next_id).zfill(5)}"
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.title
+        return self.ticket_number
 
 class Event(models.Model):
 
@@ -420,3 +444,90 @@ class EventParticipant(models.Model):
     )
 
     registered_at = models.DateTimeField(auto_now_add=True)
+
+class ReportCases(models.Model):
+
+    STATUS_CHOICES = [
+        ("open", "Open"),
+        ("investigating", "Investigating"),
+        ("resolved", "Resolved"),
+        ("closed", "Closed"),
+    ]
+
+    INCIDENT_TYPES = [
+        ("overloading", "Overloading"),
+        ("reckless_driving", "Reckless Driving"),
+        ("misconduct", "Crew Misconduct"),
+        ("fare_overcharge", "Fare Overcharge"),
+        ("harassment", "Harassment"),
+        ("unsafe_vehicle", "Unsafe Vehicle"),
+        ("other", "Other"),
+    ]
+
+    reporter = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="vehicle_incidents"
+    )
+
+    vehicle = models.ForeignKey(
+        Vehicle,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="incident_reports"
+    )
+
+    # Registered SACCO
+    sacco = models.ForeignKey(
+        SaccoMember,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+
+    # Unregistered SACCO
+    external_sacco_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    incident_type = models.CharField(
+        max_length=50,
+        choices=INCIDENT_TYPES
+    )
+
+    description = models.TextField()
+
+    journey_date = models.DateField()
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="open"
+    )
+
+    number_plate = models.CharField(
+        max_length=20,
+        blank=True,
+        default=""
+    )
+
+    vehicle_type = models.CharField(
+        max_length=20,
+        choices=Vehicle.VEHICLE_TYPES,
+        blank=True,
+        default=""
+    )
+
+    route = models.CharField(
+        max_length=255,
+        blank=True,
+        default=""
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.number_plate} - {self.incident_type}"

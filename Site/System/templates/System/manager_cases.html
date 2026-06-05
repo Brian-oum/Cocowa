@@ -1,0 +1,453 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4 main-dashboard-wrapper">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white">
+
+        <div class="card-header bg-white border-bottom border-slate-100 py-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h4 class="mb-0 fw-bold text-slate-900 d-flex align-items-center">
+                <i class="fa-solid fa-clipboard-list me-2.5 text-primary fs-5"></i>
+                Manager Case Dashboard
+            </h4>
+
+            <form method="GET" class="d-flex align-items-center gap-2 filter-form">
+                <div class="input-group input-group-sm">
+                    <label class="input-group-text bg-slate-25 text-slate-500 border-slate-200" for="statusFilter">
+                        <i class="fa-solid fa-filter small"></i>
+                    </label>
+                    <select name="status" id="statusFilter" class="form-select form-select-sm border-slate-200 text-slate-700 fw-medium" style="min-width: 140px;">
+                        <option value="">All Statuses</option>
+                        <option value="open" {% if status == "open" %}selected{% endif %}>Open</option>
+                        <option value="investigating" {% if status == "investigating" %}selected{% endif %}>Investigating</option>
+                        <option value="resolved" {% if status == "resolved" %}selected{% endif %}>Resolved</option>
+                        <option value="closed" {% if status == "closed" %}selected{% endif %}>Closed</option>
+                    </select>
+                </div>
+                <button class="btn btn-sm btn-primary px-3 fw-semibold shadow-xs">
+                    Apply
+                </button>
+            </form>
+        </div>
+
+        <div class="table-responsive" style="overflow-x: auto; min-height: 250px;">
+            <table class="table align-middle mb-0 premium-manager-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;" class="text-center">#</th>
+                        <th style="width: 15%;">Reporter</th>
+                        <th style="width: 14%;">Vehicle</th>
+                        <th style="width: 16%;">SACCO</th>
+                        <th style="width: 22%;">Incident Description</th>
+                        <th style="width: 12%;">Status</th>
+                        <th style="width: 16%;">Date &amp; Time Reported</th>
+                        <th style="width: 10%;" class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for case in cases %}
+                    <tr class="case-row-interactive">
+                        
+                        <td class="text-center text-slate-400 fw-semibold row-number-cell">
+                            {{ forloop.counter }}
+                        </td>
+
+                        <td class="text-slate-800 fw-bold">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-placeholder">{{ case.reporter.username|slice:":1"|upper }}</div>
+                                <span>{{ case.reporter.username }}</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if case.number_plate %}
+                                <span class="vehicle-badge">{{ case.number_plate }}</span>
+                            {% elif case.vehicle %}
+                                <span class="vehicle-badge">{{ case.vehicle.number_plate }}</span>
+                            {% else %}
+                                <span class="text-slate-400 fst-italic fs-7">Unspecified</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-slate-600 fw-medium">
+                            {% if case.sacco %}
+                                {{ case.sacco.sacco_name }}
+                            {% elif case.external_sacco_name %}
+                                {{ case.external_sacco_name }}
+                            {% else %}
+                                <span class="text-slate-400 fst-italic fs-7">Unknown Group</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-slate-900 fw-semibold">
+                            {{ case.get_incident_type_display }}
+                        </td>
+
+                        <td>
+                            <span class="badge-pill pill-{{ case.status }}">
+                                <span class="pill-indicator-dot"></span>
+                                {{ case.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td class="text-slate-500 fs-7">
+                            {{ case.created_at|date:"d M Y" }} 
+                            <span class="text-slate-400 d-block small mt-0.5">{{ case.created_at|date:"H:i" }}</span>
+                        </td>
+
+                        <td class="text-end pe-4">
+
+    <select class="form-select form-select-sm status-select"
+            data-case-id="{{ case.id }}">
+
+        <option value="open" {% if case.status == "open" %}selected{% endif %}>Open</option>
+        <option value="investigating" {% if case.status == "investigating" %}selected{% endif %}>Investigating</option>
+        <option value="resolved" {% if case.status == "resolved" %}selected{% endif %}>Resolved</option>
+        <option value="closed" {% if case.status == "closed" %}selected{% endif %}>Closed</option>
+
+    </select>
+
+</td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 bg-slate-25">
+                            <div class="py-4 text-center">
+                                <i class="fa-solid fa-inbox text-slate-300 fs-1 mb-3"></i>
+                                <h6 class="fw-bold text-slate-700">No Dashboard Case Records Found</h6>
+                                <p class="text-slate-400 small mb-0">Adjust your status filter variables or wait for incoming citizen queries.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+document.querySelectorAll(".status-select").forEach(select => {
+
+    select.addEventListener("change", function () {
+
+        const caseId = this.getAttribute("data-case-id");
+        const status = this.value;
+
+        fetch("{% url 'update_case_status' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                case_id: caseId,
+                status: status
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                this.style.border = "2px solid #22c55e"; // green flash
+                setTimeout(() => {
+                    this.style.border = "";
+                }, 800);
+            } else {
+                alert(data.error || "Update failed");
+            }
+        });
+
+    });
+    select.addEventListener("change", function () {
+
+    const caseId = this.getAttribute("data-case-id");
+    const status = this.value;
+
+    this.classList.add("updating");
+
+    fetch("{% url 'update_case_status' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            case_id: caseId,
+            status: status
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        this.classList.remove("updating");
+
+        if (data.success) {
+            this.classList.add("success");
+
+            setTimeout(() => {
+                this.classList.remove("success");
+            }, 800);
+
+        } else {
+            alert(data.error || "Update failed");
+        }
+    });
+});
+
+});
+</script>
+
+<style>
+/* Color tokens and global canvas settings */
+:root {
+    --primary-indigo: #4f46e5;
+    --primary-indigo-dark: #4338ca;
+    --slate-25: #f8fafc;
+    --slate-50: #f1f5f9;
+    --slate-100: #e2e8f0;
+    --slate-200: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+}
+
+.main-dashboard-wrapper {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f8fafc;
+}
+
+.btn-primary {
+    background-color: var(--primary-indigo) !important;
+    border-color: var(--primary-indigo) !important;
+}
+.btn-primary:hover {
+    background-color: var(--primary-indigo-dark) !important;
+    border-color: var(--primary-indigo-dark) !important;
+}
+
+.bg-slate-25 { background-color: var(--slate-25); }
+.border-slate-100 { border-color: var(--slate-100) !important; }
+.border-slate-200 { border-color: var(--slate-200) !important; }
+.text-slate-900 { color: var(--slate-900); }
+.text-slate-800 { color: var(--slate-800); }
+.text-slate-600 { color: var(--slate-600); }
+.text-slate-500 { color: var(--slate-500); }
+.text-slate-400 { color: var(--slate-400); }
+.fs-7 { font-size: 0.875rem; }
+.fs-8 { font-size: 0.72rem; }
+.shadow-xs { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+
+/* Table Core Architectures */
+.premium-manager-table th {
+    background-color: var(--slate-25);
+    color: var(--slate-500);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--slate-100) !important;
+}
+.premium-manager-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--slate-100);
+    white-space: nowrap;
+}
+
+.case-row-interactive:hover {
+    background-color: rgba(248, 250, 252, 0.7) !important;
+}
+
+/* User Profile Avatar Frame */
+.avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #e0e7ff;
+    color: var(--primary-indigo);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #c7d2fe;
+}
+
+/* Kenyan Styled Vehicle Badge */
+.vehicle-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    background: #fffdf5;
+    border: 1.5px solid #eab308;
+    border-radius: 6px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #1e1b4b;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* Index Number Formatting Column */
+.row-number-cell {
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 13px;
+}
+
+/* Premium Dashboard Status Pills */
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+}
+.pill-indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.pill-open, .pill- { background: #fef3c7; color: #b45309; }
+.pill-open .pill-indicator-dot, .pill- .pill-indicator-dot { background: #d97706; }
+
+.pill-investigating { background: #e0f2fe; color: #0369a1; }
+.pill-investigating .pill-indicator-dot { background: #0284c7; }
+
+.pill-resolved { background: #dcfce7; color: #15803d; }
+.pill-resolved .pill-indicator-dot { background: #16a34a; }
+
+.pill-closed { background: #f1f5f9; color: #475569; }
+.pill-closed .pill-indicator-dot { background: #64748b; }
+
+/* Premium Dropdown Component Modifications */
+.hide-caret::after {
+    display: none !important; /* Removes default clumsy browser layout arrows */
+}
+.btn-light:hover {
+    background-color: var(--slate-50);
+    border-color: var(--slate-200);
+}
+
+.dropdown-item {
+    font-size: 13px;
+    transition: background-color 0.15s ease;
+}
+.dropdown-item:hover {
+    background-color: var(--slate-25);
+}
+
+/* Fixes tables clipping or hiding dropdown menus */
+.table-responsive {
+    position: relative;
+}
+.container-dropdown {
+    position: static; 
+}
+.case-row-interactive {
+    position: relative;
+}
+
+/* Optional smooth fading dynamic transition animation */
+.animate-dropdown {
+    animation: fadeInDropdown 0.12s ease-out;
+}
+@keyframes fadeInDropdown {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* ===========================
+   STATUS DROPDOWN UI (MODERN)
+=========================== */
+
+.status-select {
+    width: 80px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* hover effect */
+.status-select:hover {
+    border-color: #94a3b8;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* focus state (important for UX) */
+.status-select:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* ===========================
+   STATUS COLOR THEMING
+=========================== */
+
+/* OPEN */
+.status-select option[value="open"] {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* INVESTIGATING */
+.status-select option[value="investigating"] {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* RESOLVED */
+.status-select option[value="resolved"] {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* CLOSED */
+.status-select option[value="closed"] {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+/* ===========================
+   LIVE UPDATE FEEDBACK EFFECT
+=========================== */
+
+.status-select.updating {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.status-select.success {
+    border-color: #22c55e !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+/* ===========================
+   ACTION CELL ALIGNMENT
+=========================== */
+
+td.text-end.pe-4 {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* optional spacing fix */
+.status-select {
+    margin-right: 6px;
+}
+</style>
+{% endblock %}

@@ -153,16 +153,11 @@ class SaccoMemberForm(forms.ModelForm):
 
         fields = [
             "sacco_name",
-            "sacco_registration_number",
         ]
 
         widgets = {
 
             "sacco_name": forms.TextInput(attrs={
-                "class": "form-control"
-            }),
-
-            "sacco_registration_number": forms.TextInput(attrs={
                 "class": "form-control"
             }),
         }
@@ -173,7 +168,6 @@ class SaccoMemberForm(forms.ModelForm):
 
         required_fields = [
             "sacco_name",
-            "sacco_registration_number",
         ]
 
         for field in required_fields:
@@ -199,7 +193,6 @@ class PartnerMemberForm(forms.ModelForm):
 
         fields = [
             "organization_name",
-            "donation_amount",
         ]
 
         widgets = {
@@ -208,9 +201,6 @@ class PartnerMemberForm(forms.ModelForm):
                 "class": "form-control"
             }),
 
-            "donation_amount": forms.NumberInput(attrs={
-                "class": "form-control"
-            }),
         }
 
     def clean(self):
@@ -257,22 +247,84 @@ class VehicleForm(forms.ModelForm):
             }),
         }
 
+# ==========================================
+# COMPLAINT FORM (GENERAL SUPPORT TICKET)
+# ==========================================
 class ComplaintForm(forms.ModelForm):
 
     class Meta:
         model = Complaint
-        fields = ["title", "description", "priority"]
+        fields = ["category", "description", "subject"]
+
         widgets = {
-            "title": forms.TextInput(attrs={
+            "subject": forms.TextInput(attrs={
                 "class": "form-control",
-                "placeholder": "Enter complaint title"
+                "placeholder": "Enter the ticket subject"
             }),
+            "category": forms.Select(attrs={
+                "class": "form-control",
+                "placeholder": "Select a ticket category"
+            }),
+
             "description": forms.Textarea(attrs={
                 "class": "form-control",
-                "rows": 4,
-                "placeholder": "Describe your issue"
-            }),
-            "priority": forms.Select(attrs={
-                "class": "form-control"
+                "placeholder": "Describe your issue in detail...",
+                "rows": 3
             }),
         }
+
+    def save(self, commit=True, user=None):
+        complaint = super().save(commit=False)
+
+        # attach logged-in user
+        if user:
+            complaint.user = user
+
+        if commit:
+            complaint.save()
+
+        return complaint
+
+
+# ==========================================
+# VEHICLE INCIDENT REPORT FORM
+# ==========================================
+class VehicleIncidentForm(forms.Form):
+
+    number_plate = forms.CharField(max_length=20)
+
+    sacco = forms.ModelChoiceField(
+        queryset=SaccoMember.objects.all(),
+        required=False,
+        empty_label="Select SACCO (optional)",
+        widget=forms.Select()
+    )
+
+    sacco_name = forms.CharField(
+        required=False,
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            "placeholder": "Or type SACCO name manually"
+        })
+    )
+
+    vehicle_type = forms.ChoiceField(choices=[
+        ("town_service", "Town Service"),
+        ("long_distance", "Long Distance"),
+    ])
+
+    route = forms.CharField(max_length=255)
+
+    incident_type = forms.ChoiceField(choices=[
+        ("overloading", "Overloading"),
+        ("reckless_driving", "Reckless Driving"),
+        ("misconduct", "Crew Misconduct"),
+        ("fare_overcharge", "Fare Overcharge"),
+        ("harassment", "Harassment"),
+        ("unsafe_vehicle", "Unsafe Vehicle"),
+        ("other", "Other"),
+    ])
+
+    journey_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+
+    description = forms.CharField(widget=forms.Textarea)

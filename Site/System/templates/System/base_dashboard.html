@@ -12,8 +12,6 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-
     <style>
         :root {
             --bg-main: #f8fafc;
@@ -353,6 +351,71 @@
                 display: block;
             }
         }
+        .badge-count {
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-left: auto;
+}
+/* Parent item */
+.sidebar-parent {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    color: #e2e8f0;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.sidebar-parent:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+/* Submenu container */
+.sidebar-submenu {
+    display: none;
+    flex-direction: column;
+    margin-left: 28px;
+    margin-top: 5px;
+    padding-left: 10px;
+}
+
+/* Submenu links */
+.sidebar-submenu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.sidebar-submenu a:hover {
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+}
+
+/* Icon rotation */
+.toggle-icon {
+    transition: transform 0.2s ease;
+}
+
+.sidebar-group.open .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Show submenu when active */
+.sidebar-group.open .sidebar-submenu {
+    display: flex;
+}
     </style>
 </head>
 <body>
@@ -386,35 +449,74 @@
 
             {% if request.user.userprofile.role == "individual" %}
                 <a href="{% url 'complete_individual_profile' %}"><i class="fa-solid fa-user-gear"></i> <span class="link-text">My Profile</span></a>
-                <a href="{% url 'payment' member.id %}"><i class="fa-solid fa-credit-card"></i> <span class="link-text">Payments</span></a>
+                <a href="{% url 'payment_page' 'individual' member.id %}"><i class="fa-solid fa-credit-card"></i> <span class="link-text">Payments</span></a>
                 <a href="{% url 'membership_card' %}"><i class="fa-solid fa-id-card"></i> <span class="link-text">Membership Card</span></a>
+                <a href="{% url 'raise_complaint' %}"><i class="fa-solid fa-ticket"></i><span class="link-text">Raise Complaint</span></a>
+                <a href="{% url 'my_complaints' %}"><i class="fa-solid fa-inbox"></i><span class="link-text">My Complaints</span></a>
+                <a href="{% url 'report_cases' %}"><i class="fa-solid fa-triangle-exclamation"></i><span class="link-text">Report Case</span></a>
+                <a href="{% url 'my_cases' %}"><i class="fa-solid fa-car-burst"></i><span class="link-text">My Cases</span></a>
             {% endif %}
 
             {% if request.user.userprofile.role == "sacco" %}
                 <a href="{% url 'complete_sacco_profile' %}"><i class="fa-solid fa-building-shield"></i> <span class="link-text">Sacco Profile</span></a>
                 <a href="#"><i class="fa-solid fa-bus"></i> <span class="link-text">Vehicles</span></a>
-                <a href="{% url 'payment' member.id %}"><i class="fa-solid fa-wallet"></i> <span class="link-text">Payments</span></a>
+                <a href="{% url 'payment_page' 'sacco' member.id %}"><i class="fa-solid fa-wallet"></i> <span class="link-text">Payments</span></a>
                 <a href="{% url 'membership_card' %}"><i class="fa-solid fa-id-card"></i> <span class="link-text">Membership Card</span></a>
+                <a href="{% url 'raise_complaint' %}"><i class="fa-solid fa-ticket"></i><span class="link-text">Raise Ticket</span></a>
+                <a href="{% url 'my_complaints' %}"><i class="fa-solid fa-inbox"></i><span class="link-text">My Tickets</span></a>
                 <a href="#"><i class="fa-solid fa-chart-line"></i> <span class="link-text">Reports</span></a>
             {% endif %}
 
             {% if request.user.userprofile.role == "partner" %}
                 <a href="{% url 'complete_partner_profile' %}"><i class="fa-solid fa-handshake"></i> <span class="link-text">Organization Profile</span></a>
                 <a href="{% url 'partner_donation' %}"><i class="fa-solid fa-hand-holding-dollar"></i><span class="link-text">Make Donation</span></a>
-                <a href="{% url 'payment' member.id %}"><i class="fa-solid fa-credit-card"></i> <span class="link-text">Payments</span></a>
+                <a href="{% url 'payment_page' 'partner' member.id %}"><i class="fa-solid fa-credit-card"></i> <span class="link-text">Payments</span></a>
                 <a href="{% url 'partner_report' %}"><i class="fa-solid fa-file-invoice-dollar"></i> <span class="link-text">Reports</span></a>
+                <a href="{% url 'raise_complaint' %}"><i class="fa-solid fa-ticket"></i><span class="link-text">Raise Complaint</span></a>
+                <a href="{% url 'my_complaints' %}"><i class="fa-solid fa-inbox"></i><span class="link-text">My Complaints</span></a>
             {% endif %}
 
             {% if request.user.userprofile.role == "manager" %}
-                <a href=""><i class="fa-solid fa-users"></i><span class="link-text">All Members</span></a>
-                <a href=""><i class="fa-solid fa-user"></i><span class="link-text">Individuals</span></a>
-                <a href=""><i class="fa-solid fa-building"></i><span class="link-text">SACCOs</span></a>
-                <a href=""><i class="fa-solid fa-handshake"></i><span class="link-text">Partners</span></a>
-                <a href=""><i class="fa-solid fa-credit-card"></i><span class="link-text">Payments</span></a>
+            
+                <!-- PARENT MENU -->
+<div class="sidebar-group">
+
+    <a href="javascript:void(0)" class="sidebar-parent" id="membersToggle">
+        <i class="fa-solid fa-users"></i>
+        <span class="link-text">All Members</span>
+        <i class="fa-solid fa-chevron-down ms-auto toggle-icon"></i>
+    </a>
+
+    <!-- CHILD MENU -->
+    <div class="sidebar-submenu" id="membersSubmenu">
+
+        <a href="{% url 'individuals_list' %}">
+            <i class="fa-solid fa-user"></i>
+            <span class="link-text">Individuals</span>
+        </a>
+
+        <a href="{% url 'sacco_list' %}">
+            <i class="fa-solid fa-building"></i>
+            <span class="link-text">SACCOs</span>
+        </a>
+
+        <a href="{% url 'partners_list' %}">
+            <i class="fa-solid fa-handshake"></i>
+            <span class="link-text">Partners</span>
+        </a>
+
+    </div>
+
+</div>
                 <a href=""><i class="fa-solid fa-bus"></i><span class="link-text">Vehicles</span></a>
-                <a href=""><i class="fa-solid fa-chart-line"></i><span class="link-text">Reports</span></a>
-                <a href=""><i class="fa-solid fa-triangle-exclamation"></i><span class="link-text">Complaints</span></a>
-                <a href=""><i class="fa-solid fa-calendar-check"></i><span class="link-text">Events</span></a>
+                <a href="{% url 'manager_report' %}"><i class="fa-solid fa-chart-line"></i><span class="link-text">Reports</span></a>
+                <a href="{% url 'manager_complaints' %}"><i class="fa-solid fa-triangle-exclamation"></i>
+                <span class="link-text">Complaints</span>
+                {% if  complaint_count%}
+                    <span class="badge-count">{{ complaint_count }}</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'manager_cases' %}"><i class="fa-solid fa-clipboard-list me-2"></i><span class="link-text">Reported Cases</span></a>
             {% endif %}
             <hr>
 
@@ -457,6 +559,9 @@
 </div>
 
 <script>
+    document.getElementById("membersToggle").addEventListener("click", function () {
+    document.querySelector(".sidebar-group").classList.toggle("open");
+    });
     document.addEventListener("DOMContentLoaded", function() {
         const sidebar = document.getElementById('dashboardSidebar');
         const desktopToggle = document.getElementById('sidebarToggle');
@@ -499,6 +604,7 @@
         if(window.location.pathname === "/dashboard/" || window.location.pathname === "/redirect/") {
             document.getElementById('nav-dashboard')?.classList.add('active');
         }
+        
     });
 </script>
 

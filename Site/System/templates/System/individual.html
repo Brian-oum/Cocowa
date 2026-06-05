@@ -5,145 +5,504 @@
 <div class="dashboard-container">
 
     <!-- =========================
-         ALERTS (INSIGHTS)
-    ========================== -->
+         FLOATING ALERTS (AUTO-DISMISS)
+        ========================== -->
     {% if alerts %}
-    <div class="toast-wrapper">
+    <div class="toast-wrapper" id="toastWrapper">
         {% for alert in alerts %}
-        <div class="toast-alert">
+        <div class="toast-alert animate-slide-in">
             <div class="toast-icon">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+                <i class="fa-solid fa-circle-exclamation"></i>
             </div>
             <div class="toast-content">
+                <span class="toast-title">System Alert</span>
                 <p class="toast-message">{{ alert }}</p>
             </div>
+            <button class="toast-close-btn" onclick="this.parentElement.remove()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
     <!-- =========================
-         KEY METRICS
-    ========================== -->
-    <div class="summary-4-grid">
-
-        <div class="metrics-card">
-            <div class="metrics-icon icon-blue"><i class="fa-solid fa-users"></i></div>
-            <div>
-                <p class="metrics-label">Total Members</p>
-                <h3>{{ total_members }}</h3>
+         SUMMARY ROW (4 CARDS)
+        ========================== -->
+    <div class="summary-4-grid animate-fade-up" style="--delay: 1;">
+        <!-- Card 1 -->
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-blue"><i class="fa-solid fa-heart-pulse"></i></div>
+            <div class="metrics-info">
+                <p class="metrics-label">Health Score</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ health_score|default:0 }}">0</span><span class="val-denominator">/100</span>
+                </h3>
             </div>
         </div>
 
-        <div class="metrics-card">
-            <div class="metrics-icon icon-green"><i class="fa-solid fa-user-check"></i></div>
-            <div>
-                <p class="metrics-label">Payment Rate</p>
-                <h3>{{ payment_rate }}%</h3>
+        <!-- Card 2 -->
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon {% if member.payment_status == 'paid' %}icon-green{% else %}icon-red{% endif %}">
+                {% if member.payment_status == "paid" %}
+                    <i class="fa-solid fa-circle-check"></i>
+                {% else %}
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                {% endif %}
+            </div>
+            <div class="metrics-info">
+                <p class="metrics-label">Payment Status</p>
+                <h3 class="metrics-value">
+                    {% if member.payment_status == "paid" %}
+                        <span class="status-active">ACTIVE</span>
+                    {% else %}
+                        <span class="status-pending">PENDING</span>
+                    {% endif %}
+                </h3>
             </div>
         </div>
 
-        <div class="metrics-card">
-            <div class="metrics-icon icon-amber"><i class="fa-solid fa-coins"></i></div>
-            <div>
-                <p class="metrics-label">Total Revenue</p>
-                <h3>KES {{ total_revenue }}</h3>
+        <!-- Card 3 -->
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-amber"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="metrics-info">
+                <p class="metrics-label">Renewal In</p>
+                <h3 class="metrics-value">
+                    <span class="count-ticker" data-count-target="{{ days_to_renewal|default:0 }}">0</span> <span class="val-denominator">days</span>
+                </h3>
             </div>
         </div>
 
-        <div class="metrics-card">
-            <div class="metrics-icon icon-purple"><i class="fa-solid fa-trophy"></i></div>
-            <div>
-                <p class="metrics-label">Top Sector</p>
-                <h3>{{ dominant_sector }}</h3>
+        <!-- Card 4 -->
+        <div class="metrics-card interactive-hover">
+            <div class="metrics-icon icon-purple"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+            <div class="metrics-info">
+                <p class="metrics-label">Outstanding Balance</p>
+                <h3 class="metrics-value KES-value">
+                    KES <span class="count-ticker" data-count-target="{{ balance|default:0 }}">0</span>
+                </h3>
             </div>
         </div>
-
     </div>
 
     <!-- =========================
-         INSIGHT ROW
-    ========================== -->
+         MAIN SECTION
+        ========================== -->
     <div class="dashboard-main-split">
+        
+        <!-- LEFT SIDE: PROFILE COMPLETION & FINANCIAL SUMMARY -->
+        <div class="split-left-column animate-fade-up" style="--delay: 2;">
+            
+            <!-- PROFILE COMPLETION -->
+            <div class="ui-card profile-progress-card interactive-hover">
+                <h3 class="card-title">Profile Completion</h3>
+                <div class="profile-progress-layout">
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                        <div class="chart-center-label">
+                            <span class="pct-num"><span class="count-ticker" data-count-target="{{ progress|default:0 }}">0</span>%</span>
+                        </div>
+                    </div>
+                    <div class="progress-details">
+                        <div class="progress-item-row">
+                            <span class="dot-indicator dot-completed"></span>
+                            <div>
+                                <span class="detail-label">Completed</span>
+                                <h4 class="detail-value"><span class="count-ticker" data-count-target="{{ progress|default:0 }}">0</span>%</h4>
+                            </div>
+                        </div>
+                        <div class="progress-item-row">
+                            <span class="dot-indicator dot-remaining"></span>
+                            <div>
+                                <span class="detail-label">Remaining Bit</span>
+                                <h4 class="detail-value"><span class="count-ticker" data-count-target="{{ remaining|default:0 }}">0</span>%</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- PIE -->
-        <div class="ui-card">
-            <h3 class="card-title">Member Distribution</h3>
-            <canvas id="pieChart"></canvas>
+            <!-- FINANCIAL SUMMARY -->
+            <div class="ui-card financial-card interactive-hover">
+                <h3 class="card-title">Financial Summary</h3>
+                <div class="financial-row-container">
+                    <div class="finance-block">
+                        <span class="fin-lbl">Amount Due</span>
+                        <h3 class="fin-val val-due">KES <span class="count-ticker" data-count-target="{{ amount_due|default:0 }}">0</span></h3>
+                    </div>
+                    <div class="finance-block">
+                        <span class="fin-lbl">Total Paid</span>
+                        <h3 class="fin-val val-paid">KES <span class="count-ticker" data-count-target="{{ amount_paid|default:0 }}">0</span></h3>
+                    </div>
+                    <div class="finance-block">
+                        <span class="fin-lbl">Net Balance</span>
+                        <h3 class="fin-val val-balance">KES <span class="count-ticker" data-count-target="{{ balance|default:0 }}">0</span></h3>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- BAR -->
-        <div class="ui-card">
-            <h3 class="card-title">Revenue Comparison</h3>
-            <canvas id="barChart"></canvas>
+        <!-- RIGHT SIDE: MEMBERSHIP OVERVIEW -->
+        <div class="split-right-column animate-fade-up" style="--delay: 3;">
+            <div class="ui-card membership-overview-card interactive-hover">
+                <h3 class="card-title">Membership Overview</h3>
+                
+                <div class="overview-list">
+                    <div class="overview-item">
+                        <span class="ov-label"><i class="fa-solid fa-box-archive"></i> Package</span>
+                        <span class="ov-value-highlight">{{ member.package }}</span>
+                    </div>
+                    <div class="overview-item">
+                        <span class="ov-label"><i class="fa-solid fa-calendar-check"></i> Duration</span>
+                        <span class="ov-value">{{ membership_years }} Years</span>
+                    </div>
+                    <div class="overview-item">
+                        <span class="ov-label"><i class="fa-solid fa-bolt"></i> Days Active</span>
+                        <span class="ov-value"><span class="count-ticker" data-count-target="{{ membership_days|default:0 }}">0</span> Days</span>
+                    </div>
+                    <div class="overview-item">
+                        <span class="ov-label"><i class="fa-solid fa-clock-rotate-left"></i> Renewal Date</span>
+                        <span class="ov-value">{{ renewal_date }}</span>
+                    </div>
+                </div>
+
+                <div class="package-info-footer-box">
+                    <h5>Package Insights</h5>
+                    <p>{{ package_info }}</p>
+                </div>
+            </div>
         </div>
 
-    </div>
-
-    <!-- =========================
-         DEEP INSIGHTS TABLE
-    ========================== -->
-    <div class="ui-card">
-        <h3 class="card-title">Revenue Efficiency (Avg per Member)</h3>
-
-        <table style="width:100%; text-align:left;">
-            <tr>
-                <th>Type</th>
-                <th>Average Revenue</th>
-            </tr>
-            <tr>
-                <td>Individual</td>
-                <td>KES {{ avg_individual|floatformat:0 }}</td>
-            </tr>
-            <tr>
-                <td>Sacco</td>
-                <td>KES {{ avg_sacco|floatformat:0 }}</td>
-            </tr>
-            <tr>
-                <td>Partner</td>
-                <td>KES {{ avg_partner|floatformat:0 }}</td>
-            </tr>
-        </table>
     </div>
 
 </div>
 
 <!-- =========================
-     CHARTS
-========================== -->
+     INTERACTION & CHARTS SCRIPTS
+    ========================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-const pie = new Chart(document.getElementById("pieChart"), {
-    type: "pie",
-    data: {
-        labels: ["Individual", "Sacco", "Partner"],
-        datasets: [{
-            data: [
-                {{ individual_members }},
-                {{ sacco_members }},
-                {{ partner_members }}
-            ],
-            backgroundColor: ["#1e3a8a", "#f59e0b", "#8b5cf6"]
-        }]
-    }
-});
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. ODOMETER/NUMBER TICKER ENGINE
+    const tickers = document.querySelectorAll('.count-ticker');
+    const animationDuration = 3000; // Total duration of the animation in ms
 
-const bar = new Chart(document.getElementById("barChart"), {
-    type: "bar",
-    data: {
-        labels: ["Individual", "Sacco", "Partner"],
-        datasets: [{
-            label: "Revenue (KES)",
-            data: [
-                {{ individual_revenue }},
-                {{ sacco_revenue }},
-                {{ partner_revenue }}
-            ],
-            backgroundColor: ["#1e3a8a", "#f59e0b", "#8b5cf6"]
-        }]
+    tickers.forEach(ticker => {
+        const targetValue = parseFloat(ticker.getAttribute('data-count-target'));
+        if (isNaN(targetValue) || targetValue === 0) {
+            ticker.textContent = '0';
+            return;
+        }
+
+        const startTime = performance.now();
+        
+        function updateNumber(currentTime) {
+            const elapsedTime = currentTime - startTime;
+            const progress = Math.min(elapsedTime / animationDuration, 1);
+            
+            // Out-cubic easing calculation curve for smooth decelerating stop
+            const easeProgress = 1 - Math.pow(1 - progress, 3);
+            const currentValue = easeProgress * targetValue;
+
+            // Format appropriately if it has a decimal point or is zero balance
+            if (targetValue % 1 === 0) {
+                ticker.textContent = Math.floor(currentValue).toLocaleString();
+            } else {
+                ticker.textContent = currentValue.toFixed(2).toLocaleString();
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(updateNumber);
+            } else {
+                ticker.textContent = targetValue.toLocaleString();
+            }
+        }
+        
+        requestAnimationFrame(updateNumber);
+    });
+
+    // 2. DOUGHNUT CHART SETUP WITH ACCELERATED PATH ANIMATION
+    const ctx = document.getElementById('progressChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Remaining'],
+                datasets: [{
+                    data: [{{ progress|default:0 }}, {{ remaining|default:0 }}],
+                    backgroundColor: ['#1e3a8a', '#e2e8f0'],
+                    hoverBackgroundColor: ['#1e3a8a', '#e2e8f0'],
+                    borderWidth: 0,
+                    weight: 0.5
+                }]
+            },
+            options: {
+                cutout: '82%',
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: animationDuration,
+                    easing: 'easeOutCubic'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            }
+        });
     }
+
+    // 3. TOAST SYSTEM
+    const alerts = document.querySelectorAll('.toast-alert');
+    alerts.forEach((alert, index) => {
+        setTimeout(() => {
+            alert.classList.remove('animate-slide-in');
+            alert.classList.add('animate-fade-out');
+            setTimeout(() => { alert.remove(); }, 400);
+        }, 4500 + (index * 800));
+    });
 });
 </script>
 
+<!-- =========================
+     COMPACT REFINED SYSTEM CSS
+    ========================== -->
+<style>
+    :root {
+        --c-blue: #1e3a8a;
+        --c-green: #10b981;
+        --c-red: #ef4444;
+        --c-amber: #f59e0b;
+        --c-purple: #8b5cf6;
+        --border-color: #f1f5f9;
+        --shadow-sm: 0 4px 18px -4px rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+    }
+
+    /* GLOBAL ENTRY LOADING STAGGER ANIMATIONS */
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeUpOnLoad 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--delay) * 120ms);
+    }
+
+    @keyframes fadeUpOnLoad {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* SMOOTH HOVER STATES */
+    .interactive-hover {
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease !important;
+    }
+    .interactive-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    /* TOAST STYLE ALERTS */
+    .toast-wrapper {
+        position: fixed;
+        top: 25px;
+        right: 25px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 380px;
+        width: 100%;
+    }
+
+    .toast-alert {
+        background: #ffffff;
+        border-left: 4px solid var(--c-red);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .toast-icon { color: var(--c-red); font-size: 18px; margin-top: 2px; }
+    .toast-content { flex: 1; }
+    .toast-title { display: block; font-weight: 700; font-size: 13px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .toast-message { margin: 0; font-size: 13px; color: #475569; line-height: 1.4; }
+    .toast-close-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 2px; }
+
+    .animate-slide-in { animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards; }
+    .animate-fade-out { opacity: 0; transform: translateY(-15px) scale(0.95); }
+    @keyframes slideIn {
+        from { transform: translateX(120%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* 4-COLUMN SUMMARY GRID */
+    .summary-4-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .metrics-card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .metrics-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .icon-blue { background: #eff6ff; color: var(--c-blue); }
+    .icon-green { background: #ecfdf5; color: var(--c-green); }
+    .icon-red { background: #fef2f2; color: var(--c-red); }
+    .icon-amber { background: #fffbeb; color: var(--c-amber); }
+    .icon-purple { background: #f5f3ff; color: var(--c-purple); }
+
+    .metrics-info { flex: 1; }
+    .metrics-label { margin: 0 0 4px 0; font-size: 13px; color: #64748b; font-weight: 500; }
+    .metrics-value { margin: 0; font-size: 20px; font-weight: 700; color: #0f172a; }
+    .val-denominator { font-size: 13px; color: #94a3b8; font-weight: 400; }
+    .status-active { color: var(--c-green); font-size: 16px; }
+    .status-pending { color: var(--c-amber); font-size: 16px; }
+    .KES-value { font-size: 18px; color: #334155; }
+
+    /* LAYOUT CONTENT SPLIT */
+    .dashboard-main-split {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    .split-left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .ui-card {
+        background: #ffffff;
+        padding: 26px;
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+    .card-title { margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #1e293b; }
+
+    /* PROFILE INNER CONFIGURATION */
+    .profile-progress-layout {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        flex-shrink: 0;
+    }
+
+    .chart-center-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    .pct-num { font-size: 22px; font-weight: 700; color: var(--c-blue); }
+
+    .progress-details {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        flex: 1;
+    }
+
+    .progress-item-row { display: flex; align-items: center; gap: 12px; }
+    .dot-indicator { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-completed { background: var(--c-blue); }
+    .dot-remaining { background: #e2e8f0; }
+    .detail-label { display: block; font-size: 12px; color: #64748b; font-weight: 500; }
+    .detail-value { margin: 2px 0 0 0; font-size: 15px; font-weight: 600; color: #0f172a; }
+
+    /* FINANCIAL ROW CONFIGURATION */
+    .financial-row-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .finance-block { text-align: left; }
+    .fin-lbl { font-size: 12px; color: #64748b; font-weight: 500; display: block; margin-bottom: 4px; }
+    .fin-val { margin: 0; font-size: 15px; font-weight: 700; }
+    .val-due { color: #334155; }
+    .val-paid { color: var(--c-green); }
+    .val-balance { color: var(--c-red); }
+
+    /* RIGHT COLUMN OVERVIEW CARD */
+    .overview-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .overview-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+    .overview-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .ov-label { font-size: 13px; color: #475569; display: flex; align-items: center; gap: 8px; }
+    .ov-label i { color: #94a3b8; width: 16px; }
+    .ov-value { font-size: 14px; font-weight: 600; color: #1e293b; }
+    .ov-value-highlight { background: #eff6ff; color: var(--c-blue); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 13px; }
+
+    .package-info-footer-box { background: #f1f5f9; padding: 14px 18px; border-radius: 12px; }
+    .package-info-footer-box h5 { margin: 0 0 6px 0; color: #475569; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    .package-info-footer-box p { margin: 0; font-size: 13px; color: #64748b; line-height: 1.4; }
+
+    /* RESPONSIVE RENDERING */
+    @media (max-width: 1100px) {
+        .summary-4-grid { grid-template-columns: repeat(2, 1fr); }
+        .dashboard-main-split { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+        .summary-4-grid { grid-template-columns: 1fr; }
+        .financial-row-container { grid-template-columns: 1fr; gap: 16px; }
+        .profile-progress-layout { flex-direction: column; gap: 20px; align-items: flex-start; }
+    }
+</style>
 {% endblock %}
