@@ -1,10 +1,28 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 import re
-
+from django.utils import timezone
+import random 
+import datetime
 User = get_user_model()
 
+class EmailOTP(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="email_otp")
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
 
+    def generate_otp(self):
+        """Generates a random 6-digit number and timestamps it."""
+        self.otp_code = f"{random.randint(100000, 999999)}"
+        self.created_at = timezone.now()
+        self.is_verified = False
+        self.save()
+
+    def is_valid(self):
+        """Returns True if OTP is verified within a 10-minute validity window."""
+        expiration_time = self.created_at + datetime.timedelta(minutes=10)
+        return timezone.now() < expiration_time
 # ==========================================
 # GENERATE MEMBERSHIP NUMBER
 # ==========================================
@@ -57,7 +75,7 @@ class UserProfile(models.Model):
 
     role = models.CharField(
         max_length=20,
-        choices=ROLE_CHOICES
+        choices=ROLE_CHOICES, null=True, blank=True
     )
 
     phone_number = models.CharField(

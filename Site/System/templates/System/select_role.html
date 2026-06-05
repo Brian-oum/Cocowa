@@ -1,0 +1,245 @@
+{% block content %}
+<!-- Inter Font & Premium Icon Packs -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<div class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5 px-3">
+    <div class="auth-card p-4 p-md-5">
+        
+        <!-- Premium Branding Header -->
+        <div class="text-center mb-4">
+            <div class="brand-icon mb-3">
+                <div class="icon-glow-wrapper">
+                    <i class="bi bi-person-badge metallic-text fs-1"></i>
+                </div>
+            </div>
+            <h2 class="auth-title mb-2">Select Your Account Type</h2>
+            <p class="auth-subtitle text-muted">Choose your membership tier to customize your experience dashboard.</p>
+        </div>
+
+        <!-- Inline Error Alerts -->
+        {% if error %}
+            <div class="alert alert-danger-custom p-3 mb-4 small d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-6"></i> 
+                <span>{{ error }}</span>
+            </div>
+        {% endif %}
+
+        <form method="POST" id="roleSelectionForm">
+            {% csrf_token %}
+
+            <!-- Interactive Selection Stack -->
+            <div class="role-cards-container d-flex flex-column gap-3 mb-4">
+                
+                <!-- Individual Card -->
+                <label class="role-premium-card d-flex align-items-center p-3" for="role_individual">
+                    <input type="radio" name="role" id="role_individual" value="individual" required class="d-none">
+                    <div class="role-icon-box d-flex align-items-center justify-content-center me-3">
+                        <i class="bi bi-person-fill fs-4"></i>
+                    </div>
+                    <div class="role-details text-start flex-grow-1">
+                        <span class="role-name d-block fw-semibold">Individual Member</span>
+                        <span class="role-description text-muted small">Access personal registration benefits & smart tools.</span>
+                    </div>
+                    <div class="select-indicator ms-2">
+                        <i class="bi bi-circle indicator-icon"></i>
+                    </div>
+                </label>
+
+                <!-- SACCO Card -->
+                <label class="role-premium-card d-flex align-items-center p-3" for="role_sacco">
+                    <input type="radio" name="role" id="role_sacco" value="sacco" class="d-none">
+                    <div class="role-icon-box d-flex align-items-center justify-content-center me-3">
+                        <i class="bi bi-bus-front-fill fs-4"></i>
+                    </div>
+                    <div class="role-details text-start flex-grow-1">
+                        <span class="role-name d-block fw-semibold">SACCO Member</span>
+                        <span class="role-description text-muted small">Manage fleet units, operators, and route tracking.</span>
+                    </div>
+                    <div class="select-indicator ms-2">
+                        <i class="bi bi-circle indicator-icon"></i>
+                    </div>
+                </label>
+
+                <!-- Partner Card -->
+                <label class="role-premium-card d-flex align-items-center p-3" for="role_partner">
+                    <input type="radio" name="role" id="role_partner" value="partner" class="d-none">
+                    <div class="role-icon-box d-flex align-items-center justify-content-center me-3">
+                        <i class="bi bi-building-fill-check fs-4"></i>
+                    </div>
+                    <div class="role-details text-start flex-grow-1">
+                        <span class="role-name d-block fw-semibold">Partner Organization</span>
+                        <span class="role-description text-muted small">Execute collaborative reporting & corporate management.</span>
+                    </div>
+                    <div class="select-indicator ms-2">
+                        <i class="bi bi-circle indicator-icon"></i>
+                    </div>
+                </label>
+
+            </div>
+
+            <!-- Action Trigger Button -->
+            <button type="submit" class="btn btn-premium w-100 py-3 fw-bold text-uppercase tracking-wider">
+                Continue Configuration <i class="bi bi-arrow-right-short ms-1 fs-5 align-middle"></i>
+            </button>
+        </form>
+
+        <div class="mt-4 text-center">
+            <a href="{% url 'logout' %}" class="text-decoration-none small cancel-link">
+                <i class="bi bi-box-arrow-left me-1"></i> Cancel & Sign Out
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Luxe UI Core Styles -->
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+}
+.auth-wrapper {
+    background: #ffffff !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    width: 100%;
+}
+.auth-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 24px !important;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08) !important;
+}
+.auth-title {
+    color: #0f172a !important;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+.auth-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #64748b !important;
+}
+.icon-glow-wrapper {
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+.icon-glow-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: #bf953f;
+    filter: blur(25px);
+    opacity: 0.15;
+    z-index: -1;
+}
+.metallic-text {
+    background: linear-gradient(135deg, #aa771c 0%, #bf953f 50%, #8a5e10 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* Premium Card Selection Styles */
+.role-premium-card {
+    cursor: pointer;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    background: #f8fafc;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+.role-premium-card:hover {
+    border-color: #94a3b8;
+    background: #f1f5f9;
+    transform: translateY(-1px);
+}
+.role-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+.role-name {
+    color: #334155;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+}
+.role-description {
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+.indicator-icon {
+    color: #cbd5e1;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+/* Dynamic Checked Interactivity States via CSS trickery */
+.role-premium-card:has(input[type="radio"]:checked) {
+    background-color: #ffffff !important;
+    border-color: #bf953f !important;
+    box-shadow: 0 0 0 4px rgba(191, 149, 63, 0.12), 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+}
+.role-premium-card:has(input[type="radio"]:checked) .role-icon-box {
+    background: linear-gradient(135deg, #bf953f 0%, #b38728 100%);
+    color: #ffffff;
+    border-color: transparent;
+}
+.role-premium-card:has(input[type="radio"]:checked) .role-name {
+    color: #0f172a;
+}
+.role-premium-card:has(input[type="radio"]:checked) .indicator-icon {
+    color: #bf953f;
+    font-style: normal;
+}
+.role-premium-card:has(input[type="radio"]:checked) .indicator-icon::before {
+    content: "\f2f6"; /* Bootstrap-icon matching bi-check-circle-fill */
+}
+
+/* Premium Layout Button Components */
+.btn-premium {
+    background: linear-gradient(135deg, #bf953f 0%, #b38728 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 4px 12px rgba(179, 135, 40, 0.15);
+}
+.btn-premium:hover {
+    background: linear-gradient(135deg, #aa771c 0%, #b38728 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(179, 135, 40, 0.3) !important;
+}
+.alert-danger-custom {
+    background: #fef2f2 !important;
+    border: 1px solid #fee2e2 !important;
+    border-radius: 12px !important;
+    color: #b91c1c !important;
+    text-align: left;
+}
+.cancel-link {
+    color: #94a3b8 !important;
+    transition: color 0.2s ease;
+    display: inline-block;
+}
+.cancel-link:hover {
+    color: #ef4444 !important;
+}
+</style>
+{% endblock %}
