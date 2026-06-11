@@ -2,12 +2,13 @@
 {% load static %}
 
 {% block content %}
+
 <div class="status-page">
     <div class="status-card">
 
-        {# ===================== PENDING ===================== #}
         {% if member.payment_status == 'pending' %}
 
+            <!-- Pending State -->
             <div class="status-icon-container">
                 <div class="loader"></div>
             </div>
@@ -15,7 +16,7 @@
             <h2>Payment Under Review</h2>
 
             <p>
-                Hello 
+                Hello
                 <strong>
                     {% if role == "individual" %}
                         {{ member.first_name }}
@@ -25,69 +26,103 @@
                         {{ member.organization_name }}
                     {% endif %}
                 </strong>,
-                your payment is being verified.
+                your payment is currently being verified by our team.
             </p>
 
-            <div class="status-badge pending">Pending</div>
+            <p>
+                This page will automatically update once verification is complete.
+            </p>
 
-        {# ===================== SUCCESS ===================== #}
+            <div class="status-badge pending">
+                Pending Verification
+            </div>
+
         {% elif member.payment_status == 'paid' %}
 
+            <!-- Success State -->
             <div class="status-icon-container">
                 <div class="success-checkmark">
-                    <div class="check-icon">
-                        <span class="icon-line line-tip"></span>
-                        <span class="icon-line line-long"></span>
-                        <div class="icon-circle"></div>
-                        <div class="icon-fix"></div>
-                    </div>
+                    <div class="check-icon"></div>
                 </div>
             </div>
 
-            <h2>Payment Successful</h2>
+            {% if role == "partner" %}
 
-            <p>
-                Welcome, 
-                <strong>
-                    {% if role == "individual" %}
-                        {{ member.first_name }}
-                    {% elif role == "sacco" %}
-                        {{ member.sacco_name }}
-                    {% elif role == "partner" %}
-                        {{ member.organization_name }}
-                    {% endif %}
-                </strong>!
-            </p>
+                <h2>Contribution Confirmed</h2>
 
-            <p>Your Membership Number:</p>
+                <p>
+                    Thank you,
+                    <strong>{{ member.organization_name }}</strong>,
+                    for supporting the Cocowa initiative.
+                </p>
 
-            <p><strong>{{ member.membership_number }}</strong></p>
+                <p>
+                    Your contribution has been successfully received and verified.
+                    Your partnership helps us empower communities, support sustainable
+                    development, and create meaningful impact.
+                </p>
 
-            <div class="status-badge success">Activated</div>
+                <p>
+                    We appreciate your commitment and look forward to working together
+                    to achieve our shared goals.
+                </p>
 
-            <div class="action-footer">
-                <a href="{% url 'download_membership_card' %}" class="btn-outline">
-                    Download Membership Card
-                </a>
-            </div>
+                <div class="status-badge success">
+                    Contribution Confirmed
+                </div>
 
-        {# ===================== REJECTED ===================== #}
+            {% else %}
+
+                <h2>Membership Activated</h2>
+
+                <p>
+                    Welcome,
+                    <strong>
+                        {% if role == "individual" %}
+                            {{ member.first_name }}
+                        {% elif role == "sacco" %}
+                            {{ member.sacco_name }}
+                        {% endif %}
+                    </strong>!
+                </p>
+
+                <p>
+                    Your payment has been successfully verified and your membership is now active.
+                </p>
+
+                <div class="membership-box">
+                    <span class="membership-label">Membership Number</span>
+                    <span class="membership-number">
+                        {{ member.membership_number }}
+                    </span>
+                </div>
+
+                <div class="status-badge success">
+                    Membership Activated
+                </div>
+
+                <div class="action-footer">
+                    <a href="{% url 'download_membership_card' %}" class="btn-outline">
+                        Download Membership Card
+                    </a>
+                </div>
+
+            {% endif %}
+
         {% elif member.payment_status == 'rejected' %}
 
+            <!-- Rejected State -->
             <div class="status-icon-container">
                 <div class="error-cross">
-                    <div class="cross-icon">
-                        <span class="cross-line left"></span>
-                        <span class="cross-line right"></span>
-                        <div class="icon-circle-red"></div>
-                    </div>
+                    <span class="cross-line left"></span>
+                    <span class="cross-line right"></span>
                 </div>
             </div>
 
-            <h2>Payment Failed</h2>
+            <h2>Payment Verification Failed</h2>
 
             <p>
-                Sorry 
+                Sorry
                 <strong>
                     {% if role == "individual" %}
                         {{ member.first_name }}
@@ -97,130 +132,206 @@
                         {{ member.organization_name }}
                     {% endif %}
                 </strong>,
-                we couldn't verify your payment.
+                we could not verify your payment.
             </p>
 
-            <div class="status-badge rejected">Rejected</div>
+            <p>
+                Please contact support for assistance or submit a new payment.
+            </p>
+
+            <div class="status-badge rejected">
+                Rejected
+            </div>
 
         {% endif %}
 
         <div class="action-footer">
-            <a href="/" class="btn-outline">Back to Dashboard</a>
+            <a href="/" class="btn-outline">
+                Back to Dashboard
+            </a>
         </div>
 
     </div>
 </div>
+
 <style>
-    .status-page {
-  background-color: #FDF2E2;
-  min-height: 70vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  font-family: 'Segoe UI', sans-serif;
-  color: #001C3D;
+
+.status-page{
+    background:#FDF2E2;
+    min-height:70vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    font-family:'Segoe UI',sans-serif;
 }
 
-.status-card {
-  background: #ffffff;
-  padding: 40px;
-  max-width: 500px;
-  width: 100%;
-  text-align: center;
-  border: 1.5px solid #001C3D;
-  box-shadow: 8px 8px 0 #001C3D;
-  animation: slideUpFade 0.7s var(--ease-out-expo) both;
+.status-card{
+    background:#fff;
+    max-width:550px;
+    width:100%;
+    padding:40px;
+    text-align:center;
+    border:2px solid #001C3D;
+    box-shadow:8px 8px 0 #001C3D;
 }
 
-.status-badge {
-  display: inline-block;
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  margin-top: 15px;
+.status-card h2{
+    color:#001C3D;
+    margin-bottom:15px;
 }
 
-.status-badge.pending  { background: #fff3cd; color: #856404; }
-.status-badge.success  { background: #d4edda; color: #155724; }
-.status-badge.rejected { background: #f8d7da; color: #721c24; }
-
-/* Spinning loader */
-.loader {
-  width: 60px;
-  height: 60px;
-  border: 5px solid #f3f3f3;
-  border-top-color: #001C3D;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+.status-card p{
+    color:#555;
+    line-height:1.7;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Animated checkmark */
-.success-checkmark, .check-icon {
-  width: 80px;
-  height: 80px;
+.status-icon-container{
+    margin-bottom:20px;
 }
 
-.success-checkmark { margin: 0 auto 20px; }
-
-.check-icon {
-  position: relative;
-  border-radius: 50%;
-  box-sizing: content-box;
-  border: 4px solid #28a745;
-  animation: bounceIn 0.6s var(--ease-out-expo) both;
+.status-badge{
+    display:inline-block;
+    margin-top:20px;
+    padding:8px 18px;
+    border-radius:25px;
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
 }
 
-@keyframes bounceIn {
-  0%   { transform: scale(0); }
-  60%  { transform: scale(1.15); }
-  100% { transform: scale(1); }
+.pending{
+    background:#fff3cd;
+    color:#856404;
 }
 
-.check-icon::after {
-  content: '';
-  position: absolute;
-  top: 24px; left: 14px;
-  width: 20px; height: 38px;
-  border-right: 4px solid #28a745;
-  border-bottom: 4px solid #28a745;
-  transform: rotate(45deg);
-  transform-origin: 100% 100%;
-  animation: checkbox-check 0.4s ease-out 0.3s forwards;
-  opacity: 0;
+.success{
+    background:#d4edda;
+    color:#155724;
 }
 
-@keyframes checkbox-check {
-  0%   { opacity: 1; height: 0;   width: 0; }
-  33%  { opacity: 1; height: 0;   width: 20px; }
-  100% { opacity: 1; height: 38px; width: 20px; }
+.rejected{
+    background:#f8d7da;
+    color:#721c24;
 }
 
-/* Rejected cross */
-.error-cross {
-  width: 80px; height: 80px;
-  margin: 0 auto 20px;
-  border: 4px solid #dc3545;
-  border-radius: 50%;
-  position: relative;
-  animation: bounceIn 0.6s var(--ease-out-expo) both;
+.loader{
+    width:60px;
+    height:60px;
+    border:5px solid #eee;
+    border-top:5px solid #001C3D;
+    border-radius:50%;
+    margin:auto;
+    animation:spin 1s linear infinite;
 }
 
-.cross-line {
-  position: absolute;
-  background: #dc3545;
-  width: 40px; height: 4px;
-  top: 38px; left: 20px;
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
 }
 
-.cross-line.left  { transform: rotate(45deg); }
-.cross-line.right { transform: rotate(-45deg); }
+.success-checkmark{
+    width:80px;
+    height:80px;
+    margin:auto;
+}
 
-.action-footer { margin-top: 30px; }
+.check-icon{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    border:4px solid #28a745;
+    position:relative;
+}
+
+.check-icon::after{
+    content:'';
+    position:absolute;
+    left:24px;
+    top:12px;
+    width:20px;
+    height:40px;
+    border-right:4px solid #28a745;
+    border-bottom:4px solid #28a745;
+    transform:rotate(45deg);
+}
+
+.error-cross{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    border:4px solid #dc3545;
+    margin:auto;
+    position:relative;
+}
+
+.cross-line{
+    position:absolute;
+    width:40px;
+    height:4px;
+    background:#dc3545;
+    top:36px;
+    left:16px;
+}
+
+.cross-line.left{
+    transform:rotate(45deg);
+}
+
+.cross-line.right{
+    transform:rotate(-45deg);
+}
+
+.membership-box{
+    margin:20px auto;
+    padding:15px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    background:#f8f9fa;
+}
+
+.membership-label{
+    display:block;
+    color:#666;
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.membership-number{
+    display:block;
+    font-size:20px;
+    font-weight:700;
+    color:#001C3D;
+}
+
+.action-footer{
+    margin-top:25px;
+}
+
+.btn-outline{
+    display:inline-block;
+    padding:10px 20px;
+    border:2px solid #001C3D;
+    color:#001C3D;
+    text-decoration:none;
+    border-radius:6px;
+    transition:.3s;
+}
+
+.btn-outline:hover{
+    background:#001C3D;
+    color:#fff;
+}
+
 </style>
+
+{% if member.payment_status == 'pending' %}
+<script>
+setInterval(function () {
+    location.reload();
+}, 5000);
+</script>
+{% endif %}
+
 {% endblock %}

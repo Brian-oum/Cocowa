@@ -130,7 +130,6 @@ class PartnerMemberAdmin(admin.ModelAdmin):
         "organization_name",
         "user",
         "payment_status",
-        "membership_number",
         "total_donations_display",
         "created_at",
     )
@@ -140,7 +139,6 @@ class PartnerMemberAdmin(admin.ModelAdmin):
     search_fields = (
         "id",
         "organization_name",
-        "membership_number",
         "user__email",
     )
 
@@ -151,7 +149,7 @@ class PartnerMemberAdmin(admin.ModelAdmin):
 
     ordering = ("-id",)
 
-    readonly_fields = ("membership_number", "created_at")
+    readonly_fields = ("id","created_at")
 
     def total_donations_display(self, obj):
         return obj.total_donations

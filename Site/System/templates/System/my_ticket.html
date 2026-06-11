@@ -22,14 +22,14 @@
         </div>
     </div>
 
-    <div class="table-utility-card">
-        <div class="search-box-wrapper">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="tableSearchInput" placeholder="Search complaints by ticket number, category, or subject..." autocomplete="off">
-        </div>
-    </div>
-
     <div class="table-card-container">
+        <div class="table-utility-card">
+            <div class="search-box-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="tableSearchInput" placeholder="Search complaints by ticket number, category, or subject..." autocomplete="off">
+            </div>
+        </div>
+
         <div class="table-responsive-wrapper">
             <table class="premium-data-table" id="complaintsTable">
                 <thead>
@@ -207,10 +207,8 @@ document.addEventListener("DOMContentLoaded", function() {
     /* UTILITY CARDS (SEARCH SYSTEM) */
     .table-utility-card {
         background: #ffffff;
-        padding: 16px;
-        border-radius: 12px 12px 0 0;
-        border: 1px solid #e2e8f0;
-        border-bottom: none;
+        padding: 16px 20px; /* Aligned padding with table cells */
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .search-box-wrapper {
@@ -248,7 +246,7 @@ document.addEventListener("DOMContentLoaded", function() {
     /* DECORATIVE PREMIUM DATA TABLE LAYOUTS */
     .table-card-container {
         background: #ffffff;
-        border-radius: 0 0 12px 12px;
+        border-radius: 12px; /* Smooth rounded corners all around */
         border: 1px solid #e2e8f0;
         box-shadow: var(--shadow-card);
         overflow: hidden;
@@ -418,7 +416,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         .header-action-deck {
-            display: none; /* Hide non-vital tools to recover display focus */
+            display: none;
         }
     }
 </style>

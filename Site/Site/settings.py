@@ -89,6 +89,9 @@ DATABASES = {
     }
 }
 
+# settings.py
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -138,15 +141,44 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SITE_ID = 1
-
+ACCOUNT_ADAPTER = "System.adapter.CustomAccountAdapter"
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
+SOCIALACCOUNT_PIPELINE = (
+    "allauth.socialaccount.pipeline.social_auth.social_login",
+    "allauth.socialaccount.pipeline.social_auth.social_user",
+    "allauth.socialaccount.pipeline.social_auth.associate_by_email",
+    "allauth.socialaccount.pipeline.social_auth.load_extra_data",
+    "allauth.socialaccount.pipeline.user.user_details",
+)
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
+LOGIN_REDIRECT_URL = "/accounts/google/redirect/"
+
+# IMPORTANT: disable allauth email verification (you handle OTP yourself)
 ACCOUNT_EMAIL_VERIFICATION = "none"
-LOGIN_REDIRECT_URL = "/google-redirect/"
+
+# Prevent auto-login bypassing your OTP flow
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Redirect Google login to your custom handler
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/accounts/google/redirect/"
+
+# After normal logout
 LOGOUT_REDIRECT_URL = "/login/"
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'countiescom@gmail.com'
+EMAIL_HOST_PASSWORD = 'mizcegmwrqcuyilm'
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

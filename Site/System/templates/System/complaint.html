@@ -2,8 +2,29 @@
 {% load static %}
 
 {% block content %}
-<div class="dashboard-panel-view animate-fade-up" style="--delay: 1;">
 
+<div class="dashboard-panel-view animate-fade-up" style="--delay: 1;">
+{% if messages %}
+<div class="toast-stack">
+    {% for message in messages %}
+        <div class="toast toast-{{ message.tags }}" role="alert">
+            <div class="toast-content">
+                {% if message.tags == "success" %}
+                    <i class="fa-solid fa-circle-check toast-icon"></i>
+                {% elif message.tags == "error" or message.tags == "danger" %}
+                    <i class="fa-solid fa-circle-exclamation toast-icon"></i>
+                {% elif message.tags == "warning" %}
+                    <i class="fa-solid fa-triangle-exclamation toast-icon"></i>
+                {% else %}
+                    <i class="fa-solid fa-circle-info toast-icon"></i>
+                {% endif %}
+                <span class="toast-message">{{ message }}</span>
+            </div>
+            <button class="toast-close-btn" onclick="dismissToast(this.parentElement);">&times;</button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
     <div class="panel-header-card">
         <div class="header-main-flex">
             <div class="header-icon-badge">
@@ -51,6 +72,7 @@
                         <th style="width: 120px;">Priority</th>
                         <th style="width: 130px;">Live Status</th>
                         <th style="width: 150px;">Timestamp</th>
+                        <th style="width: 100px; text-align: center;">Action</th>
                         <th style="width: 210px; text-align: right;">State Transition</th>
                     </tr>
                 </thead>
@@ -92,6 +114,17 @@
                                 {{ c.created_at|date:"Y-m-d H:i" }}
                             </span>
                         </td>
+                        <td style="text-align: center;">
+                            <button class="btn-view-eye open-response-modal" 
+                                    data-id="{{ c.id }}"
+                                    data-title="{{ c.title }}"
+                                    data-reporter="{{ c.user.username }}"
+                                    data-email="{{ c.user.email }}"
+                                    data-description="{{ c.description }}"
+                                    title="View details & email response">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </td>
                         <td style="text-align: right;">
                             <form method="POST" action="{% url 'update_complaint_status' c.id %}" class="inline-transition-form">
                                 {% csrf_token %}
@@ -111,7 +144,7 @@
                     </tr>
                     {% empty %}
                     <tr class="empty-registry-state">
-                        <td colspan="7">
+                        <td colspan="8">
                             <div class="empty-view-wrapper">
                                 <div class="empty-icon-cloud">
                                     <i class="fa-solid fa-clipboard-check"></i>
@@ -129,9 +162,56 @@
 
 </div>
 
+<div id="responseModal" class="premium-modal-backdrop">
+    <div class="premium-modal-container">
+        <div class="modal-header-flex">
+            <div class="modal-title-group">
+                <h3 id="modalTicketTitle">Ticket Context</h3>
+                <p class="modal-subtitle">Review ticket context and transmit an official response directly to the user's email inbox.</p>
+            </div>
+            <button class="modal-close-trigger" id="closeModalBtn">&times;</button>
+        </div>
+        
+        <form method="POST" id="responseForm">
+            {% csrf_token %}
+            <div class="modal-body-layout">
+                <div class="modal-meta-row">
+                    <div class="meta-field">
+                        <label>Reporter</label>
+                        <input type="text" id="modalReporter" readonly class="modal-readonly-input">
+                    </div>
+                    <div class="meta-field">
+                        <label>User Email Destination</label>
+                        <input type="text" id="modalEmail" readonly class="modal-readonly-input">
+                    </div>
+                </div>
+
+                <div class="modal-full-field">
+                    <label>Complaint Content Details</label>
+                    <textarea id="modalDescription" readonly class="modal-readonly-textarea"></textarea>
+                </div>
+
+                <hr class="modal-separator">
+
+                <div class="modal-full-field">
+                    <label class="required-label">Manager Feedback / Resolution Response</label>
+                    <textarea name="response_message" placeholder="Type your formal statement or updates here. This text body will be dispatched automatically via email to the address listed above." required class="modal-action-textarea"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer-flex">
+                <button type="button" class="btn-modal-secondary" id="cancelModalBtn">Cancel</button>
+                <button type="submit" class="btn-modal-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Send Official Response
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <style>
     :root {
-        --c-blue: #1e3a8a;
+        --c-blue: #6A2B91;
         --c-blue-glow: #2563eb;
         --border-color: #f1f5f9;
         --border-field: #cbd5e1;
@@ -353,6 +433,28 @@
         color: #94a3b8;
     }
 
+    /* ACTION BUTTON WITH EYE ICON */
+    .btn-view-eye {
+        width: 32px;
+        height: 32px;
+        border: 1px solid rgba(37, 99, 235, 0.15);
+        background: rgba(37, 99, 235, 0.06);
+        color: var(--c-blue-glow);
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-view-eye:hover {
+        background: var(--c-blue-glow);
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
     /* COMPONENT CONFIGURATIONS: PRIORITY CAPSULES */
     .priority-indicator-pill {
         display: inline-flex;
@@ -507,6 +609,178 @@
         line-height: 1.4;
     }
 
+    /* PREMIUM POPUP MODAL STYLINGS */
+    .premium-modal-backdrop {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .premium-modal-container {
+        background: #ffffff;
+        border-radius: 14px;
+        width: 92%;
+        max-width: 650px;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes modalScaleUp {
+        from { transform: scale(0.96); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fafafa;
+    }
+
+    .modal-title-group h3 {
+        margin: 0 0 4px 0;
+        font-size: 18px;
+        color: var(--text-main);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    .modal-close-trigger {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: var(--text-muted);
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .modal-body-layout {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .modal-meta-row {
+        display: flex;
+        gap: 16px;
+    }
+
+    .meta-field {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .modal-full-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .modal-body-layout label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .required-label::after {
+        content: " *";
+        color: #ef4444;
+    }
+
+    .modal-readonly-input, .modal-readonly-textarea {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13.5px;
+        color: #475569;
+        outline: none;
+    }
+
+    .modal-readonly-textarea {
+        min-height: 80px;
+        resize: none;
+    }
+
+    .modal-action-textarea {
+        border: 1px solid var(--border-field);
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        color: var(--text-main);
+        min-height: 120px;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .modal-action-textarea:focus {
+        border-color: var(--c-blue-glow);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .modal-separator {
+        border: 0;
+        border-top: 1px solid #e2e8f0;
+        margin: 8px 0;
+    }
+
+    .modal-footer-flex {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px 24px;
+        background: #f8fafc;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .btn-modal-secondary {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13.5px;
+        cursor: pointer;
+        color: #475569;
+        transition: background 0.15s ease;
+    }
+
+    .btn-modal-secondary:hover {
+        background: #f8fafc;
+    }
+
+    .btn-modal-primary {
+        background: var(--c-blue-glow);
+        border: none;
+        color: #ffffff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13.5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.15s ease;
+    }
+
+    .btn-modal-primary:hover {
+        background: #1d4ed8;
+    }
+
     /* RESPONSIVE LAYOUT CONSTRAINTS */
     @media (max-width: 992px) {
         .premium-management-table th:nth-child(6),
@@ -514,5 +788,185 @@
             display: none; /* Auto-collapse timestamp to secure operational width */
         }
     }
+    /* TOAST STACK CONTAINER */
+.toast-stack {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    pointer-events: none; /* Let background clicks pass through empty spaces */
+}
+
+/* BASE TOAST LAYOUT - NATIVE POP ALERT BEHAVIOR */
+.toast {
+    pointer-events: auto; /* Restore interactive clicks on the alert box itself */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 
+                0 4px 12px -2px rgba(15, 23, 42, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    
+    /* System pop position layout physics */
+    transform: translateX(calc(100% + 32px)); /* Pushed completely out off-screen right edge */
+    opacity: 0;
+    animation: toastPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.35s ease, 
+                max-height 0.35s ease, 
+                margin-top 0.35s ease, 
+                padding 0.35s ease;
+    
+    max-height: 100px; /* Secure height boundary for seamless stack collapse animations */
+    overflow: hidden;
+}
+
+/* SYSTEM POP ALERT KEYFRAMES */
+@keyframes toastPopIn {
+    0% {
+        transform: translateX(calc(100% + 32px));
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* SYSTEM ALERT REMOVAL ANIMATION */
+.toast.fade-out {
+    transform: translateX(calc(100% + 32px)) !important; /* Dispatches immediately back to the right side */
+    opacity: 0 !important;
+    max-height: 0 !important;
+    margin-top: -12px !important; /* Collapses the stack vertical gap cleanly */
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    border-color: transparent !important;
+}
+
+/* INNER LAYOUT PIECES */
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.toast-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+    line-height: 1.4;
+}
+
+.toast-close-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.toast-close-btn:hover {
+    color: #475569;
+}
+
+/* CONTEXT COLOR-CODED BORDERS */
+.toast.toast-success { border-left: 4px solid #16a34a; }
+.toast.toast-success .toast-icon { color: #16a34a; }
+
+.toast.toast-error, .toast.toast-danger { border-left: 4px solid #dc2626; }
+.toast.toast-error .toast-icon, .toast.toast-danger .toast-icon { color: #dc2626; }
+
+.toast.toast-warning { border-left: 4px solid #d97706; }
+.toast.toast-warning .toast-icon { color: #d97706; }
+
+.toast.toast-info { border-left: 4px solid #2563eb; }
+.toast.toast-info .toast-icon { color: #2563eb; }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('responseModal');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelModalBtn');
+        const responseForm = document.getElementById('responseForm');
+        const openButtons = document.querySelectorAll('.open-response-modal');
+        
+        openButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const ticketId = this.getAttribute('data-id');
+                const title = this.getAttribute('data-title');
+                const reporter = this.getAttribute('data-reporter');
+                const email = this.getAttribute('data-email');
+                const description = this.getAttribute('data-description');
+                
+                // Populate text values dynamically
+                document.getElementById('modalTicketTitle').innerText = `Respond to: ${title}`;
+                document.getElementById('modalReporter').value = reporter;
+                document.getElementById('modalEmail').value = email;
+                document.getElementById('modalDescription').value = description;
+                
+                // Form action injection dynamically points to your backend route
+                responseForm.action = `/complaints/${ticketId}/respond/`;
+                
+                // Display layout
+                modal.style.display = 'flex';
+            });
+        });
+        
+        function hideModal() {
+            modal.style.display = 'none';
+            responseForm.reset();
+        }
+        
+        closeBtn.addEventListener('click', hideModal);
+        cancelBtn.addEventListener('click', hideModal);
+        
+        // Escape clicking outside window box layer boundary area
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideModal();
+            }
+        });
+    });
+    function dismissToast(toastElement) {
+        if (!toastElement.classList.contains('fade-out')) {
+            toastElement.classList.add('fade-out');
+            toastElement.addEventListener('transitionend', () => {
+                toastElement.remove();
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('.toast-stack .toast');
+        
+        toasts.forEach(toast => {
+            // Auto-trigger dismissal sequence back to the right after 4 seconds
+            setTimeout(() => {
+                dismissToast(toast);
+            }, 4000);
+        });
+    });
+</script>
 {% endblock %}

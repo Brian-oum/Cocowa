@@ -54,9 +54,9 @@
                     <tr>
                         <th style="width: 5%;" class="text-center">#</th>
                         <th style="width: 35%;">SACCO Name</th>
-                        <th style="width: 20%;">Membership No</th>
-                        <th style="width: 20%;">Phone Contact</th>
-                        <th style="width: 20%;">Status</th>
+                        <th style="width: 15%;">Membership No</th>
+                        <th style="width: 15%;">Phone Contact</th>
+                        <th style="width: 15%;">Status</th>
                     </tr>
                 </thead>
 
@@ -89,23 +89,25 @@
                         </td>
 
                         <td>
-                            {% with status_clean=s.status|default:"Active"|lower %}
-                                {% if status_clean == "active" or status_clean == "paid" %}
-                                    <span class="state-pill pill-success-layer">
-                                        <span class="state-dot"></span> Active
-                                    </span>
-                                {% elif status_clean == "pending" %}
-                                    <span class="state-pill pill-warning-layer">
-                                        <span class="state-dot"></span> Pending
-                                    </span>
-                                {% else %}
-                                    <span class="state-pill pill-danger-layer">
-                                        <span class="state-dot"></span> {{ s.status }}
-                                    </span>
-                                {% endif %}
-                            {% endwith %}
-                        </td>
+                            {% if s.payment_status == "paid" %}
+                            <span class="state-pill pill-success-layer">
+                                <span class="state-dot"></span>
+                                {{ s.get_payment_status_display }}
+                            </span>
 
+                            {% elif s.payment_status == "pending" %}
+                            <span class="state-pill pill-warning-layer">
+                                <span class="state-dot"></span>
+                                {{ s.get_payment_status_display }}
+                            </span>
+
+                            {% else %}
+                            <span class="state-pill pill-danger-layer">
+                                <span class="state-dot"></span>
+                                {{ s.get_payment_status_display }}
+                            </span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>

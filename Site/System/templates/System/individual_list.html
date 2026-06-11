@@ -5,96 +5,68 @@
 <div class="container-fluid px-0 py-2 animate-fade-in">
 
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-4">
+
+        <!-- ── HEADER ──────────────────────────────────────────────── -->
         <div class="card-header bg-white border-bottom border-slate-100 py-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h4 class="mb-1 fw-bold text-slate-900 d-flex align-items-center">
                     <i class="fa-solid fa-user me-3 text-violet-600 fs-5"></i>
                     Individual Members Registry
                 </h4>
-                <p class="text-slate-400 small mb-0 fs-7.5">
-                    Managing and auditing activated platform consumer memberships. Total entries verified: 
+                <p class="text-slate-400 small mb-0 fs-7-5">
+                    Managing and auditing activated platform consumer memberships. Total entries verified:
                     <span class="badge bg-violet-50 text-violet-700 fw-bold border border-violet-100 px-2 py-1 ms-1 rounded-pill">{{ individuals|length }}</span>
                 </p>
             </div>
 
-            <!-- PILL SHAPED SIDE-BY-SIDE SEARCH CONTROL -->
-            <form method="GET"
-      id="searchForm"
-      class="custom-search-form d-flex align-items-center gap-2">
-
-    <div class="search-box d-flex align-items-center position-relative">
-
-        <div class="search-icon">
-            <i class="fa-solid fa-magnifying-glass"></i>
+            <!-- PILL SEARCH -->
+            <form method="GET" id="searchForm" class="custom-search-form d-flex align-items-center gap-2">
+                <div class="search-box d-flex align-items-center position-relative">
+                    <div class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <input type="text" name="q" id="liveSearch" value="{{ query|default:'' }}"
+                           class="search-input" placeholder="Search membership no, name, phone..."
+                           autocomplete="off">
+                </div>
+                {% if query %}
+                <a href="." class="reset-btn">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
+                </a>
+                {% endif %}
+            </form>
         </div>
-
-        <input type="text"
-               name="q"
-               id="liveSearch"
-               value="{{ query|default:'' }}"
-               class="search-input"
-               placeholder="Search membership no, name, phone..."
-               autocomplete="on"
-               list="memberSuggestions">
-
-        <!-- AUTOSUGGEST -->
-        <datalist id="memberSuggestions">
-            {% for item in suggestions %}
-                <option value="{{ item.membership_number }}">
-                <option value="{{ item.first_name }}">
-                <option value="{{ item.second_name }}">
-                <option value="{{ item.phone_number }}">
-            {% endfor %}
-        </datalist>
-
-    </div>
-
-    {% if query %}
-    <a href="." class="reset-btn">
-        <i class="fa-solid fa-rotate-left"></i>
-        Reset
-    </a>
-    {% endif %}
-
-</form>
-
-        </div>
-
-        <div class="table-responsive" style="overflow-x: auto;">
+<!-- ══════════════════════════════════════════════════════════
+     AUTOCOMPLETE DROPDOWN  (shared, appended to body)
+══════════════════════════════════════════════════════════════ -->
+<div id="suggestions" style="display:none;"></div>
+        <!-- ── TABLE ───────────────────────────────────────────────── -->
+        <div class="table-responsive">
             <table class="table align-middle mb-0 premium-registry-table">
                 <thead>
                     <tr>
-                        <th style="width: 4%;" class="text-center">#</th>
-                        <th style="width: 18%;">Member Name</th>
-                        <th style="width: 16%;">Email Address</th>
-                        <th style="width: 13%;">Phone Contact</th>
-                        <th style="width: 11%;">Package Layer</th>
-                        <th style="width: 11%;">Billing Amount</th>
-                        <th style="width: 11%;">Payment Status</th>
-                        <th style="width: 11%;">Membership No</th>
-                        <th style="width: 5%;" class="pe-4 text-end">Joined</th>
+                        <th style="width:4%"  class="text-center">#</th>
+                        <th style="width:22%">Member Name</th>
+                        <th style="width:14%">Phone</th>
+                        <th style="width:14%">Package</th>
+                        <th style="width:12%">Amount</th>
+                        <th style="width:13%">Status</th>
+                        <th style="width:14%">Membership No</th>
+                        <th style="width:7%"  class="text-center">Details</th>
                     </tr>
                 </thead>
-
                 <tbody>
                     {% for member in individuals %}
                     <tr class="table-row-hover">
-                        
-                        <td class="text-center text-slate-400 fw-semibold tabular-index">
-                            {{ forloop.counter }}
-                        </td>
 
-                        <td class="text-slate-800 fw-bold fs-7.5">
-                            <div class="d-flex align-items-center gap-2.5">
-                                <span>{{ member.first_name }} {{ member.second_name }}</span>
+                        <td class="text-center text-slate-400 fw-semibold tabular-index">{{ forloop.counter }}</td>
+
+                        <td class="text-slate-800 fw-bold fs-7-5">
+                            <div>
+                                <div>{{ member.first_name }} {{ member.second_name }}</div>
+                                <div class="text-slate-400 fw-normal" style="font-size:11.5px;">{{ member.email }}</div>
                             </div>
                         </td>
 
-                        <td class="text-slate-600 fs-7.5 font-fallback-clean">
-                            {{ member.email }}
-                        </td>
-
-                        <td class="text-slate-600 fs-7.5 tracking-wide">
+                        <td class="text-slate-600 fs-7-5">
                             {{ member.phone_number|default:"<span class='text-slate-300 fst-italic'>—</span>" }}
                         </td>
 
@@ -109,49 +81,46 @@
                             {% endif %}
                         </td>
 
-                        <td class="fw-bold text-slate-800 tabular-numeric fs-7.5">
-                            <span class="text-slate-400 fw-normal small me-0.5">KES</span> {{ member.amount }}
+                        <td class="fw-bold text-slate-800 tabular-numeric fs-7-5">
+                            <span class="text-slate-400 fw-normal small me-1">KES</span>{{ member.amount }}
                         </td>
 
                         <td>
                             {% if member.payment_status == "paid" %}
-                                <span class="state-pill pill-success-layer">
-                                    <span class="state-dot"></span> Paid
-                                </span>
+                                <span class="state-pill pill-success-layer"><span class="state-dot"></span> Paid</span>
                             {% elif member.payment_status == "pending" %}
-                                <span class="state-pill pill-warning-layer">
-                                    <span class="state-dot"></span> Pending
-                                </span>
+                                <span class="state-pill pill-warning-layer"><span class="state-dot"></span> Pending</span>
                             {% else %}
-                                <span class="state-pill pill-danger-layer">
-                                    <span class="state-dot"></span> Rejected
-                                </span>
+                                <span class="state-pill pill-danger-layer"><span class="state-dot"></span> Rejected</span>
                             {% endif %}
                         </td>
 
                         <td>
                             {% if member.membership_number %}
-                                <span class="membership-badge-code">
-                                    {{ member.membership_number }}
-                                </span>
+                                <span class="membership-badge-code">{{ member.membership_number }}</span>
                             {% else %}
                                 <span class="text-slate-300 fst-italic fs-8">—</span>
                             {% endif %}
                         </td>
 
-                        <td class="text-end pe-4 text-slate-500 fs-7.5 fw-medium">
-                            {{ member.created_at|date:"d M Y" }}
+                        <!-- VIEW DETAILS TRIGGER -->
+                        <td class="text-center">
+                            <button type="button"
+                                class="view-detail-btn"
+                                data-member-id="{{ member.id }}"
+                                data-target="memberModal{{ member.id }}"
+                                title="View full profile">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
                         </td>
 
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="text-center py-5 bg-slate-25">
-                            <div class="py-5 max-w-md mx-auto text-center animate-fade-in">
-                                <div class="empty-vector-wrapper mb-3">
-                                    <i class="fa-solid fa-users-slash text-slate-200 fs-0"></i>
-                                </div>
-                                <h6 class="fw-bold text-slate-700 mb-1">No Registered Individual Members Found</h6>
+                        <td colspan="8" class="text-center py-5 bg-slate-25">
+                            <div class="py-5 mx-auto text-center animate-fade-in" style="max-width:400px">
+                                <i class="fa-solid fa-users-slash text-slate-200" style="font-size:3.5rem;"></i>
+                                <h6 class="fw-bold text-slate-700 mt-3 mb-1">No Registered Individual Members Found</h6>
                                 <p class="text-slate-400 small mb-0 px-4">We couldn't track any records matching those values. Adjust your dashboard queries or verify active database fields.</p>
                             </div>
                         </td>
@@ -162,417 +131,697 @@
         </div>
     </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MEMBER DETAIL MODALS  (one per member, opened on demand)
+══════════════════════════════════════════════════════════════ -->
+{% for member in individuals %}
+<div class="member-modal-overlay" id="memberModal{{ member.id }}" role="dialog" aria-modal="true">
+    <div class="member-modal-panel">
+
+        <!-- ── MODAL HEADER ──────────────────────────────────── -->
+        <div class="mmp-header">
+            <div class="mmp-avatar">
+                {{ member.first_name|slice:":1"|upper }}{{ member.second_name|slice:":1"|upper }}
+            </div>
+            <div class="mmp-title-block">
+                <h5 class="mmp-name">{{ member.first_name }} {{ member.second_name }}</h5>
+                <div class="mmp-meta-row">
+                    {% if member.membership_number %}
+                        <span class="mmp-chip chip-code">
+                            <i class="fa-solid fa-id-card"></i> {{ member.membership_number }}
+                        </span>
+                    {% endif %}
+                    {% if member.payment_status == "paid" %}
+                        <span class="mmp-chip chip-paid"><span class="chip-dot"></span>Paid</span>
+                    {% elif member.payment_status == "pending" %}
+                        <span class="mmp-chip chip-pending"><span class="chip-dot"></span>Pending</span>
+                    {% else %}
+                        <span class="mmp-chip chip-rejected"><span class="chip-dot"></span>Rejected</span>
+                    {% endif %}
+                    <span class="mmp-chip chip-neutral">
+                        <i class="fa-solid fa-calendar-days"></i> Joined {{ member.created_at|date:"d M Y" }}
+                    </span>
+                </div>
+            </div>
+            <button type="button" class="mmp-close-btn" data-target="memberModal{{ member.id }}">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- ── MODAL TABS ─────────────────────────────────────── -->
+        <div class="mmp-tabs">
+            <button class="mmp-tab active" data-tab="profile{{ member.id }}">
+                <i class="fa-solid fa-circle-info"></i> Profile
+            </button>
+            <button class="mmp-tab" data-tab="subscription{{ member.id }}">
+                <i class="fa-solid fa-layer-group"></i> Subscription
+            </button>
+            <button class="mmp-tab" data-tab="nok{{ member.id }}">
+                <i class="fa-solid fa-heart-pulse"></i> Next of Kin
+            </button>
+            <button class="mmp-tab" data-tab="dependants{{ member.id }}">
+                <i class="fa-solid fa-children"></i> Dependants
+                {% with deps=member.dependant_set.all %}
+                {% if deps %}<span class="mmp-tab-badge">{{ deps|length }}</span>{% endif %}
+                {% endwith %}
+            </button>
+            <button class="mmp-tab" data-tab="beneficiaries{{ member.id }}">
+                <i class="fa-solid fa-hand-holding-heart"></i> Beneficiaries
+                {% with bens=member.beneficiary_set.all %}
+                {% if bens %}<span class="mmp-tab-badge">{{ bens|length }}</span>{% endif %}
+                {% endwith %}
+            </button>
+        </div>
+
+        <!-- ── TAB CONTENT ────────────────────────────────────── -->
+        <div class="mmp-body">
+
+            <!-- PROFILE TAB -->
+            <div class="mmp-pane active" id="profile{{ member.id }}">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-user"></i> Full Name</span>
+                        <span class="detail-value">{{ member.first_name }} {{ member.second_name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-envelope"></i> Email</span>
+                        <span class="detail-value">{{ member.email|default:"—" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-phone"></i> Phone</span>
+                        <span class="detail-value">{{ member.phone_number|default:"—" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-id-badge"></i> ID / Passport</span>
+                        <span class="detail-value">{{ member.id_number|default:"—" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-calendar-plus"></i> Registration Date</span>
+                        <span class="detail-value">{{ member.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-hashtag"></i> Membership No</span>
+                        <span class="detail-value mono">{{ member.membership_number|default:"—" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBSCRIPTION TAB -->
+            <div class="mmp-pane" id="subscription{{ member.id }}">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-box-archive"></i> Package</span>
+                        <span class="detail-value">
+                            {% if member.package %}
+                                <span class="package-pill-tag">{{ member.package }}</span>
+                            {% else %}—{% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-coins"></i> Billing Amount</span>
+                        <span class="detail-value mono">KES {{ member.amount }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-circle-check"></i> Payment Status</span>
+                        <span class="detail-value">
+                            {% if member.payment_status == "paid" %}
+                                <span class="state-pill pill-success-layer"><span class="state-dot"></span> Paid</span>
+                            {% elif member.payment_status == "pending" %}
+                                <span class="state-pill pill-warning-layer"><span class="state-dot"></span> Pending</span>
+                            {% else %}
+                                <span class="state-pill pill-danger-layer"><span class="state-dot"></span> Rejected</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEXT OF KIN TAB -->
+            <div class="mmp-pane" id="nok{{ member.id }}">
+                {% with nok=member.next_of_kin %}
+                {% if nok %}
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-user"></i> Full Name</span>
+                        <span class="detail-value">{{ nok.full_name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-people-arrows"></i> Relationship</span>
+                        <span class="detail-value">{{ nok.get_relationship_display }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-phone"></i> Phone</span>
+                        <span class="detail-value">{{ nok.phone_number|default:"—" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label"><i class="fa-solid fa-id-badge"></i> ID / Passport</span>
+                        <span class="detail-value">{{ nok.id_number|default:"—" }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="mmp-empty-pane">
+                    <i class="fa-solid fa-heart-crack"></i>
+                    <p>No next of kin has been registered for this member.</p>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- DEPENDANTS TAB -->
+            <div class="mmp-pane" id="dependants{{ member.id }}">
+                {% with deps=member.dependants.all %}
+                {% if deps %}
+                <div class="entries-table-wrap">
+                    <table class="entries-mini-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Relationship</th>
+                                <th>Age</th>
+                                <th>Turns 18</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dep in deps %}
+                            <tr>
+                                <td class="mono text-slate-400">{{ forloop.counter }}</td>
+                                <td class="fw-semibold">{{ dep.full_name }}</td>
+                                <td>{{ dep.get_relationship_display }}</td>
+                                <td class="mono">{{ dep.age }}</td>
+                                <td class="text-slate-500">{{ dep.turns_18_on|date:"d M Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="mmp-empty-pane">
+                    <i class="fa-solid fa-child-reaching"></i>
+                    <p>No dependants have been registered for this member.</p>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- BENEFICIARIES TAB -->
+            <div class="mmp-pane" id="beneficiaries{{ member.id }}">
+                {% with bens=member.beneficiaries.all %}
+                {% if bens %}
+
+                <!-- Allocation bar -->
+                {% with total=0 %}
+                <div class="alloc-bar-wrap">
+                    <div class="alloc-bar-track">
+                        {% for ben in bens %}
+                        <div class="alloc-bar-segment" style="width:{{ ben.allocation_percentage }}%;"
+                             title="{{ ben.full_name }}: {{ ben.allocation_percentage }}%"></div>
+                        {% endfor %}
+                    </div>
+                    <div class="alloc-bar-labels">
+                        {% for ben in bens %}
+                        <span>{{ ben.full_name }}: <strong>{{ ben.allocation_percentage }}%</strong></span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endwith %}
+
+                <div class="entries-table-wrap mt-3">
+                    <table class="entries-mini-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Relationship</th>
+                                <th>Phone</th>
+                                <th>Allocation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ben in bens %}
+                            <tr>
+                                <td class="mono text-slate-400">{{ forloop.counter }}</td>
+                                <td class="fw-semibold">{{ ben.full_name }}</td>
+                                <td>{{ ben.get_relationship_display }}</td>
+                                <td class="mono">{{ ben.phone_number|default:"—" }}</td>
+                                <td>
+                                    <span class="alloc-pill">{{ ben.allocation_percentage }}%</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="mmp-empty-pane">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <p>No beneficiaries have been registered for this member.</p>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+        </div><!-- /mmp-body -->
+    </div><!-- /mmp-panel -->
+</div><!-- /overlay -->
+{% endfor %}
+
+
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════════ -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
+    /* ── SEARCH AUTO-SUBMIT ─────────────────────────────────── */
     const searchInput = document.getElementById("liveSearch");
-    const searchForm = document.getElementById("searchForm");
+    const searchForm  = document.getElementById("searchForm");
     const suggestions = document.getElementById("suggestions");
-
     let timer;
 
     searchInput.addEventListener("keyup", function () {
-
         clearTimeout(timer);
+        const q = this.value.trim();
 
-        const query = this.value.trim();
-
-        /* ============================
-           AUTO SEARCH
-        ============================ */
-        timer = setTimeout(function () {
-
-            if (query.length >= 2 || query.length === 0) {
-
-                const currentUrl = new URL(window.location);
-
-                if (query) {
-                    currentUrl.searchParams.set("q", query);
-                } else {
-                    currentUrl.searchParams.delete("q");
-                }
-
-                window.history.replaceState({}, "", currentUrl);
-
+        timer = setTimeout(() => {
+            if (q.length >= 2 || q.length === 0) {
+                const url = new URL(window.location);
+                q ? url.searchParams.set("q", q) : url.searchParams.delete("q");
+                window.history.replaceState({}, "", url);
                 searchForm.submit();
             }
-
         }, 500);
 
-        /* ============================
-           AUTOCOMPLETE
-        ============================ */
-        if (query.length >= 2) {
-
-            fetch("{% url 'member_autocomplete' %}?term=" + encodeURIComponent(query))
-                .then(response => response.json())
+        if (q.length >= 2) {
+            fetch("{% url 'member_autocomplete' %}?term=" + encodeURIComponent(q))
+                .then(r => r.json())
                 .then(data => {
-
                     suggestions.innerHTML = "";
-
-                    if (data.length > 0) {
-
+                    if (data.length) {
                         suggestions.style.display = "block";
-
                         data.forEach(item => {
-
-                            const suggestion = document.createElement("div");
-
-                            suggestion.classList.add("suggestion-item");
-
-                            suggestion.innerHTML = `
-                                <div class="suggestion-name">
-                                    ${item.name}
-                                </div>
-
-                                <div class="suggestion-membership">
-                                    ${item.membership}
-                                </div>
-                            `;
-
-                            suggestion.addEventListener("click", function () {
-
+                            const d = document.createElement("div");
+                            d.className = "suggestion-item";
+                            d.innerHTML = `<div class="suggestion-name">${item.name}</div>
+                                           <div class="suggestion-membership">${item.membership}</div>`;
+                            d.addEventListener("click", () => {
                                 searchInput.value = item.membership;
-
                                 suggestions.style.display = "none";
-
                                 searchForm.submit();
-
                             });
-
-                            suggestions.appendChild(suggestion);
-
+                            suggestions.appendChild(d);
                         });
-
                     } else {
-
                         suggestions.style.display = "none";
-
                     }
-
                 })
-                .catch(error => {
-
-                    console.error("Autocomplete Error:", error);
-
-                    suggestions.style.display = "none";
-
-                });
-
+                .catch(() => { suggestions.style.display = "none"; });
         } else {
-
             suggestions.style.display = "none";
-
         }
-
     });
 
-    /* ============================
-       HIDE SUGGESTIONS
-    ============================ */
-    document.addEventListener("click", function (e) {
-
-        if (
-            !e.target.closest(".search-box") &&
-            !e.target.closest("#suggestions")
-        ) {
+    document.addEventListener("click", e => {
+        if (!e.target.closest(".search-box") && !e.target.closest("#suggestions"))
             suggestions.style.display = "none";
-        }
+    });
 
+    /* ── MODAL OPEN ─────────────────────────────────────────── */
+    document.querySelectorAll(".view-detail-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const modalId = btn.dataset.target;
+            const modal   = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add("open");
+                document.body.style.overflow = "hidden";
+            }
+        });
+    });
+
+    /* ── MODAL CLOSE ────────────────────────────────────────── */
+    function closeModal(modal) {
+        modal.classList.remove("open");
+        document.body.style.overflow = "";
+    }
+
+    document.querySelectorAll(".mmp-close-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const modal = document.getElementById(btn.dataset.target);
+            if (modal) closeModal(modal);
+        });
+    });
+
+    // Close on backdrop click
+    document.querySelectorAll(".member-modal-overlay").forEach(overlay => {
+        overlay.addEventListener("click", e => {
+            if (e.target === overlay) closeModal(overlay);
+        });
+    });
+
+    // Close on Escape
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") {
+            document.querySelectorAll(".member-modal-overlay.open").forEach(closeModal);
+        }
+    });
+
+    /* ── MODAL TABS ─────────────────────────────────────────── */
+    document.querySelectorAll(".mmp-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            const panel  = tab.closest(".member-modal-panel");
+            const paneId = tab.dataset.tab;
+
+            panel.querySelectorAll(".mmp-tab").forEach(t => t.classList.remove("active"));
+            panel.querySelectorAll(".mmp-pane").forEach(p => p.classList.remove("active"));
+
+            tab.classList.add("active");
+            document.getElementById(paneId)?.classList.add("active");
+        });
     });
 
 });
 </script>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     STYLES
+══════════════════════════════════════════════════════════════ -->
 <style>
-/* Color variables synced with luxury base layout system */
+/* ── VARIABLES ──────────────────────────────────────────────── */
 :root {
     --violet-600: #6d28d9;
     --violet-700: #5b21b6;
-    --slate-25: #f8fafc;
-    --slate-100: #e2e8f0;
-    --slate-200: #cbd5e1;
-    --slate-300: #94a3b8;
-    --slate-400: #64748b;
-    --slate-500: #475569;
-    --slate-700: #334155;
-    --slate-800: #1e293b;
-    --slate-900: #0f172a;
+    --slate-25:   #f8fafc;
+    --slate-100:  #e2e8f0;
+    --slate-200:  #cbd5e1;
+    --slate-300:  #94a3b8;
+    --slate-400:  #64748b;
+    --slate-500:  #475569;
+    --slate-700:  #334155;
+    --slate-800:  #1e293b;
+    --slate-900:  #0f172a;
+
 }
 
-/* Custom Base Utility Overrides */
-.btn-violet {
-    background-color: var(--violet-600) !important;
-    border-color: var(--violet-600) !important;
-    transition: all 0.15s ease;
-}
-.btn-violet:hover {
-    background-color: var(--violet-700) !important;
-    border-color: var(--violet-700) !important;
-}
-.bg-violet-50 { background-color: #f5f3ff !important; }
+/* ── UTILITY ────────────────────────────────────────────────── */
+.fs-7-5 { font-size: 0.84rem; }
+.fs-8   { font-size: 0.75rem; }
+.mono   { font-family: 'SFMono-Regular', Consolas, monospace; }
+.bg-violet-50    { background-color: #f5f3ff !important; }
 .text-violet-700 { color: #6d28d9 !important; }
 .border-violet-100 { border-color: #ddd6fe !important; }
-.border-slate-100 { border-color: var(--slate-100) !important; }
-.border-slate-200 { border-color: var(--slate-200) !important; }
-.bg-slate-25 { background-color: var(--slate-25) !important; }
+.border-slate-100  { border-color: var(--slate-100) !important; }
+.bg-slate-25       { background-color: var(--slate-25) !important; }
 .text-slate-900 { color: var(--slate-900); }
-.text-slate-700 { color: var(--slate-700); }
-.text-slate-600 { color: var(--slate-600); }
+.text-slate-800 { color: var(--slate-800); }
+.text-slate-600 { color: #475569; }
 .text-slate-500 { color: var(--slate-500); }
 .text-slate-400 { color: var(--slate-400); }
 .text-slate-300 { color: var(--slate-300); }
-.fs-7.5 { font-size: 0.84rem; }
-.fs-7.5 .text-slate-300 { font-size: 0.84rem; }
-.fs-8 { font-size: 0.75rem; }
-.fs-0 { font-size: 3.5rem; }
-.shadow-xs { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
 
-/* Typography Constraints */
-.tabular-index, .tabular-numeric, .membership-badge-code {
-    font-family: 'SFMono-Regular', Consolas, "Liberation Mono", Menlo, monospace;
-}
-.font-fallback-clean {
-    font-family: 'Inter', -apple-system, sans-serif;
-}
-.style-placeholder::placeholder {
-    color: var(--slate-300);
-    font-weight: 400;
-}
-
-/* Form Interactivity */
-.custom-search-form input:focus {
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-/* Premium Table Row Architectures */
+/* ── TABLE ──────────────────────────────────────────────────── */
 .premium-registry-table th {
     background-color: var(--slate-25);
     color: var(--slate-400);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 14px 16px;
     border-bottom: 1px solid var(--slate-100) !important;
 }
-
 .premium-registry-table td {
     padding: 13px 16px;
     border-bottom: 1px solid var(--slate-100);
     white-space: nowrap;
 }
+.table-row-hover { transition: background-color 0.15s ease; }
+.table-row-hover:hover { background-color: #f8fafc !important; }
+.tabular-index, .tabular-numeric, .membership-badge-code {
+     font-family: 'SFMono-Regular', Consolas, "Liberation Mono", Menlo, monospace;}
 
-.table-row-hover {
-    transition: background-color 0.15s ease;
-}
-.table-row-hover:hover {
-    background-color: rgba(248, 250, 252, 0.8) !important;
-}
-
-/* User Mini Profile Avatar Frame */
-.avatar-circle-ui {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background-color: #f3e8ff;
-    color: var(--violet-600);
-    font-size: 11px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #e9d5ff;
-    flex-shrink: 0;
-}
-
-/* Outline Tag Architectures */
-.package-pill-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 8px;
-    background-color: #f1f5f9;
-    color: var(--slate-700);
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 6px;
-    border: 1px solid var(--slate-100);
-}
-
-.membership-badge-code {
-    display: inline-block;
-    padding: 3px 8px;
-    background: #fafafa;
-    border: 1px solid var(--slate-200);
-    color: var(--slate-900);
-    font-weight: 600;
-    font-size: 12px;
-    border-radius: 6px;
-    letter-spacing: 0.3px;
-}
-.search-wrapper{
-    position:relative;
-}
-
-#suggestions{
-    position:absolute;
-    top:100%;
-    left:0;
-    width:100%;
-    background:#fff;
-    border:1px solid #e2e8f0;
-    border-radius:12px;
-    margin-top:5px;
-    z-index:999;
-    box-shadow:0 8px 20px rgba(0,0,0,.08);
-    display:none;
-    overflow:hidden;
-}
-
-.suggestion-item{
-    padding:12px 15px;
-    cursor:pointer;
-    border-bottom:1px solid #f1f5f9;
-}
-
-.suggestion-item:last-child{
-    border-bottom:none;
-}
-
-.suggestion-item:hover{
-    background:#f8fafc;
-}
-
-.suggestion-name{
-    font-weight:600;
-    color:#0f172a;
-}
-
-.suggestion-membership{
-    font-size:12px;
-    color:#64748b;
-}
-/* System State Capsule Badges */
+/* ── STATUS PILLS ───────────────────────────────────────────── */
 .state-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 11.5px;
-    font-weight: 600;
-    line-height: 1;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 600; line-height: 1;
 }
-.state-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-}
-
+.state-dot { width: 6px; height: 6px; border-radius: 50%; }
 .pill-success-layer { background: #dcfce7; color: #166534; }
 .pill-success-layer .state-dot { background: #16a34a; }
-
 .pill-warning-layer { background: #fef3c7; color: #92400e; }
 .pill-warning-layer .state-dot { background: #d97706; }
+.pill-danger-layer  { background: #fee2e2; color: #991b1b; }
+.pill-danger-layer  .state-dot { background: #dc2626; }
 
-.pill-danger-layer { background: #fee2e2; color: #991b1b; }
-.pill-danger-layer .state-dot { background: #dc2626; }
-
-/* Custom Micro Entrance Animations */
-.animate-fade-in {
-    animation: simpleFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-@keyframes simpleFadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ── PACKAGE TAG ────────────────────────────────────────────── */
+.package-pill-tag {
+    display: inline-flex; align-items: center;
+    padding: 3px 8px; background: #f1f5f9;
+    color: var(--slate-700); font-size: 12px; font-weight: 600;
+    border-radius: 6px; border: 1px solid var(--slate-100);
 }
 
-/* ==========================================================================
-   PILL SHAPED SEARCH OVERHAUL INTERFACE
-   ========================================================================== */
-.custom-search-form {
-    background: transparent;
+/* ── MEMBERSHIP BADGE ───────────────────────────────────────── */
+.membership-badge-code {
+    display: inline-block; padding: 3px 8px;
+    background: #fafafa; border: 1px solid var(--slate-200);
+    color: var(--slate-900); font-weight: 600; font-size: 12px;
+    border-radius: 6px; letter-spacing: 0.3px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
 }
 
-/* SEARCH INPUT AREA PILL */
+/* ── VIEW DETAILS BUTTON ────────────────────────────────────── */
+.view-detail-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid #e0e7ff;
+    background: #eef2ff; color: #4f46e5;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; cursor: pointer;
+    transition: all 0.15s ease;
+}
+.view-detail-btn:hover {
+    background: #4f46e5; color: #fff;
+    border-color: #4f46e5;
+    box-shadow: 0 4px 10px rgba(79,70,229,0.25);
+    transform: scale(1.08);
+}
+
+/* ── ANIMATE ────────────────────────────────────────────────── */
+.animate-fade-in { animation: simpleFadeIn 0.25s cubic-bezier(0.4,0,0.2,1); }
+@keyframes simpleFadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── SEARCH ─────────────────────────────────────────────────── */
+.custom-search-form { background: transparent; }
 .search-box {
-    display: inline-flex;
-    align-items: center;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 999px; /* Absolute pill layout mapping */
-    padding: 6px 18px;    /* Widened horizontal inner canvas space */
-    min-width: 290px;
-    height: 40px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex; align-items: center;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 999px; padding: 6px 18px;
+    min-width: 290px; height: 40px;
+    transition: all 0.2s ease;
 }
-
 .search-box:focus-within {
     border-color: #6d28d9;
-    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.08);
-    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(109,40,217,0.08);
+    background: #fff;
 }
-
-.search-icon {
-    color: #94a3b8;
-    font-size: 13px;
-    margin-right: 10px;
-    display: flex;
-    align-items: center;
-}
-
-.search-input {
-    border: none;
-    outline: none;
-    background: transparent;
-    width: 100%;
-    font-size: 13px;
-    font-weight: 500;
-    color: #1e293b;
-}
-
-/* SEARCH BUTTON PILL */
-.search-btn {
-    height: 40px;
-    padding: 0 22px;
-    border-radius: 999px; /* Exact matching pill border mapping */
-    border: none;
-    background: #6d28d9;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.15s ease;
-    box-shadow: 0 1px 2px rgba(109, 40, 217, 0.05);
-}
-
-.search-btn:hover {
-    background: #5b21b6;
-}
-
-.search-btn:active {
-    transform: scale(0.97);
-}
-
-/* RESET BUTTON PILL */
+.search-icon { color: #94a3b8; font-size: 13px; margin-right: 10px; }
+.search-input { border:none; outline:none; background:transparent; width:100%; font-size:13px; font-weight:500; color:#1e293b; }
 .reset-btn {
-    height: 40px;
-    padding: 0 18px;
-    border-radius: 999px; /* Synchronized styling matching search context layout */
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-    transition: all 0.15s ease;
+    height: 40px; padding: 0 18px; border-radius: 999px;
+    border: 1px solid #e2e8f0; background: #fff; color: #64748b;
+    font-size: 13px; font-weight: 600; display: inline-flex; align-items: center;
+    text-decoration: none; gap: 6px; transition: all 0.15s ease;
+}
+.reset-btn:hover { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
+
+/* ── AUTOCOMPLETE ───────────────────────────────────────────── */
+#suggestions {
+    position: fixed; z-index: 9999;
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 12px; margin-top: 5px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    overflow: hidden; min-width: 280px;
+}
+.suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:hover { background: #f8fafc; }
+.suggestion-name { font-weight: 600; color: #0f172a; }
+.suggestion-membership { font-size: 12px; color: #64748b; }
+
+/* ═══════════════════════════════════════════════════════
+   MEMBER MODAL
+═══════════════════════════════════════════════════════ */
+.member-modal-overlay {
+    position: fixed; inset: 0; z-index: 1050;
+    background: rgba(15,23,42,0.45);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(2px);
+}
+.member-modal-overlay.open {
+    opacity: 1; pointer-events: all;
+}
+.member-modal-panel {
+    background: #fff; border-radius: 20px;
+    width: 100%; max-width: 680px;
+    max-height: 88vh; display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    transform: translateY(12px) scale(0.98);
+    transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    overflow: hidden;
+}
+.member-modal-overlay.open .member-modal-panel {
+    transform: translateY(0) scale(1);
 }
 
-.reset-btn:hover {
-    background: #f8fafc;
-    color: #334155;
-    border-color: #cbd5e1;
+/* MODAL HEADER */
+.mmp-header {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid var(--slate-100);
+    flex-shrink: 0;
+}
+.mmp-avatar {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #fff; font-size: 15px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; letter-spacing: 0.5px;
+}
+.mmp-title-block { flex: 1; min-width: 0; }
+.mmp-name { font-size: 17px; font-weight: 800; color: var(--slate-900); margin: 0 0 6px; }
+.mmp-meta-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.mmp-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 600;
+}
+.chip-code    { background: #f1f5f9; color: var(--slate-700); border: 1px solid var(--slate-200); font-family: monospace; }
+.chip-neutral { background: #f8fafc; color: var(--slate-500); border: 1px solid var(--slate-100); }
+.chip-paid     { background: #dcfce7; color: #166534; }
+.chip-paid .chip-dot { width:6px; height:6px; border-radius:50%; background:#16a34a; }
+.chip-pending  { background: #fef3c7; color: #92400e; }
+.chip-pending .chip-dot { width:6px; height:6px; border-radius:50%; background:#d97706; }
+.chip-rejected { background: #fee2e2; color: #991b1b; }
+.chip-rejected .chip-dot { width:6px; height:6px; border-radius:50%; background:#dc2626; }
+
+.mmp-close-btn {
+    width: 34px; height: 34px; border-radius: 10px;
+    border: 1px solid var(--slate-100); background: #f8fafc;
+    color: var(--slate-500); font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s;
+    margin-left: auto;
+}
+.mmp-close-btn:hover { background: #fee2e2; border-color: #fecaca; color: #dc2626; }
+
+/* MODAL TABS */
+.mmp-tabs {
+    display: flex; gap: 2px; padding: 12px 20px 0;
+    border-bottom: 1px solid var(--slate-100);
+    flex-shrink: 0; overflow-x: auto;
+    scrollbar-width: none;
+}
+.mmp-tabs::-webkit-scrollbar { display: none; }
+.mmp-tab {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px 10px; border: none; background: none;
+    color: var(--slate-400); font-size: 12.5px; font-weight: 600;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; white-space: nowrap;
+    transition: color 0.15s;
+}
+.mmp-tab:hover { color: var(--slate-700); }
+.mmp-tab.active { color: var(--violet-600); border-bottom-color: var(--violet-600); }
+.mmp-tab-badge {
+    background: var(--violet-600); color: #fff;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 999px;
+    margin-left: 2px;
+}
+
+/* MODAL BODY / PANES */
+.mmp-body { flex: 1; overflow-y: auto; padding: 24px; }
+.mmp-pane { display: none; }
+.mmp-pane.active { display: block; }
+
+/* DETAIL GRID */
+.detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+@media (max-width: 520px) { .detail-grid { grid-template-columns: 1fr; } }
+.detail-item {
+    background: #f8fafc; border: 1px solid var(--slate-100);
+    border-radius: 12px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+}
+.detail-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--slate-400);
+    display: flex; align-items: center; gap: 5px;
+}
+.detail-label i { font-size: 10px; }
+.detail-value {
+    font-size: 14px; font-weight: 600; color: var(--slate-800);
+}
+.detail-value.mono { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13px; }
+
+/* EMPTY STATE */
+.mmp-empty-pane {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 48px 20px;
+    color: var(--slate-300); text-align: center;
+    gap: 12px;
+}
+.mmp-empty-pane i { font-size: 2.8rem; }
+.mmp-empty-pane p { font-size: 13.5px; color: var(--slate-400); margin: 0; font-weight: 500; max-width: 260px; }
+
+/* ENTRIES MINI TABLE */
+.entries-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--slate-100); }
+.entries-mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.entries-mini-table th {
+    background: var(--slate-25); padding: 10px 14px;
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--slate-400);
+    border-bottom: 1px solid var(--slate-100); white-space: nowrap;
+}
+.entries-mini-table td {
+    padding: 11px 14px; border-bottom: 1px solid var(--slate-100);
+    color: var(--slate-700); white-space: nowrap;
+}
+.entries-mini-table tbody tr:last-child td { border-bottom: none; }
+.entries-mini-table tbody tr:hover td { background: #f8fafc; }
+
+/* ALLOCATION BAR */
+.alloc-bar-wrap { margin-bottom: 4px; }
+.alloc-bar-track {
+    height: 10px; border-radius: 999px; background: var(--slate-100);
+    overflow: hidden; display: flex;
+}
+.alloc-bar-segment {
+    height: 100%; min-width: 2px;
+    background: linear-gradient(90deg, #6d28d9, #818cf8);
+    transition: width 0.4s ease;
+}
+.alloc-bar-segment:nth-child(2) {
+    background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+}
+.alloc-bar-labels {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    margin-top: 6px; font-size: 12px; color: var(--slate-500);
+}
+.alloc-bar-labels strong { color: var(--slate-800); }
+.alloc-pill {
+    display: inline-block; padding: 2px 9px;
+    background: #f5f3ff; color: #6d28d9;
+    border: 1px solid #ddd6fe; border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    font-family: monospace;
 }
 </style>
 {% endblock %}

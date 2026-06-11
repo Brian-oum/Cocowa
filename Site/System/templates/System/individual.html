@@ -500,7 +500,26 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     @media (max-width: 600px) {
-        .summary-4-grid { grid-template-columns: 1fr; }
+        /* FIXED: Forces 2 columns (resulting in 2 rows for your 4 cards) */
+        .summary-4-grid { 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 12px; /* Marginally tighter gaps for cleaner fit on small devices */
+        }
+        
+        /* Optional refinement: reduce padding slightly on mobile so metric data fits comfortably */
+        .metrics-card {
+            padding: 14px;
+            gap: 10px;
+        }
+        .metrics-value {
+            font-size: 16px;
+        }
+        .metrics-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+        }
+
         .financial-row-container { grid-template-columns: 1fr; gap: 16px; }
         .profile-progress-layout { flex-direction: column; gap: 20px; align-items: flex-start; }
     }

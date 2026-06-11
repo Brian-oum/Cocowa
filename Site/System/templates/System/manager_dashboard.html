@@ -172,7 +172,7 @@
                     {% for c in recent_complaints %}
                     <div class="overview-item" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border-color, #f1f5f9);">
                         <span class="ov-label" style="font-weight: 500; color: #334155;">
-                            <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; margin-right: 8px;"></i> {{ c.title|truncatechars:28 }}
+                            <i class="fa-solid fa-circle-user user-avatar-inline" style="color: #ef4444; margin-right: 8px;"></i> {{ c.user.username }}
                         </span>
                         <span class="ov-value" style="font-size: 12px; color: #64748b;">
                             {{ c.created_at|date:"M d, Y" }} &middot; <span class="status-badge-micro">{{ c.status }}</span>
@@ -193,7 +193,7 @@
                     {% for c in reported_cases %}
                     <div class="overview-item" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border-color, #f1f5f9);">
                         <span class="ov-label" style="font-weight: 500; color: #334155;">
-                            <i class="fa-solid fa-file-circle-exclamation" style="color: #3b82f6; margin-right: 8px;"></i> {{ c.title|truncatechars:24 }}
+                            <i class="fa-solid fa-circle-user user-avatar-inline" style="color: #3b82f6; margin-right: 8px;"></i> {{ c.reporter.username }}
                         </span>
                         <span class="ov-value" style="font-size: 12px; color: #64748b; text-align: right;">
                             <span class="priority-lbl" style="font-weight: 600; text-transform: uppercase; font-size: 11px;">{{ c.priority|default:"Normal" }}</span>
@@ -433,6 +433,26 @@ document.addEventListener("DOMContentLoaded", function() {
         font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+        .financial-row-container,
+        .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+
+    @media (max-width: 600px) {
+        .financial-row-container,
+        .stats-grid { grid-template-columns: 1fr !important; }
+
+        /* Stack 2-col grid to single column */
+        [style*="grid-template-columns: 1.2fr 1fr"],
+        [style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: 1fr !important;
+        }
+
+        /* Scrollable tables */
+        table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     }
 </style>
 {% endblock %}

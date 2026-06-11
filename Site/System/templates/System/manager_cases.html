@@ -2,122 +2,173 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid px-4 py-4 main-dashboard-wrapper">
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white">
-
-        <div class="card-header bg-white border-bottom border-slate-100 py-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <h4 class="mb-0 fw-bold text-slate-900 d-flex align-items-center">
-                <i class="fa-solid fa-clipboard-list me-2.5 text-primary fs-5"></i>
-                Manager Case Dashboard
-            </h4>
-
-            <form method="GET" class="d-flex align-items-center gap-2 filter-form">
-                <div class="input-group input-group-sm">
-                    <label class="input-group-text bg-slate-25 text-slate-500 border-slate-200" for="statusFilter">
-                        <i class="fa-solid fa-filter small"></i>
-                    </label>
-                    <select name="status" id="statusFilter" class="form-select form-select-sm border-slate-200 text-slate-700 fw-medium" style="min-width: 140px;">
-                        <option value="">All Statuses</option>
-                        <option value="open" {% if status == "open" %}selected{% endif %}>Open</option>
-                        <option value="investigating" {% if status == "investigating" %}selected{% endif %}>Investigating</option>
-                        <option value="resolved" {% if status == "resolved" %}selected{% endif %}>Resolved</option>
-                        <option value="closed" {% if status == "closed" %}selected{% endif %}>Closed</option>
-                    </select>
+<div class="dashboard-panel-view animate-fade-up" style="--delay: 1;">
+    
+    {% if messages %}
+    <div class="toast-stack">
+        {% for message in messages %}
+            <div class="toast toast-{{ message.tags }}" role="alert">
+                <div class="toast-content">
+                    {% if message.tags == "success" %}
+                        <i class="fa-solid fa-circle-check toast-icon"></i>
+                    {% elif message.tags == "error" or message.tags == "danger" %}
+                        <i class="fa-solid fa-circle-exclamation toast-icon"></i>
+                    {% elif message.tags == "warning" %}
+                        <i class="fa-solid fa-triangle-exclamation toast-icon"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-info toast-icon"></i>
+                    {% endif %}
+                    <span class="toast-message">{{ message }}</span>
                 </div>
-                <button class="btn btn-sm btn-primary px-3 fw-semibold shadow-xs">
-                    Apply
-                </button>
-            </form>
+                <button class="toast-close-btn" onclick="dismissToast(this.parentElement);">&times;</button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="panel-header-card">
+        <div class="header-main-flex">
+            <div class="header-icon-badge">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+            <div class="header-title-text">
+                <h2>Manager Case Dashboard</h2>
+                <p class="panel-subtitle">Review corporate road incidents, manage fleet safety tickets, and track regional operational profiles.</p>
+            </div>
         </div>
 
-        <div class="table-responsive" style="overflow-x: auto; min-height: 250px;">
-            <table class="table align-middle mb-0 premium-manager-table">
+        <hr class="panel-divider">
+
+        <div class="filter-pills-deck">
+            <a href="{% url 'manager_cases' %}" class="filter-pill-link {% if not status %}active-pill{% endif %}">
+                <span class="pill-title">All Cases</span>
+                <span class="pill-counter-bubble">{{ total_count|default:cases.count }}</span>
+            </a>
+
+            <a href="?status=open" class="filter-pill-link {% if status == 'open' %}active-pill{% endif %}">
+                <span class="pill-title">Open</span>
+                <span class="pill-counter-bubble status-bubble-open">{{ open_count|default:0 }}</span>
+            </a>
+
+            <a href="?status=investigating" class="filter-pill-link {% if status == 'investigating' %}active-pill{% endif %}">
+                <span class="pill-title">Investigating</span>
+                <span class="pill-counter-bubble status-bubble-progress">{{ investigating_count|default:0 }}</span>
+            </a>
+
+            <a href="?status=resolved" class="filter-pill-link {% if status == 'resolved' %}active-pill{% endif %}">
+                <span class="pill-title">Resolved</span>
+                <span class="pill-counter-bubble status-bubble-resolved">{{ resolved_count|default:0 }}</span>
+            </a>
+
+            <a href="?status=closed" class="filter-pill-link {% if status == 'closed' %}active-pill{% endif %}">
+                <span class="pill-title">Closed</span>
+                <span class="pill-counter-bubble">{{ closed_count|default:0 }}</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="registry-table-card">
+        <div class="table-scroll-container">
+            <table class="premium-management-table">
                 <thead>
                     <tr>
-                        <th style="width: 5%;" class="text-center">#</th>
-                        <th style="width: 15%;">Reporter</th>
-                        <th style="width: 14%;">Vehicle</th>
-                        <th style="width: 16%;">SACCO</th>
-                        <th style="width: 22%;">Incident Description</th>
-                        <th style="width: 12%;">Status</th>
-                        <th style="width: 16%;">Date &amp; Time Reported</th>
-                        <th style="width: 10%;" class="text-end pe-4">Actions</th>
+                        <th style="width: 50px; text-align: center;">#</th>
+                        <th>Reporter</th>
+                        <th>Vehicle</th>
+                        <th>SACCO / Group</th>
+                        <th>Incident Description</th>
+                        <th style="width: 140px;">Live Status</th>
+                        <th style="width: 150px;">Timestamp</th>
+                        <th style="width: 80px; text-align: center;">Action</th>
+                        <th style="width: 210px; text-align: right;">State Transition</th>
                     </tr>
                 </thead>
-
                 <tbody>
                     {% for case in cases %}
-                    <tr class="case-row-interactive">
-                        
-                        <td class="text-center text-slate-400 fw-semibold row-number-cell">
-                            {{ forloop.counter }}
+                    <tr class="interactive-table-row">
+                        <td style="text-align: center;">
+                            <span class="row-index-counter">{{ forloop.counter }}</span>
                         </td>
-
-                        <td class="text-slate-800 fw-bold">
-                            <div class="d-flex align-items-center gap-2">
+                        <td>
+                            <div class="user-account-badge">
                                 <div class="avatar-placeholder">{{ case.reporter.username|slice:":1"|upper }}</div>
-                                <span>{{ case.reporter.username }}</span>
+                                <span class="username-string">{{ case.reporter.username }}</span>
                             </div>
                         </td>
-
                         <td>
                             {% if case.number_plate %}
                                 <span class="vehicle-badge">{{ case.number_plate }}</span>
                             {% elif case.vehicle %}
                                 <span class="vehicle-badge">{{ case.vehicle.number_plate }}</span>
                             {% else %}
-                                <span class="text-slate-400 fst-italic fs-7">Unspecified</span>
+                                <span class="text-slate-400 fst-italic style-null">Unspecified</span>
                             {% endif %}
                         </td>
-
-                        <td class="text-slate-600 fw-medium">
-                            {% if case.sacco %}
-                                {{ case.sacco.sacco_name }}
-                            {% elif case.external_sacco_name %}
-                                {{ case.external_sacco_name }}
-                            {% else %}
-                                <span class="text-slate-400 fst-italic fs-7">Unknown Group</span>
-                            {% endif %}
-                        </td>
-
-                        <td class="text-slate-900 fw-semibold">
-                            {{ case.get_incident_type_display }}
-                        </td>
-
                         <td>
-                            <span class="badge-pill pill-{{ case.status }}">
-                                <span class="pill-indicator-dot"></span>
+                            <span class="sacco-text-span">
+                                {% if case.sacco %}
+                                    {{ case.sacco.sacco_name }}
+                                {% elif case.external_sacco_name %}
+                                    {{ case.external_sacco_name }}
+                                {% else %}
+                                    <span class="text-slate-400 fst-italic style-null">Unknown Group</span>
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="complaint-headline-text">{{ case.get_incident_type_display }}</span>
+                        </td>
+                        <td>
+                            <span class="status-indicator-badge status-{{ case.status }}">
+                                <span class="status-core-dot"></span>
                                 {{ case.get_status_display }}
                             </span>
                         </td>
-
-                        <td class="text-slate-500 fs-7">
-                            {{ case.created_at|date:"d M Y" }} 
-                            <span class="text-slate-400 d-block small mt-0.5">{{ case.created_at|date:"H:i" }}</span>
+                        <td>
+                            <span class="timestamp-calendar-text">
+                                <i class="fa-regular fa-calendar-lines-pen time-icon"></i>
+                                {{ case.created_at|date:"Y-m-d H:i" }}
+                            </span>
                         </td>
-
-                        <td class="text-end pe-4">
-
-    <select class="form-select form-select-sm status-select"
-            data-case-id="{{ case.id }}">
-
-        <option value="open" {% if case.status == "open" %}selected{% endif %}>Open</option>
-        <option value="investigating" {% if case.status == "investigating" %}selected{% endif %}>Investigating</option>
-        <option value="resolved" {% if case.status == "resolved" %}selected{% endif %}>Resolved</option>
-        <option value="closed" {% if case.status == "closed" %}selected{% endif %}>Closed</option>
-
-    </select>
-
-</td>
+                        <td style="text-align: center;">
+                            <button class="btn-view-eye open-response-modal" 
+                                    data-id="{{ case.id }}"
+                                    data-title="{{ case.get_incident_type_display }}"
+                                    data-reporter="{{ case.reporter.username }}"
+                                    data-email="{{ case.reporter.email|default:'' }}"
+                                    data-vehicle="{% if case.number_plate %}{{ case.number_plate }}{% elif case.vehicle %}{{ case.vehicle.number_plate }}{% else %}Unspecified{% endif %}"
+                                    data-description="{{ case.description|default:'No extended content summary log available.' }}"
+                                    title="View details & register updates">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </td>
+                        <td style="text-align: right;">
+                            <form method="POST" action="{% url 'update_case_status' %}" class="inline-transition-form update-case-status-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="case_id" value="{{ case.id }}">
+                                <div class="action-select-group">
+                                    <select name="status" class="action-control-dropdown status-select" data-case-id="{{ case.id }}" required>
+                                        <option value="open" {% if case.status == "open" %}selected{% endif %}>Open</option>
+                                        <option value="investigating" {% if case.status == "investigating" %}selected{% endif %}>Investigating</option>
+                                        <option value="resolved" {% if case.status == "resolved" %}selected{% endif %}>Resolved</option>
+                                        <option value="closed" {% if case.status == "closed" %}selected{% endif %}>Closed</option>
+                                    </select>
+                                    <button type="submit" class="btn-action-submit" title="Commit State Change">
+                                        <i class="fa-solid fa-floppy-disk"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </td>
                     </tr>
-
                     {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center py-5 bg-slate-25">
-                            <div class="py-4 text-center">
-                                <i class="fa-solid fa-inbox text-slate-300 fs-1 mb-3"></i>
-                                <h6 class="fw-bold text-slate-700">No Dashboard Case Records Found</h6>
-                                <p class="text-slate-400 small mb-0">Adjust your status filter variables or wait for incoming citizen queries.</p>
+                    <tr class="empty-registry-state">
+                        <td colspan="9">
+                            <div class="empty-view-wrapper">
+                                <div class="empty-icon-cloud">
+                                    <i class="fa-solid fa-clipboard-check"></i>
+                                </div>
+                                <h3>Clear Operational Queue</h3>
+                                <p>No case logs correspond to the active filter parameters.</p>
                             </div>
                         </td>
                     </tr>
@@ -127,327 +178,537 @@
         </div>
     </div>
 </div>
-<script>
-document.querySelectorAll(".status-select").forEach(select => {
 
-    select.addEventListener("change", function () {
+<div id="responseModal" class="premium-modal-backdrop">
+    <div class="premium-modal-container">
+        <div class="modal-header-flex">
+            <div class="modal-title-group">
+                <h3 id="modalTicketTitle">Case Context</h3>
+                <p class="modal-subtitle">Review reported system field indices and transmit an operational status update log directly to the tracking dashboard.</p>
+            </div>
+            <button class="modal-close-trigger" id="closeModalBtn">&times;</button>
+        </div>
+        
+        <form method="POST" id="responseForm">
+            {% csrf_token %}
+            <div class="modal-body-layout">
+                <div class="modal-meta-row">
+                    <div class="meta-field">
+                        <label>Reporter profile</label>
+                        <input type="text" id="modalReporter" readonly class="modal-readonly-input">
+                    </div>
+                    <div class="meta-field">
+                        <label>Vehicle Target Plate</label>
+                        <input type="text" id="modalVehicle" readonly class="modal-readonly-input">
+                    </div>
+                </div>
 
-        const caseId = this.getAttribute("data-case-id");
-        const status = this.value;
+                <div class="modal-full-field">
+                    <label>Incident Details Log</label>
+                    <textarea id="modalDescription" readonly class="modal-readonly-textarea"></textarea>
+                </div>
 
-        fetch("{% url 'update_case_status' %}", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({
-                case_id: caseId,
-                status: status
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                this.style.border = "2px solid #22c55e"; // green flash
-                setTimeout(() => {
-                    this.style.border = "";
-                }, 800);
-            } else {
-                alert(data.error || "Update failed");
-            }
-        });
+                <hr class="modal-separator">
 
-    });
-    select.addEventListener("change", function () {
+                <div class="modal-full-field">
+                    <label class="required-label">Resolution Summary Note / Action Taken</label>
+                    <textarea name="response_message" placeholder="Type internal diagnostic logs or updates here. This description profile anchors contextual notes back into regional ticket states." required class="modal-action-textarea"></textarea>
+                </div>
+            </div>
 
-    const caseId = this.getAttribute("data-case-id");
-    const status = this.value;
-
-    this.classList.add("updating");
-
-    fetch("{% url 'update_case_status' %}", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": "{{ csrf_token }}",
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({
-            case_id: caseId,
-            status: status
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        this.classList.remove("updating");
-
-        if (data.success) {
-            this.classList.add("success");
-
-            setTimeout(() => {
-                this.classList.remove("success");
-            }, 800);
-
-        } else {
-            alert(data.error || "Update failed");
-        }
-    });
-});
-
-});
-</script>
+            <div class="modal-footer-flex">
+                <button type="button" class="btn-modal-secondary" id="cancelModalBtn">Cancel</button>
+                <button type="submit" class="btn-modal-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Save Action & Dispatched Note
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <style>
-/* Color tokens and global canvas settings */
-:root {
-    --primary-indigo: #4f46e5;
-    --primary-indigo-dark: #4338ca;
-    --slate-25: #f8fafc;
-    --slate-50: #f1f5f9;
-    --slate-100: #e2e8f0;
-    --slate-200: #cbd5e1;
-    --slate-400: #94a3b8;
-    --slate-500: #64748b;
-    --slate-600: #475569;
-    --slate-700: #334155;
-    --slate-800: #1e293b;
-    --slate-900: #0f172a;
-}
+    :root {
+        --c-blue: #6A2B91;
+        --c-blue-glow: #2563eb;
+        --border-color: #f1f5f9;
+        --border-field: #cbd5e1;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.02), 0 4px 12px -2px rgba(0, 0, 0, 0.01);
+    }
 
-.main-dashboard-wrapper {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #f8fafc;
-}
+    .dashboard-panel-view {
+        width: 100%;
+        margin: 0 auto;
+        padding: 24px px;
+        padding-bottom: 60px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
-.btn-primary {
-    background-color: var(--primary-indigo) !important;
-    border-color: var(--primary-indigo) !important;
-}
-.btn-primary:hover {
-    background-color: var(--primary-indigo-dark) !important;
-    border-color: var(--primary-indigo-dark) !important;
-}
+    /* VIEW ANIMATION STAGGERING */
+    .animate-fade-up {
+        opacity: 0;
+        transform: translateY(14px);
+        animation: panelSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation-delay: calc(var(--delay) * 100ms);
+    }
 
-.bg-slate-25 { background-color: var(--slate-25); }
-.border-slate-100 { border-color: var(--slate-100) !important; }
-.border-slate-200 { border-color: var(--slate-200) !important; }
-.text-slate-900 { color: var(--slate-900); }
-.text-slate-800 { color: var(--slate-800); }
-.text-slate-600 { color: var(--slate-600); }
-.text-slate-500 { color: var(--slate-500); }
-.text-slate-400 { color: var(--slate-400); }
-.fs-7 { font-size: 0.875rem; }
-.fs-8 { font-size: 0.72rem; }
-.shadow-xs { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+    @keyframes panelSlideIn {
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-/* Table Core Architectures */
-.premium-manager-table th {
-    background-color: var(--slate-25);
-    color: var(--slate-500);
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--slate-100) !important;
-}
-.premium-manager-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--slate-100);
-    white-space: nowrap;
-}
+    /* HEADER STYLES */
+    .panel-header-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-premium);
+    }
 
-.case-row-interactive:hover {
-    background-color: rgba(248, 250, 252, 0.7) !important;
-}
+    .header-main-flex {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
 
-/* User Profile Avatar Frame */
-.avatar-placeholder {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background-color: #e0e7ff;
-    color: var(--primary-indigo);
-    font-size: 11px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #c7d2fe;
-}
+    .header-icon-badge {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(106, 43, 145, 0.06);
+        color: var(--c-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
 
-/* Kenyan Styled Vehicle Badge */
-.vehicle-badge {
-    display: inline-block;
-    padding: 3px 9px;
-    background: #fffdf5;
-    border: 1.5px solid #eab308;
-    border-radius: 6px;
-    font-family: 'SFMono-Regular', Consolas, monospace;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #1e1b4b;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-}
+    .header-title-text h2 {
+        margin: 0 0 4px 0;
+        font-size: 21px;
+        font-weight: 700;
+        color: var(--text-main);
+        letter-spacing: -0.02em;
+    }
 
-/* Index Number Formatting Column */
-.row-number-cell {
-    font-family: 'SFMono-Regular', Consolas, monospace;
-    font-size: 13px;
-}
+    .panel-subtitle {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--text-muted);
+    }
 
-/* Premium Dashboard Status Pills */
-.badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1;
-}
-.pill-indicator-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-}
-.pill-open, .pill- { background: #fef3c7; color: #b45309; }
-.pill-open .pill-indicator-dot, .pill- .pill-indicator-dot { background: #d97706; }
+    .panel-divider {
+        border: 0;
+        border-top: 1px solid #f1f5f9;
+        margin: 20px 0;
+    }
 
-.pill-investigating { background: #e0f2fe; color: #0369a1; }
-.pill-investigating .pill-indicator-dot { background: #0284c7; }
+    /* TABS / PILLS */
+    .filter-pills-deck {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
 
-.pill-resolved { background: #dcfce7; color: #15803d; }
-.pill-resolved .pill-indicator-dot { background: #16a34a; }
+    .filter-pill-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-.pill-closed { background: #f1f5f9; color: #475569; }
-.pill-closed .pill-indicator-dot { background: #64748b; }
+    .filter-pill-link:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: var(--text-main);
+    }
 
-/* Premium Dropdown Component Modifications */
-.hide-caret::after {
-    display: none !important; /* Removes default clumsy browser layout arrows */
-}
-.btn-light:hover {
-    background-color: var(--slate-50);
-    border-color: var(--slate-200);
-}
+    .filter-pill-link.active-pill {
+        background: var(--c-blue);
+        border-color: var(--c-blue);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(106, 43, 145, 0.15);
+    }
 
-.dropdown-item {
-    font-size: 13px;
-    transition: background-color 0.15s ease;
-}
-.dropdown-item:hover {
-    background-color: var(--slate-25);
-}
+    .pill-counter-bubble {
+        font-size: 11px;
+        padding: 2px 7px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        color: #475569;
+        font-weight: 700;
+    }
 
-/* Fixes tables clipping or hiding dropdown menus */
-.table-responsive {
-    position: relative;
-}
-.container-dropdown {
-    position: static; 
-}
-.case-row-interactive {
-    position: relative;
-}
+    .filter-pill-link.active-pill .pill-counter-bubble {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
 
-/* Optional smooth fading dynamic transition animation */
-.animate-dropdown {
-    animation: fadeInDropdown 0.12s ease-out;
-}
-@keyframes fadeInDropdown {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-/* ===========================
-   STATUS DROPDOWN UI (MODERN)
-=========================== */
+    /* REGISTRY GRAPH TABLE BASE DECK */
+    .registry-table-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        box-shadow: var(--shadow-premium);
+        overflow: hidden;
+    }
 
-.status-select {
-    width: 80px;
-    padding: 6px 10px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    color: #1e293b;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-}
+    .table-scroll-container {
+        width: 100%;
+        overflow-x: auto;
+    }
 
-/* hover effect */
-.status-select:hover {
-    border-color: #94a3b8;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
+    .premium-management-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        text-align: left;
+    }
 
-/* focus state (important for UX) */
-.status-select:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-}
+    .premium-management-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        font-size: 12.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
 
-/* ===========================
-   STATUS COLOR THEMING
-=========================== */
+    .premium-management-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        white-space: nowrap;
+    }
 
-/* OPEN */
-.status-select option[value="open"] {
-    background: #fef3c7;
-    color: #92400e;
-}
+    .interactive-table-row:hover td {
+        background-color: #fafafa;
+    }
 
-/* INVESTIGATING */
-.status-select option[value="investigating"] {
-    background: #dbeafe;
-    color: #1e40af;
-}
+    .row-index-counter {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #94a3b8;
+    }
 
-/* RESOLVED */
-.status-select option[value="resolved"] {
-    background: #dcfce7;
-    color: #166534;
-}
+    /* SPECIFIC CELL AVATARS & INLINES */
+    .avatar-placeholder {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #f3e8ff;
+        color: var(--c-blue);
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e9d5ff;
+        flex-shrink: 0;
+    }
 
-/* CLOSED */
-.status-select option[value="closed"] {
-    background: #f1f5f9;
-    color: #334155;
-}
+    .user-account-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #1e293b;
+        font-weight: 600;
+    }
 
-/* ===========================
-   LIVE UPDATE FEEDBACK EFFECT
-=========================== */
+    .sacco-text-span {
+        color: #475569;
+        font-weight: 500;
+    }
 
-.status-select.updating {
-    border-color: #f59e0b !important;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
-}
+    .complaint-headline-text {
+        font-weight: 600;
+        color: var(--text-main);
+    }
 
-.status-select.success {
-    border-color: #22c55e !important;
-    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
-}
+    /* PLATE DESIGN BADGING */
+    .vehicle-badge {
+        display: inline-block;
+        padding: 3px 9px;
+        background: #fffdf5;
+        border: 1.5px solid #eab308;
+        border-radius: 6px;
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #1e1b4b;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
 
-/* ===========================
-   ACTION CELL ALIGNMENT
-=========================== */
+    .style-null {
+        font-size: 12.5px;
+    }
 
-td.text-end.pe-4 {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-}
+    .timestamp-calendar-text {
+        color: #475569;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
 
-/* optional spacing fix */
-.status-select {
-    margin-right: 6px;
-}
+    .time-icon { color: #94a3b8; }
+
+    /* ACTION ENGINE ICON EYE */
+    .btn-view-eye {
+        width: 32px;
+        height: 32px;
+        border: 1px solid rgba(37, 99, 235, 0.15);
+        background: rgba(37, 99, 235, 0.06);
+        color: var(--c-blue-glow);
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-view-eye:hover {
+        background: var(--c-blue-glow);
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+    }
+
+    /* STATUS CAPSULES */
+    .status-indicator-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-core-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .status-indicator-badge.status-open { background: #eff6ff; color: #1e40af; }
+    .status-indicator-badge.status-open .status-core-dot { background: #1e40af; }
+
+    .status-indicator-badge.status-investigating { background: #fffbeb; color: #b45309; }
+    .status-indicator-badge.status-investigating .status-core-dot { background: #b45309; }
+
+    .status-indicator-badge.status-resolved { background: #f0fdf4; color: #166534; }
+    .status-indicator-badge.status-resolved .status-core-dot { background: #166534; }
+
+    .status-indicator-badge.status-closed { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+    .status-indicator-badge.status-closed .status-core-dot { background: #475569; }
+
+    /* INLINE FORM SELECTION TRANSITIONS */
+    .inline-transition-form { display: inline-block; }
+    .action-select-group { display: flex; align-items: center; gap: 4px; background: #ffffff; }
+
+    .action-control-dropdown {
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border-field);
+        font-size: 12.5px;
+        color: var(--text-main);
+        outline: none;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: border-color 0.15s ease;
+        font-weight: 600;
+    }
+
+    .action-control-dropdown:focus { border-color: var(--c-blue); }
+
+    .btn-action-submit {
+        width: 30px;
+        height: 30px;
+        border: none;
+        background: var(--c-blue);
+        color: #ffffff;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-action-submit:hover { background: #532073; transform: translateY(-0.5px); }
+
+    /* ASYNC AJAX FEEDBACK OVERLAYS */
+    .action-control-dropdown.updating { border-color: #f59e0b !important; }
+    .action-control-dropdown.success { border-color: #22c55e !important; }
+
+    /* EMPTY STATES STYLING */
+    .empty-registry-state td { padding: 65px 20px !important; text-align: center; }
+    .empty-view-wrapper { max-width: 300px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+    .empty-icon-cloud {
+        width: 46px; height: 46px; border-radius: 50%; background: #f8fafc; color: #94a3b8;
+        display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; border: 1px dashed #cbd5e1;
+    }
+    .empty-view-wrapper h3 { margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: var(--text-main); }
+    .empty-view-wrapper p { margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+
+    /* POPUP OVERLAY WINDOW MODULES */
+    .premium-modal-backdrop {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999;
+    }
+
+    .premium-modal-container {
+        background: #ffffff; border-radius: 14px; width: 92%; max-width: 650px;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        border: 1px solid #e2e8f0; overflow: hidden;
+        animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes modalScaleUp { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-header-flex { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px; border-bottom: 1px solid #f1f5f9; background: #fafafa; }
+    .modal-title-group h3 { margin: 0 0 4px 0; font-size: 18px; color: var(--text-main); font-weight: 700; letter-spacing: -0.01em; }
+    .modal-close-trigger { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; line-height: 1; }
+    .modal-body-layout { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .modal-meta-row { display: flex; gap: 16px; }
+    .meta-field { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .modal-full-field { display: flex; flex-direction: column; gap: 6px; }
+    .modal-body-layout label { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .required-label::after { content: " *"; color: #ef4444; }
+    .modal-readonly-input, .modal-readonly-textarea { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: #475569; outline: none; }
+    .modal-readonly-textarea { min-height: 80px; resize: none; }
+    .modal-action-textarea { border: 1px solid var(--border-field); border-radius: 8px; padding: 12px; font-size: 14px; color: var(--text-main); min-height: 120px; resize: vertical; outline: none; transition: border-color 0.2s ease; }
+    .modal-action-textarea:focus { border-color: var(--c-blue-glow); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .modal-separator { border: 0; border-top: 1px solid #e2e8f0; margin: 8px 0; }
+    .modal-footer-flex { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; background: #f8fafc; border-top: 1px solid #f1f5f9; }
+    .btn-modal-secondary { background: #ffffff; border: 1px solid #cbd5e1; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 13.5px; cursor: pointer; color: #475569; transition: background 0.15s ease; }
+    .btn-modal-secondary:hover { background: #f8fafc; }
+    .btn-modal-primary { background: var(--c-blue-glow); border: none; color: #ffffff; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s ease; }
+    .btn-modal-primary:hover { background: #1d4ed8; }
+
+    /* ==========================================
+       TOAST ALERTS SYSTEM
+       ========================================== */
+    .toast-stack { position: fixed; top: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px; pointer-events: none; }
+    .toast { pointer-events: auto; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 12px; padding: 14px 18px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05); display: flex; align-items: center; justify-content: space-between; gap: 16px; transform: translateX(calc(100% + 32px)); opacity: 0; animation: toastPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, max-height 0.35s ease, margin-top 0.35s ease, padding 0.35s ease; max-height: 100px; overflow: hidden; }
+    @keyframes toastPopIn { 0% { transform: translateX(calc(100% + 32px)); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    .toast.fade-out { transform: translateX(calc(100% + 32px)) !important; opacity: 0 !important; max-height: 0 !important; margin-top: -12px !important; padding-top: 0 !important; padding-bottom: 0 !important; border-color: transparent !important; }
+    .toast-content { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .toast-icon { font-size: 16px; flex-shrink: 0; }
+    .toast-message { font-size: 13px; font-weight: 500; color: #0f172a; line-height: 1.4; }
+    .toast-close-btn { background: none; border: none; font-size: 18px; color: #94a3b8; cursor: pointer; padding: 0; line-height: 1; transition: color 0.15s ease; }
+    .toast-close-btn:hover { color: #475569; }
+    .toast.toast-success { border-left: 4px solid #16a34a; }
+    .toast.toast-success .toast-icon { color: #16a34a; }
+    .toast.toast-error, .toast.toast-danger { border-left: 4px solid #dc2626; }
+    .toast.toast-error .toast-icon, .toast.toast-danger .toast-icon { color: #dc2626; }
+    .toast.toast-warning { border-left: 4px solid #d97706; }
+    .toast.toast-warning .toast-icon { color: #d97706; }
+    .toast.toast-info { border-left: 4px solid #2563eb; }
+    .toast.toast-info .toast-icon { color: #2563eb; }
+
+    @media (max-width: 992px) {
+        .premium-management-table th:nth-child(4), .premium-management-table td:nth-child(4),
+        .premium-management-table th:nth-child(7), .premium-management-table td:nth-child(7) { display: none; }
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('responseModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelModalBtn');
+    const responseForm = document.getElementById('responseForm');
+    const openButtons = document.querySelectorAll('.open-response-modal');
+    
+    // Wire modal overlay values dynamically from clicked targets
+    openButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const caseId = this.getAttribute('data-id');
+            const title = this.getAttribute('data-title');
+            const reporter = this.getAttribute('data-reporter');
+            const vehicle = this.getAttribute('data-vehicle');
+            const description = this.getAttribute('data-description');
+            
+            document.getElementById('modalTicketTitle').innerText = `Review Case: ${title}`;
+            document.getElementById('modalReporter').value = reporter;
+            document.getElementById('modalVehicle').value = vehicle;
+            document.getElementById('modalDescription').value = description;
+            
+            // Map action endpoint for modal form submission
+            responseForm.action = `/cases/${caseId}/respond/`;
+            modal.style.display = 'flex';
+        });
+    });
+    
+    function hideModal() {
+        modal.style.display = 'none';
+        responseForm.reset();
+    }
+    
+    closeBtn.addEventListener('click', hideModal);
+    cancelBtn.addEventListener('click', hideModal);
+    window.addEventListener('click', function(e) { if (e.target === modal) hideModal(); });
+
+    // Handle instant inline change states with dual fallback mechanisms (Form Submit + Fallback Auto AJAX Status tracking)
+    document.querySelectorAll(".status-select").forEach(select => {
+        select.addEventListener("change", function () {
+            const caseId = this.getAttribute("data-case-id");
+            const status = this.value;
+            this.classList.add("updating");
+
+            fetch("{% url 'update_case_status' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({ case_id: caseId, status: status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.classList.remove("updating");
+                if (data.success) {
+                    this.classList.add("success");
+                    setTimeout(() => { this.classList.remove("success"); }, 800);
+                }
+            }).catch(() => this.classList.remove("updating"));
+        });
+    });
+});
+
+// Toast dismiss lifecycle rules
+function dismissToast(toastElement) {
+    if (!toastElement.classList.contains('fade-out')) {
+        toastElement.classList.add('fade-out');
+        toastElement.addEventListener('transitionend', () => { toastElement.remove(); });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toasts = document.querySelectorAll('.toast-stack .toast');
+    toasts.forEach(toast => {
+        setTimeout(() => { dismissToast(toast); }, 4000);
+    });
+});
+</script>
 {% endblock %}

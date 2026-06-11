@@ -4,6 +4,8 @@ import re
 from django.utils import timezone
 import random 
 import datetime
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 User = get_user_model()
 
 class EmailOTP(models.Model):
@@ -27,6 +29,7 @@ class EmailOTP(models.Model):
 # GENERATE MEMBERSHIP NUMBER
 # ==========================================
 def generate_unique_membership_number():
+    from .models import IndividualMember, SaccoMember
 
     all_numbers = []
 
@@ -34,7 +37,6 @@ def generate_unique_membership_number():
     models_list = [
         IndividualMember,
         SaccoMember,
-        PartnerMember
     ]
 
     for model in models_list:
@@ -68,6 +70,7 @@ class UserProfile(models.Model):
         ('partner', 'Partner/Donor'),
         ('manager', 'Manager'),
     ]
+
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE
@@ -75,7 +78,9 @@ class UserProfile(models.Model):
 
     role = models.CharField(
         max_length=20,
-        choices=ROLE_CHOICES, null=True, blank=True
+        choices=ROLE_CHOICES,
+        null=True,
+        blank=True
     )
 
     phone_number = models.CharField(
@@ -86,10 +91,68 @@ class UserProfile(models.Model):
 
     profile_completed = models.BooleanField(default=False)
 
+    email_verified = models.BooleanField(default=False)
+
+    profile_picture = models.ImageField(
+        upload_to='profile_pictures/',
+        blank=True,
+        null=True
+    )
+
+    # ==========================================
+    # DATA SHARING CONSENT (COCOWA)
+    # ==========================================
+    cocowa_data_consent = models.BooleanField(
+        default=False,
+        help_text="User has consented to sharing their data with COCOWA"
+    )
+
+    cocowa_consent_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Timestamp when consent was last given or revoked"
+    )
+
     def __str__(self):
         return self.user.email
 
+class UserSettings(models.Model):
 
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    # =========================
+    # NOTIFICATIONS
+    # =========================
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=False)
+    complaint_updates = models.BooleanField(default=True)
+    payment_reminders = models.BooleanField(default=True)
+
+    # =========================
+    # EMAIL & LOGIN
+    # =========================
+    two_factor_enabled = models.BooleanField(default=False)
+    login_alerts = models.BooleanField(default=True)
+
+    # =========================
+    # PRIVACY
+    # =========================
+    profile_visibility = models.BooleanField(default=True)
+    show_email = models.BooleanField(default=False)
+    show_phone = models.BooleanField(default=False)
+
+    # =========================
+    # SYSTEM PREFERENCES
+    # =========================
+    dark_mode = models.BooleanField(default=False)
+    language = models.CharField(max_length=20, default="en")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @receiver(post_save, sender=User)
+    def create_user_settings(sender, instance, created, **kwargs):
+        if created:
+            UserSettings.objects.create(user=instance)
 # ==========================================
 # BASE MEMBER
 # ==========================================
@@ -183,6 +246,175 @@ class IndividualMember(BaseMember):
     def __str__(self):
         return f"{self.first_name or ''} {self.second_name or ''}"
 
+
+# ==========================================
+# NEXT OF KIN  (Super Subscription only)
+# ==========================================
+class NextOfKin(models.Model):
+
+    RELATIONSHIP_CHOICES = [
+        ('spouse', 'Spouse'),
+        ('parent', 'Parent'),
+        ('sibling', 'Sibling'),
+        ('child', 'Child'),
+        ('guardian', 'Guardian'),
+        ('other', 'Other'),
+    ]
+
+    member = models.OneToOneField(
+        IndividualMember,
+        on_delete=models.CASCADE,
+        related_name='next_of_kin'
+    )
+
+    full_name = models.CharField(max_length=255)
+
+    relationship = models.CharField(
+        max_length=20,
+        choices=RELATIONSHIP_CHOICES
+    )
+
+    phone_number = models.CharField(max_length=15)
+
+    email = models.EmailField(blank=True, null=True)
+
+    id_number = models.CharField(max_length=20, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.full_name} ({self.get_relationship_display()}) — NOK of {self.member}"
+
+
+# ==========================================
+# DEPENDANT  (Super Subscription only)
+# Age-based auto-removal at exactly 18 years
+# ==========================================
+class Dependant(models.Model):
+
+    RELATIONSHIP_CHOICES = [
+        ('child', 'Child'),
+        ('spouse', 'Spouse'),
+        ('sibling', 'Sibling'),
+        ('parent', 'Parent'),
+        ('other', 'Other'),
+    ]
+
+    member = models.ForeignKey(
+        IndividualMember,
+        on_delete=models.CASCADE,
+        related_name='dependants'
+    )
+
+    full_name = models.CharField(max_length=255)
+
+    relationship = models.CharField(
+        max_length=20,
+        choices=RELATIONSHIP_CHOICES
+    )
+
+    date_of_birth = models.DateField()
+
+    id_number = models.CharField(max_length=20, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Soft-flag so the record is retained for audit purposes
+    # but effectively treated as removed from the active list.
+    aged_out = models.BooleanField(
+        default=False,
+        help_text="Set to True automatically when the dependant turns 18"
+    )
+
+    aged_out_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="The date on which the dependant was auto-removed"
+    )
+
+    @property
+    def age(self):
+        """Returns the dependant's current age in completed years."""
+        today = datetime.date.today()
+        dob = self.date_of_birth
+        return today.year - dob.year - (
+            (today.month, today.day) < (dob.month, dob.day)
+        )
+
+    @property
+    def turns_18_on(self):
+        """Returns the exact date the dependant turns 18."""
+        dob = self.date_of_birth
+        try:
+            return dob.replace(year=dob.year + 18)
+        except ValueError:
+            # Feb 29 edge-case — use Mar 1
+            return dob.replace(year=dob.year + 18, day=28) + datetime.timedelta(days=1)
+
+    def check_and_age_out(self):
+        """
+        Call this method (e.g. from a management command or Celery beat task)
+        to soft-delete dependants who have reached their 18th birthday.
+        Returns True if the record was newly aged out.
+        """
+        if not self.aged_out and self.age >= 18:
+            self.aged_out = True
+            self.aged_out_date = datetime.date.today()
+            self.save(update_fields=['aged_out', 'aged_out_date'])
+            return True
+        return False
+
+    def __str__(self):
+        return f"{self.full_name} (age {self.age}) — dependant of {self.member}"
+
+
+# ==========================================
+# BENEFICIARY  (Super Subscription only)
+# ==========================================
+class Beneficiary(models.Model):
+
+    RELATIONSHIP_CHOICES = [
+        ('spouse', 'Spouse'),
+        ('child', 'Child'),
+        ('parent', 'Parent'),
+        ('sibling', 'Sibling'),
+        ('other', 'Other'),
+    ]
+
+    member = models.ForeignKey(
+        IndividualMember,
+        on_delete=models.CASCADE,
+        related_name='beneficiaries'
+    )
+
+    full_name = models.CharField(max_length=255)
+
+    relationship = models.CharField(
+        max_length=20,
+        choices=RELATIONSHIP_CHOICES
+    )
+
+    phone_number = models.CharField(max_length=15)
+
+    id_number = models.CharField(max_length=20, blank=True, null=True)
+
+    # Allocation percentage (all beneficiaries for one member must sum to 100)
+    allocation_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=100.00,
+        help_text="Percentage of benefits allocated to this beneficiary"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.full_name} ({self.allocation_percentage}%) — beneficiary of {self.member}"
+
+
 # ==========================================
 # SACCO MEMBER
 # ==========================================
@@ -225,20 +457,13 @@ class PartnerMember(BaseMember):
         null=True
     )
 
-    membership_number = models.CharField(
-        max_length=20,
-        unique=True,
-        blank=True,
-        null=True
-    )
+    @property
+    def total_donations(self):
+        total = self.donations.filter(
+            status="paid"
+        ).aggregate(total=models.Sum("amount"))["total"]
 
-    def save(self, *args, **kwargs):
-
-        # ONLY generate when admin marks payment as PAID
-        if self.payment_status == "paid" and not self.membership_number:
-            self.membership_number = generate_unique_membership_number()
-
-        super().save(*args, **kwargs)
+        return total or 0
 
     def __str__(self):
         return self.organization_name or "Partner"
@@ -323,9 +548,20 @@ class PartnerDonation(models.Model):
 class Vehicle(models.Model):
 
     VEHICLE_TYPES = [
-        ('town_service', 'Town Service'),
+        ('bodaboda', 'Boda Boda'),
+        ('uber', 'Uber'),
         ('long_distance', 'Long Distance'),
+        ('tuktuk', 'Tuk Tuk'),
+        ('minibus_matatu', 'Minibus / Matatu'),
     ]
+
+    VEHICLE_PRICES = {
+        'bodaboda': 3050,
+        'uber': 2500,
+        'long_distance': 10000,
+        'tuktuk': 2000,
+        'minibus_matatu': 4000,
+    }
 
     PAYMENT_STATUS = [
         ('pending', 'Pending'),
@@ -334,7 +570,7 @@ class Vehicle(models.Model):
     ]
 
     sacco = models.ForeignKey(
-        SaccoMember,
+        'SaccoMember',
         on_delete=models.CASCADE,
         related_name="vehicles"
     )
@@ -354,7 +590,8 @@ class Vehicle(models.Model):
     amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=0
+        blank=True,
+        null=True
     )
 
     payment_status = models.CharField(
@@ -366,13 +603,7 @@ class Vehicle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        allowed = dict(self.VEHICLE_TYPES).keys()
-
-        if self.vehicle_type not in allowed:
-            raise ValueError(f"Invalid vehicle_type: {self.vehicle_type}")
-
-        self.amount = 1000 if self.vehicle_type == "town_service" else 5000
-
+        self.amount = self.VEHICLE_PRICES.get(self.vehicle_type, 0)
         super().save(*args, **kwargs)
 
     def __str__(self):
