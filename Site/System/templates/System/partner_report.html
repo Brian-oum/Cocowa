@@ -2,250 +2,318 @@
 {% load static %}
 
 {% block content %}
-<div class="report-container fade-in-up">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
-    <!-- ==========================================
-         REPORT DASHBOARD HEADER
-         ========================================== -->
-    <div class="report-header">
-        <div class="header-left">
-            <h2 class="report-title">Partner Analytics Dashboard</h2>
-            <p class="report-subtitle">Real-time tracking of contributions, financial ledgers, and transaction metrics.</p>
-        </div>
-        <a href="{% url 'partner_report_pdf' %}" class="download-btn ripple-effect">
-            <i class="fa-solid fa-file-pdf"></i> Download Report PDF
-        </a>
-    </div>
+<div class="rpt-shell-premium">
 
-    <!-- ==========================================
-         TOP ROW: HIGHLIGHT CARDS
-         ========================================== -->
-    <div class="insight-grid delay-1">
-        <div class="insight-card border-brand">
-            <span class="meta-label">Total Contributions</span>
-            <h2 class="stat-value">KES {{ total_donations|floatformat:0 }}</h2>
-            <div class="card-footer-metric">Aggregated platform deposits</div>
+    <div class="rpt-premium-header animate__animated animate__fadeInDown">
+        <div class="header-left-cluster">
+            <div class="title-accent-bar"></div>
+            <div>
+                <h1 class="rpt-title-lux">Partner Analytics</h1>
+                <p class="rpt-subtitle-lux">Impact tracking, contribution analytics, and financial performance</p>
+            </div>
         </div>
-        <div class="insight-card border-brand">
-            <span class="meta-label">Average Donation</span>
-            <h2 class="stat-value">KES {{ avg_donation|floatformat:0 }}</h2>
-            <div class="card-footer-metric">Mean performance value per batch</div>
-        </div>
-        <div class="insight-card border-brand">
-            <span class="meta-label">Total Transactions</span>
-            <h2 class="stat-value">{{ donation_count }}</h2>
-            <div class="card-footer-metric">Successful & pending balance checks</div>
+        <div class="header-right-cluster">
+            <div class="rpt-date-pill-lux">
+                <span id="rpt-date-label">{{ current_year }}</span>
+                <i class="fa-regular fa-calendar"></i>
+            </div>
+            <div class="user-profile-plate">
+                <div class="avatar-ring-premium">
+                    {% if request.user.userprofile.profile_picture %}
+                        <img src="{{ request.user.userprofile.profile_picture.url }}" alt="Partner">
+                    {% else %}
+                        <i class="fa-solid fa-handshake"></i>
+                    {% endif %}
+                </div>
+                <div class="profile-meta-text">
+                    <span class="user-name-premium">{{ partner.organization_name }}</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- ==========================================
-         MIDDLE ROW: COMPACT DONUT & LEDGER SUMMARY
-         ========================================== -->
-    <div class="middle-layout-row delay-2">
-        
-        <!-- COMPACT DONUT CHART -->
-        <div class="chart-box status-donut-box">
-            <div class="chart-header-inline">
-                <h3><i class="fa-solid fa-chart-pie"></i> Status Verification</h3>
+    <div class="rpt-dashboard-main-grid animate__animated animate__fadeInUp" style="animation-delay: 100ms;">
+
+        <div class="rpt-grid-column">
+
+            <div class="rpt-grid-mini-quad">
+                <div class="rpt-glass-card KPI-card-interactive">
+                    <div class="card-glass-glow"></div>
+                    <div class="rpt-kpi-top">
+                        <span class="rpt-kpi-caption">Total Donations</span>
+                        <div class="lux-icon-wrap"><i class="fa-solid fa-heart"></i></div>
+                    </div>
+                    <div class="rpt-kpi-value-lux count-up" data-target="{{ total_donations }}">0</div>
+                    <div class="rpt-kpi-metric-footer status-positive">
+                        <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> KES</span>
+                        <span class="footer-meta-text">confirmed</span>
+                    </div>
+                </div>
+
+                <div class="rpt-glass-card KPI-card-interactive">
+                    <div class="card-glass-glow"></div>
+                    <div class="rpt-kpi-top">
+                        <span class="rpt-kpi-caption">Transactions</span>
+                        <div class="lux-icon-wrap"><i class="fa-solid fa-handshake"></i></div>
+                    </div>
+                    <div class="rpt-kpi-value-lux count-up" data-target="{{ donation_count }}">0</div>
+                    <div class="rpt-kpi-metric-footer status-positive">
+                        <span class="metric-trend-pill"><i class="fa-solid fa-chart-line"></i> {{ total_count }}</span>
+                        <span class="footer-meta-text">all donations</span>
+                    </div>
+                </div>
+
+                <div class="rpt-glass-card KPI-card-interactive">
+                    <div class="card-glass-glow"></div>
+                    <div class="rpt-kpi-top">
+                        <span class="rpt-kpi-caption">Best Month ({{ best_month.name|default:"—" }})</span>
+                        <div class="lux-icon-wrap"><i class="fa-solid fa-calendar-star" style="color: var(--p-green);"></i></div>
+                    </div>
+                    <div class="rpt-kpi-value-lux" style="font-size: 24px; line-height: 1.2; margin: 4px 0 6px 0;">
+                        <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); vertical-align: middle;">KES</span> 
+                        {{ best_month.value|default:"0"|floatformat:0 }}
+                    </div>
+                    <div class="rpt-kpi-metric-footer status-positive">
+                        <span class="metric-trend-pill"><i class="fa-solid fa-bolt"></i> Peak</span>
+                        <span class="footer-meta-text">highest performance</span>
+                    </div>
+                </div>
+
+                <div class="rpt-glass-card KPI-card-interactive">
+                    <div class="card-glass-glow"></div>
+                    <div class="rpt-kpi-top">
+                        <span class="rpt-kpi-caption">Impact Score</span>
+                        <div class="lux-icon-wrap"><i class="fa-solid fa-star"></i></div>
+                    </div>
+                    <div class="rpt-kpi-value-lux count-up" data-target="{{ impact_score }}">0</div>
+                    <div class="rpt-kpi-metric-footer status-positive">
+                        <span class="metric-trend-pill"><i class="fa-solid fa-percent"></i> Score</span>
+                        <span class="footer-meta-text">contribution level</span>
+                    </div>
+                </div>
             </div>
-            <div class="canvas-wrapper compact-donut">
-                <canvas id="donutChart"></canvas>
+
+            <div class="rpt-glass-card premium-card-container">
+                <div class="premium-card-header">
+                    <div class="header-title-set">
+                        <h3 class="box-main-heading">Donation Trend ({{ current_year }})</h3>
+                    </div>
+                    <div class="dropdown-pill-premium">
+                        <span>Monthly breakdown</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="donationTrendChart"></canvas>
+                </div>
             </div>
+
+            <div class="rpt-glass-card premium-card-container">
+                <div class="premium-card-header">
+                    <div class="header-title-set">
+                        <h3 class="box-main-heading">Contribution Frequency</h3>
+                    </div>
+                    <div class="dropdown-pill-premium">
+                        <span>Monthly transactions</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="frequencyChart"></canvas>
+                </div>
+            </div>
+
         </div>
 
-        <!-- CONDENSED FINANCIAL SUMMARY CARD -->
-        <div class="summary-ledger-card">
-            <div class="chart-header-inline">
-                <h3><i class="fa-solid fa-vault"></i> Financial Balance Sheets</h3>
-            </div>
-            <div class="ledger-strips-holder">
-                <div class="ledger-strip l-paid">
-                    <span class="strip-tag"><i class="fa-solid fa-circle-check"></i> Confirmed Ledger</span>
-                    <strong class="strip-money">KES {{ total_donations|floatformat:0 }}</strong>
-                </div>
-                <div class="ledger-strip l-pending">
-                    <span class="strip-tag"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending Clearing</span>
-                    <strong class="strip-money">KES {{ pending_donations|floatformat:0 }}</strong>
-                </div>
-                <div class="ledger-strip l-rejected">
-                    <span class="strip-tag"><i class="fa-solid fa-circle-xmark"></i> Rejected Records</span>
-                    <strong class="strip-money">KES {{ rejected_donations|floatformat:0 }}</strong>
-                </div>
-            </div>
-        </div>
+        <div class="rpt-grid-column">
 
+            <div class="rpt-glass-card donut-lux-card">
+                <div class="rpt-kpi-top" style="padding:0; margin-bottom: 4px;">
+                    <span class="rpt-kpi-caption">Donation Status Overview</span>
+                </div>
+                <div class="donut-value-header count-up" data-target="{{ total_count }}">0</div>
+                <div class="donut-integration-flex" style="justify-content: space-between; gap: 32px;">
+                    <div class="canvas-chart-holder" style="flex-grow: 1; max-width: 180px; height: 140px;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="donut-custom-legend" style="flex-grow: 1; justify-content: center; gap: 12px;">
+                        <div class="legend-item-premium" style="font-size: 13px;"><span class="legend-indicator-dot" style="background:var(--p-green); width: 10px; height: 10px;"></span><span class="legend-label-txt">{{ paid_count }} Confirmed</span></div>
+                        <div class="legend-item-premium" style="font-size: 13px;"><span class="legend-indicator-dot" style="background:var(--p-amber); width: 10px; height: 10px;"></span><span class="legend-label-txt">{{ pending_count }} Pending</span></div>
+                        <div class="legend-item-premium" style="font-size: 13px;"><span class="legend-indicator-dot" style="background:var(--p-crimson); width: 10px; height: 10px;"></span><span class="legend-label-txt">{{ rejected_count }} Rejected</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rpt-grid-financial-pair">
+                <div class="rpt-glass-card financial-metric-box">
+                    <div class="financial-header-inline">
+                        <div class="fin-icon-badge badge-green"><i class="fa-solid fa-circle-check"></i></div>
+                        <span class="fin-percentage-pill text-green"><i class="fa-solid fa-check-circle"></i> Confirmed</span>
+                    </div>
+                    <span class="fin-caption" style="margin-top:12px;">Verified Donations</span>
+                    <div class="fin-value-row">
+                        <span class="fin-currency">KES</span>
+                        <span class="count-up fin-main-amount" data-target="{{ total_donations }}">0</span>
+                    </div>
+                    <span class="fin-subtext-footnote">{{ current_year }} Financial Year</span>
+                </div>
+
+                <div class="rpt-glass-card financial-metric-box">
+                    <div class="financial-header-inline">
+                        <div class="fin-icon-badge badge-purple"><i class="fa-solid fa-hourglass-end"></i></div>
+                        <span class="fin-percentage-pill text-purple"><i class="fa-solid fa-pause-circle"></i> Pending</span>
+                    </div>
+                    <span class="fin-caption" style="margin-top:12px;">Awaiting Approval</span>
+                    <div class="fin-value-row">
+                        <span class="fin-currency">KES</span>
+                        <span class="count-up fin-main-amount" data-target="{{ pending_donations }}">0</span>
+                    </div>
+                    <span class="fin-subtext-footnote">{{ current_year }} Financial Year</span>
+                </div>
+            </div>
+
+            <div class="rpt-glass-card premium-card-container table-card-premium" style="flex-grow: 1;">
+                <div class="premium-card-header header-padding-leeway">
+                    <div class="header-title-set">
+                        <h3 class="box-main-heading">Recent Donations</h3>
+                    </div>
+                    <button class="lux-refresh-action-btn" title="Refresh data"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+
+                <div class="premium-table-scroll-container">
+                    <table class="lux-data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for donation in recent_donations %}
+                            <tr>
+                                <td class="cell-muted-text">{{ donation.created_at|date:"d M Y" }}</td>
+                                <td class="identity-bold-txt">KES {{ donation.amount|floatformat:0 }}</td>
+                                <td><span class="lux-badge status-{{ donation.status }}">{{ donation.status|capfirst }}</span></td>
+                                <td class="cell-muted-text">Donation</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="empty-table-fallback-row">
+                                    <div class="fallback-flex-center">
+                                        <i class="fa-solid fa-inbox"></i>
+                                        <span>No donations recorded yet.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
     </div>
-
-    <!-- ==========================================
-         BOTTOM ROW: INTERACTIVE CARD & HISTORY TABLE
-         ========================================== -->
-    <div class="bottom-split-grid delay-3">
-        
-        <!-- INTERACTIVE TRIGGER CONTAINER -->
-        <div class="left-interactive-column">
-            <div class="interactive-trigger-card" id="toggleTrendCard" role="button" tabindex="0">
-                <div class="trigger-left">
-                    <div class="trigger-icon-bubble">
-                        <i class="fa-solid fa-calendar-days"></i>
-                    </div>
-                    <div class="trigger-meta">
-                        <span class="trigger-lbl">Peak Velocity Month</span>
-                        <h3 class="trigger-val">{{ best_month.name|default:"No Data Available" }}</h3>
-                    </div>
-                </div>
-                <div class="trigger-action-hint">
-                    <span id="hintText">View Trend Grid</span>
-                    <i class="fa-solid fa-chevron-down" id="arrowIndicator"></i>
-                </div>
-            </div>
-
-            <!-- COLLAPSIBLE CHART CONTAINER -->
-            <div class="collapsible-trend-wrapper" id="trendChartCollapse">
-                <div class="chart-box nested-trend">
-                    <div class="chart-header-inline">
-                        <h3><i class="fa-solid fa-chart-line"></i> Monthly Donation Trend</h3>
-                    </div>
-                    <div class="canvas-wrapper line-trend-canvas">
-                        <canvas id="lineChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- RECENT TRANSACTION HISTORIES -->
-        <div class="table-box">
-            <div class="table-header-inline">
-                <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Transaction Logs</h3>
-            </div>
-            <div class="responsive-table-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Timeline Date</th>
-                            <th>Verification Status</th>
-                            <th class="text-right">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for d in recent_donations %}
-                        <tr>
-                            <td class="font-medium text-dark">{{ d.created_at|date:"Y-m-d" }}</td>
-                            <td>
-                                <span class="status status-{{ d.status|lower }}">
-                                    {{ d.status|upper }}
-                                </span>
-                            </td>
-                            <td class="font-bold text-dark text-right">KES {{ d.amount }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="empty-table-state">
-                                <p>No logs found in this sequence loop.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </div>
-
 </div>
 
-<!-- ==========================================
-     CORE INTERACTION CONTROLLER SCRIPTS
-     ========================================== -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    
-    // Chart Default Options Configuration
-    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
-    Chart.defaults.color = '#64748b';
+document.addEventListener("DOMContentLoaded", function () {
 
-    // 1. COMPACT DONUT INITIALIZATION
-    const donutCtx = document.getElementById('donutChart');
-    if (donutCtx) {
-        new Chart(donutCtx, {
-            type: 'doughnut',
+    // Count-Up Animation Engine
+    document.querySelectorAll(".count-up").forEach(el => {
+        const target = parseFloat(el.dataset.target) || 0;
+        const start  = performance.now();
+        const dur    = 1800;
+        (function tick(now) {
+            const p = Math.min((now - start) / dur, 1);
+            el.textContent = Math.floor(target * (1 - Math.pow(1 - p, 4))).toLocaleString();
+            if (p < 1) requestAnimationFrame(tick);
+        })(start);
+    });
+
+    const paletteBlue = "#3b82f6";
+    const paletteAmber = "#f59e0b";
+    const palettePurple = "#a855f7";
+    const paletteGreen = "#22c55e";
+    const paletteCrimson = "#ef4444";
+    const gridColorLine = "rgba(148, 163, 184, 0.08)";
+
+    // Status Doughnut Chart Setup
+    const statusChart = document.getElementById("statusChart");
+    if (statusChart) {
+        const rawStatusData = {{ status_data|safe }};
+        const hasData = rawStatusData.some(v => v > 0);
+        new Chart(statusChart, {
+            type: "doughnut",
             data: {
-                labels: ['Paid', 'Pending', 'Rejected'],
+                labels: ["Confirmed", "Pending", "Rejected"],
                 datasets: [{
-                    data: {{ donut_data|safe }},
-                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                    borderWidth: 3,
-                    borderColor: '#ffffff',
+                    data: hasData ? rawStatusData : [1, 0, 0],
+                    backgroundColor: hasData
+                        ? [paletteGreen, paletteAmber, paletteCrimson]
+                        : ["rgba(148,163,184,0.2)", "transparent", "transparent"],
+                    borderWidth: 0,
                     hoverOffset: 4
                 }]
             },
+            options: { cutout: "75%", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: hasData } } }
+        });
+    }
+
+    // Donation Trend Chart Configuration
+    const trendCtx = document.getElementById("donationTrendChart");
+    if (trendCtx) {
+        new Chart(trendCtx, {
+            type: "bar",
+            data: {
+                labels: {{ months|safe }},
+                datasets: [{
+                    label: "Monthly Donations",
+                    data: {{ monthly_data|safe }},
+                    backgroundColor: paletteGreen,
+                    borderRadius: 4,
+                    maxBarThickness: 14
+                }]
+            },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false } // Hidden to fit compact frame footprint
-                },
-                cutout: '75%'
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: gridColorLine }, ticks: { color: "#94a3b8", font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { color: "#94a3b8", font: { size: 10 } } }
+                }
             }
         });
     }
 
-    // 2. TIMELINE TREND EXPANSION INTERACTION LOGIC
-    const toggleBtn = document.getElementById('toggleTrendCard');
-    const collapsible = document.getElementById('trendChartCollapse');
-    const arrow = document.getElementById('arrowIndicator');
-    const hintText = document.getElementById('hintText');
-    let lineChartInstance = null;
-
-    toggleBtn.addEventListener('click', function() {
-        const isExpanded = collapsible.classList.contains('expanded');
-        
-        if (isExpanded) {
-            collapsible.classList.remove('expanded');
-            arrow.style.transform = 'rotate(0deg)';
-            hintText.textContent = 'View Trend Grid';
-        } else {
-            collapsible.classList.add('expanded');
-            arrow.style.transform = 'rotate(180deg)';
-            hintText.textContent = 'Hide Trend Grid';
-            
-            // Lazy load or re-render line chart asset to handle dynamic container sizes cleanly
-            if (!lineChartInstance) {
-                initializeLineChart();
-            }
-        }
-    });
-
-    function initializeLineChart() {
-        const lineCtx = document.getElementById('lineChart');
-        if (!lineCtx) return;
-
-        const monthlyLabels = JSON.parse('{{ monthly_labels|escapejs }}');
-        const monthlyData = JSON.parse('{{ monthly_data|escapejs }}');
-
-        lineChartInstance = new Chart(lineCtx, {
-            type: 'line',
+    // Frequency Transaction Chart Configuration
+    const freqCtx = document.getElementById("frequencyChart");
+    if (freqCtx) {
+        new Chart(freqCtx, {
+            type: "line",
             data: {
-                labels: monthlyLabels,
+                labels: {{ months|safe }},
                 datasets: [{
-                    label: 'Monthly Donations',
-                    data: monthlyData,
-                    borderColor: '#001C3D',
-                    borderWidth: 2.5,
-                    backgroundColor: 'rgba(0, 28, 61, 0.04)',
-                    fill: true,
-                    tension: 0.35,
-                    pointBackgroundColor: '#001C3D',
-                    pointRadius: 3
+                    label: "Transactions",
+                    data: {{ monthly_counts|safe }},
+                    borderColor: palettePurple,
+                    backgroundColor: "transparent",
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    fill: false
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { display: false } },
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } }
+                    y: { grid: { color: gridColorLine }, ticks: { color: "#94a3b8", font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { color: "#94a3b8", font: { size: 10 } } }
                 }
             }
         });
@@ -253,140 +321,205 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
-<!-- ==========================================
-     PREMIUM DASHBOARD CORE STYLESHEET
-     ========================================== -->
 <style>
-    :root {
-        --primary-brand: #001C3D;
-        --secondary-hover: #002d62;
-        --text-dark: #0f172a;
-        --text-muted: #64748b;
-        --bg-surface: #ffffff;
-        --border-fluid: #e2e8f0;
-        
-        --emerald-success: #10b981;
-        --amber-warning: #f59e0b;
-        --crimson-danger: #ef4444;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    .report-container {
-        padding: 40px;
-        background: #f8fafc;
-        min-height: 100vh;
-        width: 100%;
-        box-sizing: border-box;
-    }
+:root {
+    --p-bg: #f8fafc;
+    --p-card-surface: rgba(255, 255, 255, 0.95);
+    --border-premium: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #94a3b8;
+    --p-blue: #3b82f6;
+    --p-green: #22c55e;
+    --p-amber: #f59e0b;
+    --p-purple: #a855f7;
+    --p-crimson: #ef4444;
+    --rpt-radius-premium: 16px;
+    --rpt-premium-glow: 0 4px 6px -1px rgba(0,0,0,0.01), 0 2px 4px -1px rgba(0,0,0,0.01);
+}
 
-    /* HEADER STYLES */
-    .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
-    .report-title { font-size: 26px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; margin: 0; }
-    .report-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+[data-lux-theme="dark"] {
+    --p-bg: #0f172a;
+    --p-card-surface: #1e293b;
+    --border-premium: #334155;
+    --text-main: #f1f5f9;
+    --text-muted: #64748b;
+}
 
-    .download-btn {
-        background: var(--primary-brand); color: #ffffff !important; padding: 12px 24px; border-radius: 12px;
-        text-decoration: none !important; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;
-        box-shadow: 0 4px 12px rgba(0, 28, 61, 0.06); transition: all 0.2s ease;
-    }
-    .download-btn:hover { background: var(--secondary-hover); transform: translateY(-1px); }
+.rpt-shell-premium {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background: var(--p-bg);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 16px;
+}
 
-    /* ROW 1: METRIC CARD LAYOUT */
-    .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
-    .insight-card {
-        background: var(--bg-surface); padding: 22px 26px; border-radius: 16px; border: 1px solid var(--border-fluid);
-        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.01);
-    }
-    .insight-card.border-brand { border-top: 4px solid var(--primary-brand); }
-    .meta-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-value { font-size: 24px; font-weight: 800; color: var(--text-dark); margin: 8px 0; letter-spacing: -0.5px; }
-    .card-footer-metric { font-size: 12px; color: var(--text-muted); }
+/* ── LAYOUT GRID CORE ARCHITECTURE ── */
+.rpt-dashboard-main-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+}
+.rpt-grid-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
 
-    /* ROW 2: SPLIT MIDDLE PLATFORM */
-    .middle-layout-row { display: grid; grid-template-columns: 320px 1fr; gap: 24px; margin-bottom: 24px; }
-    .chart-box { background: var(--bg-surface); padding: 24px; border-radius: 18px; border: 1px solid var(--border-fluid); }
-    .chart-header-inline h3 { font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; }
-    
-    /* DONUT COMPACT SIZING */
-    .compact-donut { height: 160px !important; position: relative; margin: 0 auto; }
-    
-    /* SUMMARY BALANCE STRIPS */
-    .summary-ledger-card { background: var(--bg-surface); padding: 24px; border-radius: 18px; border: 1px solid var(--border-fluid); display: flex; flex-direction: column; }
-    .ledger-strips-holder { display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }
-    .ledger-strip { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-radius: 12px; font-size: 14px; }
-    
-    .l-paid { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-    .l-pending { background: #fffbeb; border: 1px solid #fef3c7; color: #92400e; }
-    .l-rejected { background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; }
-    .strip-tag { font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .strip-money { font-weight: 700; font-size: 16px; }
+/* LEFT COLUMN SUB-GRIDS */
+.rpt-grid-mini-quad {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
 
-    /* ROW 3: REARRANGED BOTTOM SECTION */
-    .bottom-split-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: start; }
-    .left-interactive-column { display: flex; flex-direction: column; gap: 16px; }
+/* RIGHT COLUMN SUB-GRIDS */
+.rpt-grid-financial-pair {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
 
-    /* CLICKABLE INTERACTIVE HEADER CARD */
-    .interactive-trigger-card {
-        background: var(--primary-brand); color: #ffffff; padding: 20px 24px; border-radius: 16px;
-        display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 8px 24px -6px rgba(0,28,61,0.15);
-    }
-    .interactive-trigger-card:hover { background: var(--secondary-hover); transform: translateY(-2px); }
-    .trigger-left { display: flex; align-items: center; gap: 16px; }
-    .trigger-icon-bubble { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    .trigger-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; font-weight: 600; }
-    .trigger-val { font-size: 20px; font-weight: 700; margin: 2px 0 0 0; }
-    
-    .trigger-action-hint { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #cbd5e1; }
-    .trigger-action-hint i { transition: transform 0.3s ease; }
+/* ── COMPONENT BOX STYLING ── */
+.rpt-glass-card {
+    background: var(--p-card-surface);
+    border: 1px solid var(--border-premium);
+    border-radius: var(--rpt-radius-premium);
+    box-shadow: var(--rpt-premium-glow);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
 
-    /* ANIMATED COLLAPSE LOGIC */
-    .collapsible-trend-wrapper {
-        max-height: 0; overflow: hidden; opacity: 0;
-        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-    }
-    .collapsible-trend-wrapper.expanded { max-height: 400px; opacity: 1; }
-    .nested-trend { margin-top: 4px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.03); }
-    .line-trend-canvas { height: 250px !important; }
+.rpt-premium-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--p-card-surface);
+    border: 1px solid var(--border-premium);
+    border-radius: var(--rpt-radius-premium);
+    padding: 16px 24px;
+}
+.header-left-cluster { display: flex; align-items: center; gap: 14px; }
+.title-accent-bar { width: 4px; height: 32px; background: var(--p-blue); border-radius: 4px; }
+.rpt-title-lux { font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+.rpt-subtitle-lux { display: none; }
 
-    /* HISTORY LEDGER RECORD TABLE */
-    .table-box { background: var(--bg-surface); padding: 24px; border-radius: 18px; border: 1px solid var(--border-fluid); }
-    .table-header-inline h3 { font-size: 15px; font-weight: 700; color: var(--text-dark); margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; }
-    .responsive-table-scroll { width: 100%; }
-    
-    table { width: 100%; border-collapse: collapse; }
-    th { padding: 12px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); background: #f8fafc; border-bottom: 1px solid var(--border-fluid); }
-    td { padding: 14px; font-size: 13px; color: #475569; border-bottom: 1px solid #f8fafc; }
-    
-    .status { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; display: inline-block; }
-    .status-paid { background: #dcfce7; color: #166534; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-rejected { background: #fee2e2; color: #991b1b; }
-    
-    .font-medium { font-weight: 500; }
-    .font-bold { font-weight: 700; }
-    .text-right { text-align: right; }
-    .empty-table-state { text-align: center; padding: 20px 0; color: var(--text-muted); font-size: 13px; }
+.header-right-cluster { display: flex; align-items: center; gap: 16px; }
+.rpt-date-pill-lux {
+    display: flex; align-items: center; gap: 10px; background: var(--p-bg);
+    border: 1px solid var(--border-premium); border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 500;
+}
+.user-profile-plate { display: flex; align-items: center; gap: 10px; }
+.avatar-ring-premium { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; }
+.avatar-ring-premium img { width: 100%; height: 100%; object-fit: cover; }
+.profile-meta-text { font-size: 14px; font-weight: 600; }
 
-    /* ==========================================
-       STAGGERED LOAD MOTION KEYFRAMES
-       ========================================== */
-    .fade-in-up { opacity: 0; animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .insight-grid, .middle-layout-row, .bottom-split-grid { opacity: 0; }
-    
-    .delay-1 { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards; }
-    .delay-2 { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.24s forwards; }
-    .delay-3 { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.36s forwards; }
+/* KPI Blocks elements */
+.rpt-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+.rpt-kpi-caption { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+.lux-icon-wrap { color: var(--sidebar-bg); font-size: 16px; }
+.rpt-kpi-value-lux { font-size: 32px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+.rpt-kpi-metric-footer { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+.metric-trend-pill { font-weight: 600; display: inline-flex; align-items: center; gap: 2px; }
+.status-positive .metric-trend-pill { color: var(--p-green); }
 
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(16px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+/* Donut Layout */
+.donut-value-header { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+.donut-integration-flex { display: flex; align-items: center; gap: 14px; }
+.canvas-chart-holder { position: relative; flex-shrink: 0; }
+.canvas-chart-holder canvas { width: 100% !important; height: 100% !important; }
+.donut-custom-legend { display: flex; flex-direction: column; gap: 6px; }
+.legend-item-premium { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--text-muted); }
+.legend-indicator-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    /* DEVICE FRAME RESPONSIVE OVERRIDES */
-    @media(max-width: 1024px) {
-        .insight-grid { grid-template-columns: 1fr; }
-        .middle-layout-row { grid-template-columns: 1fr; }
-        .bottom-split-grid { grid-template-columns: 1fr; }
-    }
+/* Financial Component Row Elements */
+.financial-header-inline { display: flex; justify-content: space-between; align-items: center; }
+.fin-icon-badge { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.badge-purple { background: #f3e8ff; color: var(--p-purple); }
+.badge-green { background: #dcfce7; color: var(--p-green); }
+.fin-percentage-pill { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+.text-purple { color: var(--p-purple); }
+.text-green { color: var(--p-green); }
+.fin-caption { font-size: 13px; font-weight: 500; color: var(--text-muted); display: block; }
+.fin-value-row { display: flex; align-items: baseline; gap: 2px; margin: 4px 0; }
+.fin-currency { font-size: 18px; font-weight: 600; color: var(--text-main); }
+.fin-main-amount { font-size: 24px; font-weight: 700; color: var(--text-main); }
+.fin-subtext-footnote { font-size: 11px; color: var(--text-muted); }
+
+/* Chart Containers and Labels styling */
+.premium-card-container { padding: 20px; }
+.premium-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.box-main-heading { font-size: 14px; font-weight: 600; color: var(--text-main); margin: 0; }
+.dropdown-pill-premium { font-size: 12px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.chart-canvas-wrapper { position: relative; height: 180px; width: 100%; }
+
+/* Refined Clean Layout Tables Components */
+.table-card-premium { padding: 20px 0 0; }
+.header-padding-leeway { padding: 0 20px; margin-bottom: 12px; }
+.lux-refresh-action-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
+.premium-table-scroll-container { overflow-x: auto; width: 100%; }
+.lux-data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.lux-data-table thead th { color: var(--text-muted); padding: 10px 20px; font-size: 11px; font-weight: 500; border-bottom: 1px solid var(--border-premium); }
+.lux-data-table tbody td { padding: 12px 20px; font-size: 13px; border-bottom: 1px solid var(--border-premium); }
+.lux-data-table tbody tr:last-child td { border-bottom: none; }
+.identity-bold-txt { font-weight: 500; color: var(--text-main); }
+.cell-muted-text { color: var(--text-muted); }
+
+/* Semantic Status Badge Configurations */
+.lux-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
+.lux-badge.status-paid { background: #dcfce7; color: #16a34a; }
+.lux-badge.status-pending { background: #fef3c7; color: #b45309; }
+.lux-badge.status-rejected { background: #fee2e2; color: #dc2626; }
+
+.fallback-flex-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 40px 20px; color: var(--text-muted); }
+
+/* ── INTERACTIVE / CLICKABLE ELEMENTS ── */
+.KPI-card-interactive {
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.KPI-card-interactive:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -4px rgba(0,0,0,0.10);
+    border-color: var(--p-blue);
+}
+.KPI-card-interactive:active { transform: translateY(-1px); }
+
+.lux-data-table tbody tr { cursor: pointer; transition: background 0.15s ease; }
+.lux-data-table tbody tr:hover { background: rgba(59,130,246,0.06); }
+
+.dropdown-pill-premium:hover { color: var(--p-blue); border-color: var(--p-blue); }
+.lux-refresh-action-btn:hover { color: var(--p-blue); transform: rotate(90deg); }
+
+.donut-lux-card { cursor: default; overflow: visible; }
+.legend-item-premium {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.legend-item-premium:hover { background: rgba(148,163,184,0.12); }
+
+/* ── RESPONSIVE VIEWPORTS HANDLERS ── */
+@media(max-width: 1150px) {
+    .rpt-dashboard-main-grid { grid-template-columns: 1fr; }
+}
+@media(max-width: 768px) {
+    .rpt-title-lux { font-size: 20px; }
+    .header-right-cluster { gap: 10px; }
+    .user-name-premium { display: none; }
+}
+@media(max-width: 600px) {
+    .rpt-grid-mini-quad, .rpt-grid-financial-pair { grid-template-columns: 1fr; }
+    .rpt-premium-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .rpt-kpi-value-lux { font-size: 26px; }
+    .donut-integration-flex { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .chart-canvas-wrapper { height: 160px; }
+    .lux-data-table thead th, .lux-data-table tbody td { padding: 10px 12px; }
+}
 </style>
 {% endblock %}

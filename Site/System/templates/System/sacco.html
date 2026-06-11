@@ -217,8 +217,16 @@
                             <i class="fa-solid fa-car"></i> {{ vehicle.number_plate }}
                         </span>
                         <span class="ov-value">
-                            {{ vehicle.vehicle_type }} &middot; <span class="detail-label" style="display:inline;">{{ vehicle.route }}</span>
+                            {{ vehicle.get_vehicle_type_display }}
+                            &middot;
+                            <span class="detail-label" style="display:inline;">
+                                {{ vehicle.route }}
+                            </span>
                         </span>
+                        <span class="ov-value-highlight">
+                            KES {{ vehicle.amount|floatformat:0 }}
+                        </span>
+
                     </div>
                     {% empty %}
                     <div class="overview-item" style="justify-content: center; padding: 20px 0;">
@@ -307,7 +315,14 @@ document.addEventListener("DOMContentLoaded", function() {
         flex-direction: column;
         gap: 28px;
     }
-
+    .type-badge {
+    background: #eff6ff;
+    color: #1e3a8a;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-left: 6px;
+}
     /* GLOBAL ENTRY LOADING STAGGER ANIMATIONS */
     .animate-fade-up {
         opacity: 0;

@@ -1,4 +1,3 @@
-
 {% extends 'System/base.html' %}
 {% load static %}
 
@@ -74,9 +73,25 @@
             </div>
 
             <!-- =========================
-                 PHONE + EMAIL
+                 USERNAME + PHONE
             ========================== -->
             <div class="form-row">
+
+                <div class="form-group">
+
+                    <input
+                        type="text"
+                        name="username"
+                        class="form-control"
+                        required
+                        autocomplete="username"
+                    >
+
+                    <label>
+                        Username
+                    </label>
+
+                </div>
 
                 <div class="form-group">
 
@@ -93,7 +108,14 @@
 
                 </div>
 
-                <div class="form-group">
+            </div>
+
+            <!-- =========================
+                 EMAIL
+            ========================== -->
+            <div class="form-row">
+
+                <div class="form-group full-width">
 
                     <input
                         type="email"
@@ -356,4 +378,3 @@
 </style>
 
 {% endblock %}
-

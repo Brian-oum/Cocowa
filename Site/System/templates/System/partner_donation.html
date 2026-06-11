@@ -3,6 +3,13 @@
 
 {% block content %}
 <div class="membership-page">
+    {% if messages %}
+            {% for message in messages %}
+                <div class="alert-message">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
 
     <div class="form-container fade-in-up">
 

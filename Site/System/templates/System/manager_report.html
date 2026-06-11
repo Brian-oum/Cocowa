@@ -2,339 +2,498 @@
 {% load static %}
 
 {% block content %}
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
-<div class="dashboard-container">
+<div class="rpt-shell-premium">
 
-    <div class="page-header-row animate-fade-up" style="--delay: 1;">
-        <h1 class="page-title">Manager Executive Report</h1>
-        <p class="page-subtitle">Real-time organizational compliance, financial health, and systems logistics.</p>
-    </div>
-
-    <div class="summary-4-grid animate-fade-up" style="--delay: 2;">
-
-        <div class="metrics-card interactive-hover">
-            <div class="metrics-icon icon-blue">
-                <i class="fa-solid fa-users"></i>
-            </div>
-            <div class="metrics-info">
-                <p class="metrics-label">Total Members</p>
-                <h3 class="metrics-value">
-                    <span class="count-ticker" data-count-target="{{ total_members|default:0 }}">0</span>
-                </h3>
+    <div class="rpt-premium-header animate__animated animate__fadeInDown">
+        <div class="header-left-cluster">
+            <div class="title-accent-bar"></div>
+            <div>
+                <h1 class="rpt-title-lux">Analytics</h1>
+                <p class="rpt-subtitle-lux">Real-time operational overview and performance dynamics</p>
             </div>
         </div>
-
-        <div class="metrics-card interactive-hover">
-            <div class="metrics-icon icon-green">
-                <i class="fa-solid fa-user-check"></i>
+        <div class="header-right-cluster">
+            <div class="rpt-date-pill-lux">
+                <span id="rpt-date-label">{{ current_year }}</span>
+                <i class="fa-regular fa-calendar"></i>
             </div>
-            <div class="metrics-info">
-                <p class="metrics-label">Active Members</p>
-                <h3 class="metrics-value">
-                    <span class="count-ticker" data-count-target="{{ active_members|default:0 }}">0</span>
-                </h3>
-            </div>
-        </div>
-
-        <div class="metrics-card interactive-hover">
-            <div class="metrics-icon icon-purple">
-                <i class="fa-solid fa-percent"></i>
-            </div>
-            <div class="metrics-info">
-                <p class="metrics-label">Payment Compliance</p>
-                <h3 class="metrics-value">
-                    <span class="count-ticker" data-count-target="{{ payment_rate|default:0 }}">0</span><span style="font-size: 18px; color: var(--c-purple);">%</span>
-                </h3>
-            </div>
-        </div>
-
-        <div class="metrics-card interactive-hover">
-            <div class="metrics-icon icon-amber">
-                <i class="fa-solid fa-hand-holding-dollar"></i>
-            </div>
-            <div class="metrics-info">
-                <p class="metrics-label">Total Revenue</p>
-                <h3 class="metrics-value">
-                    <span class="val-denominator" style="font-size: 14px; font-weight: 600; color: #0f172a; margin-right: 2px;">KES</span> 
-                    <span class="count-ticker" data-count-target="{{ total_revenue|default:0 }}">0</span>
-                </h3>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="ui-card insight-card animate-fade-up interactive-hover" style="--delay: 3;">
-        <div class="insight-header">
-            <i class="fa-solid fa-lightbulb"></i>
-            <h3 class="card-title" style="margin: 0;">Management Insights</h3>
-        </div>
-        <ul class="insight-list">
-            {% for insight in insights %}
-                <li>{{ insight }}</li>
-            {% empty %}
-                <li>No critical anomalies or system alerts detected in this operational cycle.</li>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <div class="brick-masonry-grid animate-fade-up" style="--delay: 4;">
-
-        <div class="ui-card interactive-hover brick-hero">
-            <h3 class="card-title">Revenue Trend</h3>
-            <div class="chart-wrapper line-chart-wrapper">
-                <canvas id="revenueChart"></canvas>
-            </div>
-        </div>
-
-        <div class="ui-card interactive-hover brick-medium">
-            <h3 class="card-title">Membership Distribution</h3>
-            <div class="profile-progress-layout">
-                <div class="chart-container">
-                    <canvas id="membershipChart"></canvas>
+            <div class="user-profile-plate">
+                <div class="avatar-ring-premium">
+                    {% if request.user.userprofile.profile_picture %}
+                        <img src="{{ request.user.userprofile.profile_picture.url }}" alt="Manager">
+                    {% else %}
+                        <i class="fa-solid fa-user-gear"></i>
+                    {% endif %}
                 </div>
-                <div class="progress-details">
-                    <div class="progress-item-row">
-                        <span class="dot-indicator" style="background: #1e3a8a;"></span>
-                        <div>
-                            <span class="detail-label">Individuals</span>
-                            <h4 class="detail-value"><span class="count-ticker" data-count-target="{{ individual_count|default:0 }}">0</span></h4>
-                        </div>
-                    </div>
-                    <div class="progress-item-row">
-                        <span class="dot-indicator" style="background: #f59e0b;"></span>
-                        <div>
-                            <span class="detail-label">SACCOs</span>
-                            <h4 class="detail-value"><span class="count-ticker" data-count-target="{{ sacco_count|default:0 }}">0</span></h4>
-                        </div>
-                    </div>
-                    <div class="progress-item-row">
-                        <span class="dot-indicator" style="background: #8b5cf6;"></span>
-                        <div>
-                            <span class="detail-label">Partners</span>
-                            <h4 class="detail-value"><span class="count-ticker" data-count-target="{{ partner_count|default:0 }}">0</span></h4>
-                        </div>
-                    </div>
+                <div class="profile-meta-text">
+                    <span class="user-name-premium">{{ request.user.get_full_name|default:request.user.username }}</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="ui-card table-card interactive-hover brick-tall">
-            <div class="table-header-box">
-                <h3 class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color: var(--c-red); margin-right: 8px;"></i> Recent Complaints</h3>
+    <div class="rpt-dashboard-main-grid animate__animated animate__fadeInUp" style="animation-delay: 100ms;">
+        
+        <div class="rpt-grid-column">
+            
+            <div class="rpt-grid-mini-quad">
+                <a href="{% url 'individuals_list' %}" class="rpt-kpi-link">
+                <div class="rpt-glass-card KPI-card-interactive">
+                    <div class="card-glass-glow"></div>
+                    <div class="rpt-kpi-top">
+                        <span class="rpt-kpi-caption">Total Members</span>
+                        <div class="lux-icon-wrap"><i class="fa-regular fa-square"></i></div>
+                    </div>
+                    <div class="rpt-kpi-value-lux count-up" data-target="{{ total_members }}">0</div>
+                    <div class="rpt-kpi-metric-footer status-positive">
+                        <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> {{ payment_rate }}%</span>
+                        <span class="footer-meta-text">Payment rate</span>
+                    </div>
+                </div>
+                </a>
+
+                <a href="{% url 'individuals_list' %}?status=paid" class="rpt-kpi-link">
+                <div class="rpt-glass-card KPI-card-interactive">
+                    <div class="card-glass-glow"></div>
+                    <div class="rpt-kpi-top">
+                        <span class="rpt-kpi-caption">Active Members</span>
+                        <div class="lux-icon-wrap"><i class="fa-regular fa-square-check"></i></div>
+                    </div>
+                    <div class="rpt-kpi-value-lux count-up" data-target="{{ active_members }}">0</div>
+                    <div class="rpt-kpi-metric-footer status-positive">
+                        <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> {% widthratio active_members total_members 100 %}%</span>
+                        <span class="footer-meta-text">of total members</span>
+                    </div>
+                </div>
+                </a>
+
+                <a href="{% url 'manager_cases' %}" class="rpt-kpi-link">
+                <div class="rpt-glass-card KPI-card-interactive">
+                    <div class="card-glass-glow"></div>
+                    <div class="rpt-kpi-top">
+                        <span class="rpt-kpi-caption">Total Cases</span>
+                        <div class="lux-icon-wrap"><i class="fa-solid fa-shield-halved"></i></div>
+                    </div>
+                    <div class="rpt-kpi-value-lux count-up" data-target="{{ total_cases }}">0</div>
+                    <div class="rpt-kpi-metric-footer {% if open_cases > 0 %}status-negative{% else %}status-positive{% endif %}">
+                        <span class="metric-trend-pill"><i class="fa-solid fa-alert-circle"></i> {{ open_cases }}</span>
+                        <span class="footer-meta-text">Open cases</span>
+                    </div>
+                </div>
+                </a>
+
+                <a href="{% url 'individuals_list' %}" class="rpt-kpi-link">
+                <div class="rpt-glass-card KPI-card-interactive">
+                    <div class="card-glass-glow"></div>
+                    <div class="rpt-kpi-top">
+                        <span class="rpt-kpi-caption">Total Revenue</span>
+                        <div class="lux-icon-wrap"><i class="fa-regular fa-credit-card"></i></div>
+                    </div>
+                    <div class="rpt-kpi-value-lux count-up" data-target="{{ total_revenue }}">0</div>
+                    <div class="rpt-kpi-metric-footer status-positive">
+                        <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> KES</span>
+                        <span class="footer-meta-text">This year</span>
+                    </div>
+                </div>
+                </a>
             </div>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ticket No</th>
-                            <th>Subject</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for complaint in recent_complaints %}
+
+            <div class="rpt-glass-card premium-card-container">
+                <div class="premium-card-header">
+                    <div class="header-title-set">
+                        <h3 class="box-main-heading">Revenue Trend ({{ current_year }})</h3>
+                    </div>
+                    <div class="dropdown-pill-premium">
+                        <span>{{ current_year }}</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="salesDynamicsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="rpt-glass-card premium-card-container">
+                <div class="premium-card-header">
+                    <div class="header-title-set">
+                        <h3 class="box-main-heading">Membership Breakdown</h3>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="rpt-grid-column">
+            
+            <div class="rpt-grid-double-donut">
+                <div class="rpt-glass-card donut-lux-card">
+                    <div class="rpt-kpi-top" style="padding:0; margin-bottom: 4px;">
+                        <span class="rpt-kpi-caption">Members by Type</span>
+                    </div>
+                    <div class="donut-value-header count-up" data-target="{{ total_members }}">0</div>
+                    <div class="donut-integration-flex">
+                        <div class="canvas-chart-holder">
+                            <canvas id="kpiMemberChart"></canvas>
+                        </div>
+                        <div class="donut-custom-legend">
+                            <a href="{% url 'individuals_list' %}" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--p-sapphire);"></span><span class="legend-label-txt">{{ individual_count }} Individuals</span></div></a>
+                            <a href="{% url 'sacco_list' %}" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--p-luxury-gold);"></span><span class="legend-label-txt">{{ sacco_count }} Saccos</span></div></a>
+                            <a href="{% url 'partners_list' %}" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--p-amethyst);"></span><span class="legend-label-txt">{{ partner_count }} Partners</span></div></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rpt-glass-card donut-lux-card">
+                    <div class="rpt-kpi-top" style="padding:0; margin-bottom: 4px;">
+                        <span class="rpt-kpi-caption">Complaints Status</span>
+                    </div>
+                    <div class="donut-value-header count-up" data-target="{{ total_complaints }}">0</div>
+                    <div class="donut-integration-flex">
+                        <div class="canvas-chart-holder">
+                            <canvas id="kpiPayChart"></canvas>
+                        </div>
+                        <div class="donut-custom-legend">
+                            <a href="{% url 'manager_complaints' %}?status=open" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--p-sapphire);"></span><span class="legend-label-txt">{{ complaint_open }} Open</span></div></a>
+                            <a href="{% url 'manager_complaints' %}?status=resolved" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--border-premium);"></span><span class="legend-label-txt">{{ complaint_resolved }} Resolved</span></div></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rpt-grid-financial-pair">
+                <div class="rpt-glass-card financial-metric-box">
+                    <div class="financial-header-inline">
+                        <div class="fin-icon-badge badge-purple"><i class="fa-solid fa-wallet"></i></div>
+                        <span class="fin-percentage-pill text-purple"><i class="fa-solid fa-circle-notch"></i> {{ payment_rate }}%</span>
+                    </div>
+                    <span class="fin-caption" style="margin-top:12px;">Individual Revenue</span>
+                    <div class="fin-value-row">
+                        <span class="fin-currency">KES</span>
+                        <span class="count-up fin-main-amount" data-target="{{ individual_revenue }}">0</span>
+                    </div>
+                    <span class="fin-subtext-footnote">{{ current_year }} Financial Year</span>
+                </div>
+
+                <div class="rpt-glass-card financial-metric-box">
+                    <div class="financial-header-inline">
+                        <div class="fin-icon-badge badge-green"><i class="fa-solid fa-briefcase"></i></div>
+                        <span class="fin-percentage-pill text-green"><i class="fa-solid fa-circle-notch"></i> {{ active_members }} Active</span>
+                    </div>
+                    <span class="fin-caption" style="margin-top:12px;">Partner Revenue</span>
+                    <div class="fin-value-row">
+                        <span class="fin-currency">KES</span>
+                        <span class="count-up fin-main-amount" data-target="{{ partner_revenue }}">0</span>
+                    </div>
+                    <span class="fin-subtext-footnote">{{ current_year }} Financial Year</span>
+                </div>
+            </div>
+
+            <div class="rpt-glass-card premium-card-container table-card-premium" style="flex-grow: 1;">
+                <div class="premium-card-header header-padding-leeway">
+                    <div class="header-title-set">
+                        <h3 class="box-main-heading">Recent Complaints ({{ total_complaints }})</h3>
+                    </div>
+                    <a href="{% url 'manager_complaints' %}" class="rpt-view-all-link"><i class="fa-solid fa-arrow-right"></i> View All</a>
+                </div>
+
+                <div class="premium-table-scroll-container">
+                    <table class="lux-data-table">
+                        <thead>
                             <tr>
-                                <td class="text-bold">#{{ complaint.ticket_number }}</td>
-                                <td>{{ complaint.subject }}</td>
-                                <td><span class="badge {{ complaint.status }}">{{ complaint.status }}</span></td>
-                                <td class="text-muted">{{ complaint.created_at|date:"d M Y" }}</td>
+                                <th>User</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Ticket #</th>
                             </tr>
-                        {% empty %}
+                        </thead>
+                        <tbody>
+                            {% for complaint in recent_complaints %}
+                            <tr class="rpt-clickable-row" onclick="window.location='{% url 'manager_complaints' %}'">
+                                <td>
+                                    <div class="table-user-profile-identity">
+                                        <div class="avatar-letter-premium">{{ complaint.user.get_full_name|default:complaint.user.username|first|upper }}</div>
+                                        <span class="identity-bold-txt">{{ complaint.user.get_full_name|default:complaint.user.username }}</span>
+                                    </div>
+                                </td>
+                                <td class="cell-muted-text">{{ complaint.category|default:"General"|capfirst }}</td>
+                                <td class="cell-muted-text">{{ complaint.created_at|date:"d M Y" }}</td>
+                                <td><span class="lux-badge status-{{ complaint.status|default:'open' }}">{{ complaint.status|default:'Open'|capfirst }}</span></td>
+                                <td class="cell-identity-code">#{{ complaint.id }}</td>
+                            </tr>
+                            {% empty %}
                             <tr>
-                                <td colspan="4" class="table-empty-state">No open customer complaints registered.</td>
+                                <td colspan="5" class="empty-table-fallback-row">
+                                    <div class="fallback-flex-center">
+                                        <i class="fa-solid fa-inbox"></i>
+                                        <span>No complaints recorded.</span>
+                                    </div>
+                                </td>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="rpt-glass-card premium-card-container table-card-premium animate__animated animate__fadeInUp" style="animation-delay: 200ms;">
+        <div class="premium-card-header header-padding-leeway">
+            <div class="header-title-set">
+                <h3 class="box-main-heading"><i class="fa-solid fa-shield-halved text-sapphire" style="margin-right: 6px;"></i> Recent Incident Reports ({{ total_cases }})</h3>
+                <p class="box-sub-heading">Real-time telemetry and validation records</p>
+            </div>
+            <div class="header-action-addons">
+                <span class="count-badge-luxury-tag">{{ open_cases }} Open • {{ resolved_cases }} Resolved</span>
+                <a href="{% url 'manager_cases' %}" class="rpt-view-all-link" style="margin-left:12px;"><i class="fa-solid fa-arrow-right"></i> View All</a>
             </div>
         </div>
 
-        <div class="ui-card interactive-hover brick-medium">
-            <h3 class="card-title">Complaint Analytics</h3>
-            <div class="chart-wrapper">
-                <canvas id="complaintChart"></canvas>
-            </div>
+        <div class="premium-table-scroll-container">
+            <table class="lux-data-table">
+                <thead>
+                    <tr>
+                        <th>Vehicle Plate</th>
+                        <th>Incident Type</th>
+                        <th>SACCO/Hub</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in recent_cases %}
+                    <tr class="rpt-clickable-row" onclick="window.location='{% url 'manager_cases' %}'">
+                        <td class="identity-bold-txt"><i class="fa-solid fa-bus-simple table-inline-icon"></i>{{ case.number_plate }}</td>
+                        <td>{{ case.get_incident_type_display }}</td>
+                        <td class="cell-muted-text">{{ case.sacco.sacco_name|default:case.external_sacco_name|default:"—" }}</td>
+                        <td class="cell-muted-text">{{ case.journey_date|date:"d M Y" }}</td>
+                        <td><span class="lux-badge status-{{ case.status }}">{{ case.status|capfirst }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty-table-fallback-row">
+                            <div class="fallback-flex-center">
+                                <i class="fa-solid fa-clipboard-check"></i>
+                                <span>No incident reports at this time.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <div class="ui-card table-card interactive-hover brick-wide-span">
-            <div class="table-header-box">
-                <h3 class="card-title"><i class="fa-solid fa-shield-halved" style="color: var(--c-blue); margin-right: 8px;"></i> Recent Incident Reports</h3>
-            </div>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Vehicle</th>
-                            <th>Incident Type</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for case in recent_cases %}
-                            <tr>
-                                <td class="text-bold"><i class="fa-solid fa-car" style="font-size:12px; margin-right:4px; color:#64748b;"></i> {{ case.number_plate }}</td>
-                                <td>{{ case.get_incident_type_display }}</td>
-                                <td><span class="badge {{ case.status }}">{{ case.status }}</span></td>
-                                <td class="text-muted">{{ case.created_at|date:"d M Y" }}</td>
-                            </tr>
-                        {% empty %}
-                            <tr>
-                                <td colspan="4" class="table-empty-state">No field incident records submitted.</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="ui-card interactive-hover brick-medium">
-            <h3 class="card-title">Incident Analytics</h3>
-            <div class="chart-wrapper donut-fix">
-                <canvas id="incidentChart"></canvas>
-            </div>
-        </div>
-
     </div>
 
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
 
-    // SACCO CUBIC EASE-OUT TICKER ENGINE
-    const tickers = document.querySelectorAll('.count-ticker');
-    const duration = 2000;
-
-    tickers.forEach(el => {
-        const target = parseFloat(el.dataset.countTarget) || 0;
-        const start = performance.now();
-
-        function animate(time) {
-            const progress = Math.min((time - start) / duration, 1);
-            const value = target * (1 - Math.pow(1 - progress, 3)); 
-
-            el.textContent = Math.floor(value).toLocaleString();
-
-            if (progress < 1) requestAnimationFrame(animate);
-        }
-
-        requestAnimationFrame(animate);
+    // Count-Up Engine Custom Optimization
+    document.querySelectorAll(".count-up").forEach(el => {
+        const target = parseFloat(el.dataset.target) || 0;
+        const start  = performance.now();
+        const dur    = 1800;
+        (function tick(now) {
+            const p = Math.min((now - start) / dur, 1);
+            el.textContent = Math.floor(target * (1 - Math.pow(1 - p, 4))).toLocaleString();
+            if (p < 1) requestAnimationFrame(tick);
+        })(start);
     });
 
-    // REVENUE CHART INITIALIZER
-    const revCtx = document.getElementById("revenueChart");
-    if(revCtx) {
-        new Chart(revCtx, {
-            type: "line",
+    // Premium Color Match Constants
+    const paletteSapphire = "#1e3a8a";
+    const paletteGold = "#d97706";
+    const paletteAmethyst = "#7c3aed";
+    const gridColorLine = "rgba(148, 163, 184, 0.05)";
+
+    // Users Composition Chart (Member Breakdown)
+    const kpiMem = document.getElementById("kpiMemberChart");
+    if (kpiMem) {
+        new Chart(kpiMem, {
+            type: "doughnut",
+            data: {
+                labels: ["Individuals", "Saccos", "Partners"],
+                datasets: [{
+                    data: [{{ individual_count }}, {{ sacco_count }}, {{ partner_count }}],
+                    backgroundColor: [paletteSapphire, paletteGold, paletteAmethyst],
+                    borderWidth: 0,
+                    hoverOffset: 3
+                }]
+            },
+            options: { cutout: "78%", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+
+    // Subscription Chart (Complaint Status)
+    const kpiPay = document.getElementById("kpiPayChart");
+    if (kpiPay) {
+        new Chart(kpiPay, {
+            type: "doughnut",
+            data: {
+                labels: ["Open", "Resolved"],
+                datasets: [{
+                    data: [{{ complaint_open }}, {{ complaint_resolved }}],
+                    backgroundColor: [paletteSapphire, "rgba(30, 58, 138, 0.15)"],
+                    borderWidth: 0
+                }]
+            },
+            options: { cutout: "78%", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+
+    // Bar Chart - Revenue Trend
+    const salesCtx = document.getElementById("salesDynamicsChart");
+    if (salesCtx) {
+        new Chart(salesCtx, {
+            type: "bar",
             data: {
                 labels: {{ months|safe }},
                 datasets: [{
-                    label: "Revenue (KES)",
+                    label: "Monthly Revenue",
                     data: {{ revenue_data|safe }},
-                    borderColor: '#1e3a8a',
-                    backgroundColor: 'rgba(30, 58, 138, 0.04)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.35,
-                    pointBackgroundColor: '#1e3a8a'
+                    backgroundColor: paletteSapphire,
+                    borderRadius: 6,
+                    maxBarThickness: 12
                 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: gridColorLine }, ticks: { color: "#94a3b8", font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { color: "#94a3b8", font: { size: 10 } } }
+                }
+            }
+        });
+    }
+    // Membership Breakdown — Multi-Line Chart (monthly, 3 series)
+    const actCtx = document.getElementById("activityChart");
+    if (actCtx) {
+        new Chart(actCtx, {
+            type: "line",
+            data: {
+                labels: {{ months|safe }},
+                datasets: [
+                    {
+                        label: "Individual",
+                        data: {{ monthly_individual|safe }},
+                        borderColor: "#1e3a8a",
+                        backgroundColor: "transparent",
+                        borderWidth: 2.5,
+                        tension: 0.45,
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: "#ffffff",
+                        pointBorderColor: "#1e3a8a",
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: "#1e3a8a"
+                    },
+                    {
+                        label: "SACCO",
+                        data: {{ monthly_sacco|safe }},
+                        borderColor: "#d97706",
+                        backgroundColor: "transparent",
+                        borderWidth: 2.5,
+                        tension: 0.45,
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: "#ffffff",
+                        pointBorderColor: "#d97706",
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: "#d97706"
+                    },
+                    {
+                        label: "Partner",
+                        data: {{ monthly_partner|safe }},
+                        borderColor: "#7c3aed",
+                        backgroundColor: "transparent",
+                        borderWidth: 2.5,
+                        tension: 0.45,
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: "#ffffff",
+                        pointBorderColor: "#7c3aed",
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: "#7c3aed"
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: "top",
+                        align: "end",
+                        labels: {
+                            color: "#94a3b8",
+                            font: { size: 11, weight: "600" },
+                            usePointStyle: true,
+                            pointStyle: "circle",
+                            boxWidth: 7,
+                            boxHeight: 7,
+                            padding: 16
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: "rgba(15, 23, 42, 0.88)",
+                        titleColor: "#e2e8f0",
+                        bodyColor: "#94a3b8",
+                        borderColor: "rgba(148, 163, 184, 0.12)",
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        callbacks: {
+                            label: function(ctx) {
+                                return "  " + ctx.dataset.label + ": " + ctx.parsed.y + " members";
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "rgba(148, 163, 184, 0.07)", drawBorder: false },
+                        border: { display: false },
+                        ticks: { color: "#94a3b8", font: { size: 10 }, precision: 0, padding: 8, maxTicksLimit: 6 }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: { color: "#94a3b8", font: { size: 10 }, padding: 6 }
+                    }
                 }
             }
         });
     }
 
-    // MEMBERSHIP PIE CHART (UPGRADED TO LUXE DOUGHNUT)
-    const memCtx = document.getElementById("membershipChart");
-    if(memCtx) {
-        new Chart(memCtx, {
-            type: "doughnut",
-            data: {
-                labels: ["Individuals", "SACCOs", "Partners"],
-                datasets: [{
-                    data: [
-                        {{ individual_count|default:0 }},
-                        {{ sacco_count|default:0 }},
-                        {{ partner_count|default:0 }}
-                    ],
-                    backgroundColor: ['#1e3a8a', '#f59e0b', '#8b5cf6'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                cutout: '75%',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
-
-    // COMPLAINTS STATUS CHART
-    const compCtx = document.getElementById("complaintChart");
-    if(compCtx) {
-        new Chart(compCtx, {
-            type: "bar",
-            data: {
-                labels: ["Open", "In Progress", "Resolved", "Closed"],
-                datasets: [{
-                    label: "Complaints Grid",
-                    data: [
-                        {{ complaint_open|default:0 }},
-                        {{ complaint_progress|default:0 }},
-                        {{ complaint_resolved|default:0 }},
-                        {{ complaint_closed|default:0 }}
-                    ],
-                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#1e3a8a'],
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: '#f1f5f9' }, ticks: { beginAtZero: true, color: '#64748b' } },
-                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
-                }
-            }
-        });
-    }
-
-    // INCIDENT TRACKING ANALYTICS
-    const incCtx = document.getElementById("incidentChart");
-    if(incCtx) {
-        new Chart(incCtx, {
-            type: "doughnut",
-            data: {
-                labels: ["Open", "Investigating", "Resolved", "Closed"],
-                datasets: [{
-                    data: [
-                        {{ open_cases|default:0 }},
-                        {{ investigating_cases|default:0 }},
-                        {{ resolved_cases|default:0 }},
-                        {{ closed_cases|default:0 }}
-                    ],
-                    backgroundColor: ['#ef4444', '#3b82f6', '#10b981', '#64748b'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                cutout: '70%',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, color: '#64748b', font: { size: 11 } } } }
+    // System Theme Palette Switcher
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    if(themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const rootAttr = document.documentElement;
+            const currentTheme = rootAttr.getAttribute('data-lux-theme');
+            const icon = document.getElementById('rpt-theme-icon');
+            if (currentTheme === 'dark') {
+                rootAttr.removeAttribute('data-lux-theme');
+                if(icon) icon.className = "fa-solid fa-moon";
+            } else {
+                rootAttr.setAttribute('data-lux-theme', 'dark');
+                if(icon) icon.className = "fa-solid fa-sun";
             }
         });
     }
@@ -342,164 +501,238 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 <style>
-    :root {
-        --c-blue: #1e3a8a;
-        --c-green: #10b981;
-        --c-red: #ef4444;
-        --c-amber: #f59e0b;
-        --c-purple: #8b5cf6;
-        --border-color: #f1f5f9;
-        --bg-luxury: #ffffff;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    .dashboard-container {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        padding: 10px 0;
-    }
-
-    /* HEADER CSS */
-    .page-header-row { margin-bottom: 4px; }
-    .page-title { font-size: 26px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0; letter-spacing: -0.5px; }
-    .page-subtitle { font-size: 14px; color: #64748b; margin: 0; }
-
-    /* LOADING TRANSITIONS SETUP */
-    .animate-fade-up {
-        opacity: 0;
-        transform: translateY(18px);
-        animation: fadeUpOnLoad 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        animation-delay: calc(var(--delay) * 100ms);
-    }
-    @keyframes fadeUpOnLoad {
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* CARDS ARCHITECTURE */
-    .ui-card {
-        background: var(--bg-luxury);
-        border-radius: 16px;
-        padding: 22px;
-        box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0,0,0,0.01);
-        border: 1px solid rgba(241, 245, 249, 0.7);
-        display: flex;
-        flex-direction: column;
-    }
-    .interactive-hover {
-        transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.35s ease !important;
-    }
-    .interactive-hover:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.07), 0 4px 12px -2px rgba(0, 0, 0, 0.02) !important;
-    }
-
-    .card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 18px 0; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    /* TOP SUMMARY GRID */
-    .summary-4-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-    }
-    .metrics-card {
-        background: var(--bg-luxury);
-        padding: 20px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.04);
-        border: 1px solid rgba(241, 245, 249, 0.6);
-    }
-    .metrics-icon {
-        width: 46px;
-        height: 46px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-    }
-    .icon-blue { background: #eff6ff; color: var(--c-blue); }
-    .icon-green { background: #ecfdf5; color: var(--c-green); }
-    .icon-amber { background: #fffbeb; color: var(--c-amber); }
-    .icon-purple { background: #f5f3ff; color: var(--c-purple); }
-
-    .metrics-info { flex: 1; }
-    .metrics-label { font-size: 12px; color: #64748b; margin: 0 0 4px 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
-    .metrics-value { font-size: 23px; font-weight: 700; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
-
-    /* MANAGEMENT INSIGHT BOX */
-    .insight-card { border-left: 4px solid var(--c-blue); background: #f8fafc; }
-    .insight-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--c-blue); font-size: 16px; }
-    .insight-list { margin: 0; padding-left: 20px; color: #334155; font-size: 13.5px; line-height: 1.6; }
-    .insight-list li { margin-bottom: 8px; }
-
-    /* ==================================
-       BRICK STRUCTURE ENGINE (CSS GRID)
-    ==================================== */
-    .brick-masonry-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
-    }
+:root {
+    --p-bg: #f8fafc;
+    --p-card-surface: rgba(255, 255, 255, 0.9);
+    --border-premium: rgba(226, 232, 240, 0.8);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
     
-    /* Spanning configuration rules */
-    .brick-hero { grid-column: span 2; }
-    .brick-tall { grid-row: span 2; display: flex; flex-direction: column; justify-content: space-between; }
-    .brick-wide-span { grid-column: span 1; }
-    .brick-medium { grid-column: span 1; }
+    /* Modern Luxe Executive Identity Palette */
+    --p-sapphire: #1e3a8a;
+    --p-luxury-gold: #b45309;
+    --p-emerald: #0f766e;
+    --p-amethyst: #6d28d9;
+    --p-crimson: #be123c;
+    
+    --rpt-radius-premium: 16px;
+    --rpt-premium-glow: 0 10px 30px -15px rgba(30, 58, 138, 0.05);
+}
 
-    .chart-wrapper { position: relative; height: 210px; width: 100%; margin: auto 0; }
-    .line-chart-wrapper { height: 260px; }
-    .donut-fix { height: 230px; }
+[data-lux-theme="dark"] {
+    --p-bg: #0b0f19;
+    --p-card-surface: rgba(22, 30, 49, 0.85);
+    --border-premium: rgba(51, 65, 85, 0.5);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    --p-sapphire: #3b82f6;
+    --p-luxury-gold: #fbbf24;
+    --p-emerald: #10b981;
+    --p-amethyst: #a78bfa;
+    --p-crimson: #f43f5e;
+    --rpt-premium-glow: 0 20px 40px -20px rgba(0, 0, 0, 0.5);
+}
 
-    /* MEMBERSHIP INTERNAL DISTRIBUTION SLOTS */
-    .profile-progress-layout { display: flex; align-items: center; gap: 24px; flex: 1; justify-content: center; }
-    .chart-container { width: 140px; height: 140px; position: relative; }
-    .progress-details { display: flex; flex-direction: column; gap: 12px; flex: 1; }
-    .progress-item-row { display: flex; align-items: center; gap: 12px; }
-    .dot-indicator { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    .detail-label { font-size: 12px; color: #64748b; display: block; font-weight: 500; }
-    .detail-value { font-size: 16px; font-weight: 700; color: #0f172a; margin: 1px 0 0 0; }
+.rpt-shell-premium {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background: var(--p-bg);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px;
+}
 
-    /* TABLES LAYOUT SCHEMES */
-    .table-responsive { width: 100%; overflow-x: auto; flex: 1; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    table th { background: #f8fafc; color: #475569; padding: 12px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); }
-    table td { padding: 13px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid var(--border-color); }
-    table tr:last-child td { border-bottom: none; }
+/* ── LAYOUT GRID CORE ARCHITECTURE ── */
+.rpt-dashboard-main-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+}
+.rpt-grid-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
 
-    .text-bold { font-weight: 600; color: #0f172a; }
-    .text-muted { font-size: 12px; color: #64748b; }
-    .table-empty-state { text-align: center; color: #94a3b8; padding: 30px 0 !important; font-style: italic; }
+/* LEFT COLUMN SUB-GRIDS */
+.rpt-grid-mini-quad {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
 
-    /* BADGE MANAGEMENT SYNC RULES */
-    .badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        display: inline-block;
-    }
-    .badge.open, .badge.Open { background: #fef2f2; color: var(--c-red); }
-    .badge.progress, .badge.investigating, .badge.Investigating { background: #fffbeb; color: var(--c-amber); }
-    .badge.resolved, .badge.Resolved { background: #ecfdf5; color: var(--c-green); }
-    .badge.closed, .badge.Closed { background: #f1f5f9; color: #475569; }
+/* RIGHT COLUMN SUB-GRIDS */
+.rpt-grid-double-donut {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+.rpt-grid-financial-pair {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
 
-    /* VIEWPORT RESPONSIVENESS */
-    @media(max-width: 1150px) {
-        .summary-4-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-        .brick-masonry-grid { grid-template-columns: 1fr; }
-        .brick-hero, .brick-tall, .brick-wide-span, .brick-medium { grid-column: span 1; grid-row: auto; }
-    }
-    @media(max-width: 650px) {
-        .summary-4-grid { grid-template-columns: 1fr; }
-        .profile-progress-layout { flex-direction: column; height: auto; gap: 15px; align-items: start; }
-        .chart-container { margin: 0 auto; }
-    }
+/* ── COMPONENT BOX STYLING ── */
+.rpt-glass-card {
+    background: var(--p-card-surface);
+    border: 1px solid var(--border-premium);
+    border-radius: var(--rpt-radius-premium);
+    box-shadow: var(--rpt-premium-glow);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.rpt-premium-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--p-card-surface);
+    border: 1px solid var(--border-premium);
+    border-radius: var(--rpt-radius-premium);
+    padding: 20px 28px;
+    box-shadow: var(--rpt-premium-glow);
+    backdrop-filter: blur(12px);
+}
+.header-left-cluster { display: flex; align-items: center; gap: 16px; }
+.title-accent-bar { width: 4px; height: 32px; background: linear-gradient(135deg, var(--p-sapphire), var(--p-amethyst)); border-radius: 4px; }
+.rpt-title-lux { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--text-main), var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.rpt-subtitle-lux { display: none; }
+
+.header-right-cluster { display: flex; align-items: center; gap: 16px; }
+.rpt-date-pill-lux {
+    display: flex; align-items: center; gap: 10px; background: rgba(148, 163, 184, 0.06);
+    border: 1px solid var(--border-premium); border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600; color: var(--p-sapphire);
+}
+.user-profile-plate { display: flex; align-items: center; gap: 12px; }
+.avatar-ring-premium { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-premium); background: var(--p-bg); display: flex; align-items: center; justify-content: center; color: var(--p-sapphire); }
+.avatar-ring-premium img { width: 100%; height: 100%; object-fit: cover; }
+.profile-meta-text { font-size: 14px; font-weight: 600; color: var(--text-main); }
+
+/* KPI Blocks elements */
+.rpt-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.rpt-kpi-caption { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.lux-icon-wrap { color: var(--p-sapphire); font-size: 18px; opacity: 0.8; }
+.rpt-kpi-value-lux { font-size: 34px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; letter-spacing: -0.5px; }
+.rpt-kpi-metric-footer { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.metric-trend-pill { font-weight: 600; display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px; border-radius: 20px; }
+.status-positive .metric-trend-pill { color: var(--p-emerald); background: rgba(16, 185, 129, 0.1); }
+.status-negative .metric-trend-pill { color: var(--p-crimson); background: rgba(244, 63, 94, 0.1); }
+
+/* Donut & Segment Blocks Layout */
+.donut-value-header { font-size: 28px; font-weight: 700; margin-bottom: 14px; color: var(--text-main); }
+.donut-integration-flex { display: flex; align-items: center; gap: 16px; }
+.canvas-chart-holder { width: 85px; height: 85px; flex-shrink: 0; }
+.donut-custom-legend { display: flex; flex-direction: column; gap: 6px; }
+.legend-item-premium { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.legend-indicator-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Financial Component Row Elements */
+.financial-header-inline { display: flex; justify-content: space-between; align-items: center; }
+.fin-icon-badge { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.badge-purple { background: rgba(109, 40, 217, 0.1); color: var(--p-amethyst); }
+.badge-green { background: rgba(15, 118, 110, 0.1); color: var(--p-emerald); }
+.fin-percentage-pill { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; }
+.text-purple { color: var(--p-amethyst); background: rgba(109, 40, 217, 0.08); }
+.text-green { color: var(--p-emerald); background: rgba(15, 118, 110, 0.08); }
+.fin-caption { font-size: 13px; font-weight: 600; color: var(--text-muted); display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+.fin-value-row { display: flex; align-items: baseline; gap: 4px; margin: 6px 0; }
+.fin-currency { font-size: 16px; font-weight: 700; color: var(--p-sapphire); }
+.fin-main-amount { font-size: 26px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
+.fin-subtext-footnote { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+/* Chart Containers and Labels styling */
+.premium-card-container { padding: 24px; }
+.premium-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.box-main-heading { font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0; letter-spacing: -0.2px; }
+.box-sub-heading { font-size: 12px; color: var(--text-muted); margin: 4px 0 0; font-weight: 500; }
+.dropdown-pill-premium { font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-premium); background: rgba(148, 163, 184, 0.03); }
+.chart-canvas-wrapper { position: relative; height: 190px; width: 100%; }
+
+/* Refined Clean Layout Tables Components */
+.table-card-premium { padding: 24px 0 0; }
+.header-padding-leeway { padding: 0 24px; margin-bottom: 16px; }
+.count-badge-luxury-tag { font-size: 11px; font-weight: 700; color: var(--p-sapphire); background: rgba(30, 58, 138, 0.08); padding: 4px 12px; border-radius: 20px; text-transform: uppercase; }
+.premium-table-scroll-container { overflow-x: auto; width: 100%; }
+.lux-data-table { width: 100%; border-collapse: collapse; text-align: left; }
+.lux-data-table thead th { color: var(--text-muted); padding: 12px 24px; font-size: 11px; font-weight: 600; border-bottom: 1px solid var(--border-premium); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(148, 163, 184, 0.02); }
+.lux-data-table tbody td { padding: 14px 24px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border-premium); }
+.lux-data-table tbody tr:last-child td { border-bottom: none; }
+
+.table-user-profile-identity { display: flex; align-items: center; gap: 10px; }
+.avatar-letter-premium { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: rgba(30, 58, 138, 0.1); color: var(--p-sapphire); }
+.identity-bold-txt { font-weight: 600; color: var(--text-main); }
+.cell-muted-text { color: var(--text-muted); font-weight: 500; }
+.cell-identity-code { font-weight: 700; color: var(--p-sapphire); font-size: 12px; }
+.table-inline-icon { margin-right: 6px; color: var(--text-muted); font-size: 12px; }
+
+/* Semantic Status Badge Configurations */
+.lux-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; text-transform: uppercase; letter-spacing: 0.3px; }
+.lux-badge.status-delivered, .lux-badge.status-resolved, .lux-badge.status-closed { background: rgba(16, 185, 129, 0.12); color: var(--p-emerald); }
+.lux-badge.status-in_progress, .lux-badge.status-investigating { background: rgba(245, 158, 11, 0.12); color: var(--p-luxury-gold); }
+.lux-badge.status-open { background: rgba(244, 63, 94, 0.12); color: var(--p-crimson); }
+
+/* ── CLICKABLE KPI CARDS & TABLE ROWS ── */
+.rpt-kpi-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.rpt-kpi-link .rpt-glass-card {
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s ease;
+    cursor: pointer;
+}
+.rpt-kpi-link:hover .rpt-glass-card {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -10px rgba(30, 58, 138, 0.15);
+    border-color: var(--p-sapphire);
+}
+.rpt-legend-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+    padding: 4px 8px;
+    margin: -4px -8px;
+}
+.rpt-legend-link:hover {
+    background: rgba(30, 58, 138, 0.05);
+}
+.rpt-clickable-row {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.rpt-clickable-row:hover {
+    background: rgba(30, 58, 138, 0.03) !important;
+}
+/* View all link in table headers */
+.rpt-view-all-link {
+    font-size: 12px;
+    color: var(--p-sapphire);
+    text-decoration: none;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.15s ease, opacity 0.15s;
+}
+.rpt-view-all-link:hover { opacity: 0.8; transform: translateX(2px); }
+
+/* ── RESPONSIVE VIEWPORTS HANDLERS ── */
+@media(max-width: 1150px) {
+    .rpt-dashboard-main-grid { grid-template-columns: 1fr; }
+}
+@media(max-width: 600px) {
+    .rpt-grid-mini-quad, .rpt-grid-double-donut, .rpt-grid-financial-pair { grid-template-columns: 1fr; }
+    .rpt-premium-header { flex-direction: column; gap: 14px; align-items: flex-start; padding: 16px 20px; }
+}
 </style>
-
 {% endblock %}

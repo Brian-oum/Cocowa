@@ -3,7 +3,6 @@
 
 {% block content %}
 
-<div class="container-fluid px-4 py-4 main-dashboard-wrapper">
     <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
         
         <div class="card-header bg-white border-bottom border-slate-100 py-4 px-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -11,8 +10,11 @@
                 <i class="fa-solid fa-folder-open me-2.5 text-primary fs-5"></i>
                 My Incident Reports
             </h4>
-            <a href="{% url 'report_cases' %}" class="btn btn-primary px-4 py-2 rounded-3 fw-semibold shadow-sm transition-all text-decoration-none">
-                <i class="fa-solid fa-plus me-2"></i>Report Incident
+            <a href="{% url 'report_cases' %}" class="report-incident-btn text-decoration-none">
+                <span class="btn-icon">
+                    <i class="fa-solid fa-plus"></i>
+                </span>
+                <span>Report Incident</span>
             </a>
         </div>
 
@@ -111,9 +113,6 @@
                                 <p class="text-slate-500 mb-4 mx-auto" style="max-width: 340px; font-size: 14px;">
                                     You haven't submitted any incident reports yet. New reports will cleanly catalog here.
                                 </p>
-                                <a href="{% url 'report_cases' %}" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm fw-semibold">
-                                    <i class="fa-solid fa-plus me-2"></i> Report First Incident
-                                </a>
                             </div>
                         </td>
                     </tr>
@@ -122,7 +121,6 @@
             </table>
         </div>
     </div>
-</div>
 
 <style>
 /* Design System Palettes */
@@ -145,15 +143,81 @@
     min-height: 100vh;
 }
 
-/* Custom Overrides for Base Dashboard Components */
-.btn-primary {
-    background-color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
+/* ==========================
+   PREMIUM REPORT BUTTON
+========================== */
+
+.report-incident-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 22px;
+    border-radius:14px;
+    font-weight:700;
+    font-size:14px;
+    color:#fff;
+    text-decoration:none;
+    background:linear-gradient(
+        135deg,
+        #6A2B91 0%,
+        #8242b1 50%,
+        #9c5fd0 100%
+    );
+    box-shadow:
+        0 10px 25px rgba(106,43,145,.22),
+        0 3px 8px rgba(106,43,145,.15);
+    transition:all .25s ease;
+    position:relative;
+    overflow:hidden;
 }
-.btn-primary:hover {
-    background-color: var(--primary-hover) !important;
-    border-color: var(--primary-hover) !important;
+
+.report-incident-btn::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:-120%;
+    width:100%;
+    height:100%;
+    background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.25),
+        transparent
+    );
+    transition:.7s;
 }
+
+.report-incident-btn:hover::before{
+    left:120%;
+}
+
+.report-incident-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:
+        0 18px 35px rgba(106,43,145,.28),
+        0 8px 15px rgba(106,43,145,.18);
+    color:#fff;
+}
+
+.report-incident-btn:active{
+    transform:translateY(-1px);
+}
+
+.report-incident-btn .btn-icon{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:rgba(255,255,255,.18);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(8px);
+}
+
+.report-incident-btn .btn-icon i{
+    font-size:12px;
+}
+
 
 .bg-slate-25 { background-color: var(--slate-25); }
 .text-slate-900 { color: var(--slate-900); }

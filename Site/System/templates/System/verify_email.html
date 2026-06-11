@@ -1,0 +1,198 @@
+
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="otp-wrapper">
+    <div class="otp-card">
+        <h2 class="otp-title">Email Verification</h2>
+        <p class="otp-subtitle">Enter the 6-digit OTP sent to your email.</p>
+
+        <form method="POST" id="otpForm">
+            {% csrf_token %}
+            
+            <div class="otp-input-container">
+                <input type="text" class="otp-field" maxlength="1" pattern="\d*" required inputmode="numeric">
+                <input type="text" class="otp-field" maxlength="1" pattern="\d*" required inputmode="numeric">
+                <input type="text" class="otp-field" maxlength="1" pattern="\d*" required inputmode="numeric">
+                <input type="text" class="otp-field" maxlength="1" pattern="\d*" required inputmode="numeric">
+                <input type="text" class="otp-field" maxlength="1" pattern="\d*" required inputmode="numeric">
+                <input type="text" class="otp-field" maxlength="1" pattern="\d*" required inputmode="numeric">
+            </div>
+
+            <input type="hidden" name="otp" id="hiddenOtp">
+
+            <button type="submit" class="btn-purple">
+                Verify Email
+            </button>
+        </form>
+
+        <div class="otp-footer">
+            <a href="{% url 'resend_otp' %}" class="resend-link">Resend OTP</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Full page wrapper to center everything cleanly */
+    .otp-wrapper {
+        font-family: 'Inter', -apple-system, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh; /* Centers vertically on the screen */
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    /* Card styling */
+    .otp-card {
+        background: #ffffff;
+        padding: 40px 32px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 20px 48px rgba(0, 0, 0, 0.05);
+        max-width: 460px;
+        width: 100%;
+        text-align: center;
+        border: 1px solid #f0f0f0;
+    }
+
+    .otp-title {
+        color: #1a1a1a;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .otp-subtitle {
+        color: #666666;
+        font-size: 0.95rem;
+        margin-bottom: 32px;
+    }
+
+    /* Center alignment for the fields */
+    .otp-input-container {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 32px;
+    }
+
+    /* Perfect Circular Fields */
+    .otp-field {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        border: 2px solid #e0e0e0;
+        background-color: #fafafa;
+        outline: none;
+        transition: all 0.2s ease-in-out;
+        box-sizing: border-box;
+    }
+    
+    /* Smooth purple glow effect on focus */
+    .otp-field:focus {
+        border-color: #6A2B91
+        background-color: #ffffff;
+        box-shadow: 0 0 0 4px rgba(111, 66, 193, 0.15);
+    }
+
+    /* Premium Purple Button Styling */
+    .btn-purple {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        background-color: #6A2B91; /* Core Deep Purple */
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        box-shadow: 0 4px 12px rgba(111, 66, 193, 0.2);
+    }
+
+    .btn-purple:hover {
+        background-color: #6A2B91; /* Darker shade on hover */
+    }
+
+    .btn-purple:active {
+        transform: scale(0.98); /* Click pop effect */
+    }
+
+    /* Footer styling */
+    .otp-footer {
+        margin-top: 24px;
+    }
+
+    .resend-link {
+        color: #6A2B91;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .resend-link:hover {
+        color: #6A2B91;
+        text-decoration: underline;
+    }
+
+    /* Hide standard input spinner arrows */
+    .otp-field::-webkit-outer-spin-button,
+    .otp-field::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const inputs = document.querySelectorAll(".otp-field");
+        const hiddenOtp = document.getElementById("hiddenOtp");
+        const form = document.getElementById("otpForm");
+
+        inputs.forEach((input, index) => {
+            // Auto-focus progression
+            input.addEventListener("input", (e) => {
+                if (input.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+
+            // Backspace capability
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && input.value.length === 0 && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+
+            // Smart 6-digit paste tracking
+            input.addEventListener("paste", (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData("text").trim();
+                if (/^\d{6}$/.test(pastedData)) {
+                    inputs.forEach((numInput, i) => {
+                        numInput.value = pastedData[i];
+                    });
+                    inputs[inputs.length - 1].focus();
+                }
+            });
+        });
+
+        // Pack values into the hidden form field right before submitting
+        form.addEventListener("submit", (e) => {
+            let otpValue = "";
+            inputs.forEach((input) => {
+                otpValue += input.value;
+            });
+            hiddenOtp.value = otpValue;
+        });
+    });
+</script>
+{% endblock %}

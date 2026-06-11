@@ -1,6 +1,6 @@
-
 from django import forms
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from .models import (
     IndividualMember,
@@ -8,7 +8,10 @@ from .models import (
     PartnerMember,
     Vehicle,
     UserProfile,
-    Complaint
+    Complaint,
+    NextOfKin,
+    Dependant,
+    Beneficiary,
 )
 
 
@@ -89,6 +92,18 @@ class LoginForm(forms.Form):
 # =====================================================
 class IndividualMemberForm(forms.ModelForm):
 
+    # --------------------------------------------------
+    # COCOWA DATA CONSENT  — shown to ALL individual users
+    # --------------------------------------------------
+    cocowa_data_consent = forms.BooleanField(
+        required=False,
+        label="I consent to sharing my data with COCOWA",
+        widget=forms.CheckboxInput(attrs={
+            "class": "consent-checkbox",
+            "id": "cocowa_data_consent",
+        }),
+    )
+
     class Meta:
 
         model = IndividualMember
@@ -147,6 +162,18 @@ class IndividualMemberForm(forms.ModelForm):
 # =====================================================
 class SaccoMemberForm(forms.ModelForm):
 
+    # --------------------------------------------------
+    # COCOWA DATA CONSENT  — shown to ALL users
+    # --------------------------------------------------
+    cocowa_data_consent = forms.BooleanField(
+        required=False,
+        label="I consent to sharing my data with COCOWA",
+        widget=forms.CheckboxInput(attrs={
+            "class": "consent-checkbox",
+            "id": "cocowa_data_consent",
+        }),
+    )
+
     class Meta:
 
         model = SaccoMember
@@ -187,6 +214,18 @@ class SaccoMemberForm(forms.ModelForm):
 # =====================================================
 class PartnerMemberForm(forms.ModelForm):
 
+    # --------------------------------------------------
+    # COCOWA DATA CONSENT  — shown to ALL users
+    # --------------------------------------------------
+    cocowa_data_consent = forms.BooleanField(
+        required=False,
+        label="I consent to sharing my data with COCOWA",
+        widget=forms.CheckboxInput(attrs={
+            "class": "consent-checkbox",
+            "id": "cocowa_data_consent",
+        }),
+    )
+
     class Meta:
 
         model = PartnerMember
@@ -213,6 +252,189 @@ class PartnerMemberForm(forms.ModelForm):
                 "organization_name",
                 "Organization name is required"
             )
+
+        return cleaned_data
+
+
+# =====================================================
+# NEXT OF KIN FORM  (Super Subscription only)
+# =====================================================
+class NextOfKinForm(forms.ModelForm):
+
+    class Meta:
+
+        model = NextOfKin
+
+        fields = [
+            "full_name",
+            "relationship",
+            "phone_number",
+            "email",
+            "id_number",
+        ]
+
+        widgets = {
+            "full_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Full legal name",
+            }),
+            "relationship": forms.Select(attrs={
+                "class": "form-control",
+            }),
+            "phone_number": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "e.g. +254 7XX XXX XXX",
+            }),
+            "email": forms.EmailInput(attrs={
+                "class": "form-control",
+                "placeholder": "Email address (optional)",
+            }),
+            "id_number": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "National ID / Passport (optional)",
+            }),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for field in ("full_name", "relationship", "phone_number"):
+            if not cleaned_data.get(field):
+                self.add_error(field, "This field is required.")
+
+        return cleaned_data
+
+
+# =====================================================
+# DEPENDANT FORM  (Super Subscription only)
+# =====================================================
+class DependantForm(forms.ModelForm):
+
+    class Meta:
+
+        model = Dependant
+
+        fields = [
+            "full_name",
+            "relationship",
+            "date_of_birth",
+            "id_number",
+        ]
+
+        widgets = {
+            "full_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Full name",
+            }),
+            "relationship": forms.Select(attrs={
+                "class": "form-control",
+            }),
+            "date_of_birth": forms.DateInput(attrs={
+                "class": "form-control",
+                "type": "date",
+            }),
+            "id_number": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "National ID / Passport (optional)",
+            }),
+        }
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data.get("date_of_birth")
+
+        if dob:
+            if dob >= timezone.now().date():
+                raise forms.ValidationError(
+                    "Date of birth must be in the past."
+                )
+
+            # Block adding someone already 18+
+            import datetime
+            age = (
+                timezone.now().date().year - dob.year
+                - (
+                    (timezone.now().date().month, timezone.now().date().day)
+                    < (dob.month, dob.day)
+                )
+            )
+
+            if age >= 18:
+                raise forms.ValidationError(
+                    "Dependants must be under 18 years of age. "
+                    "Persons aged 18 or over cannot be added as dependants."
+                )
+
+        return dob
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for field in ("full_name", "relationship", "date_of_birth"):
+            if not cleaned_data.get(field):
+                self.add_error(field, "This field is required.")
+
+        return cleaned_data
+
+
+# =====================================================
+# BENEFICIARY FORM  (Super Subscription only)
+# =====================================================
+class BeneficiaryForm(forms.ModelForm):
+
+    class Meta:
+
+        model = Beneficiary
+
+        fields = [
+            "full_name",
+            "relationship",
+            "phone_number",
+            "id_number",
+            "allocation_percentage",
+        ]
+
+        widgets = {
+            "full_name": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Full legal name",
+            }),
+            "relationship": forms.Select(attrs={
+                "class": "form-control",
+            }),
+            "phone_number": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "e.g. +254 7XX XXX XXX",
+            }),
+            "id_number": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "National ID / Passport (optional)",
+            }),
+            "allocation_percentage": forms.NumberInput(attrs={
+                "class": "form-control",
+                "min": "1",
+                "max": "100",
+                "step": "0.01",
+                "placeholder": "e.g. 50",
+            }),
+        }
+
+    def clean_allocation_percentage(self):
+        value = self.cleaned_data.get("allocation_percentage")
+
+        if value is not None:
+            if value <= 0 or value > 100:
+                raise forms.ValidationError(
+                    "Allocation must be between 1% and 100%."
+                )
+
+        return value
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for field in ("full_name", "relationship", "phone_number"):
+            if not cleaned_data.get(field):
+                self.add_error(field, "This field is required.")
 
         return cleaned_data
 

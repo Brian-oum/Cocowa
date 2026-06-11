@@ -1,5 +1,4 @@
 {% block content %}
-<!-- Inter Font & Premium Icon Packs -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -7,18 +6,16 @@
 <div class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5 px-3">
     <div class="auth-card p-4 p-md-5">
         
-        <!-- Premium Branding Header -->
         <div class="text-center mb-4">
             <div class="brand-icon mb-3">
                 <div class="icon-glow-wrapper">
-                    <i class="bi bi-person-badge metallic-text fs-1"></i>
+                    <i class="bi bi-person-badge purple-branding-text fs-1"></i>
                 </div>
             </div>
             <h2 class="auth-title mb-2">Select Your Account Type</h2>
             <p class="auth-subtitle text-muted">Choose your membership tier to customize your experience dashboard.</p>
         </div>
 
-        <!-- Inline Error Alerts -->
         {% if error %}
             <div class="alert alert-danger-custom p-3 mb-4 small d-flex align-items-center" role="alert">
                 <i class="bi bi-exclamation-triangle-fill me-2 fs-6"></i> 
@@ -29,10 +26,8 @@
         <form method="POST" id="roleSelectionForm">
             {% csrf_token %}
 
-            <!-- Interactive Selection Stack -->
             <div class="role-cards-container d-flex flex-column gap-3 mb-4">
                 
-                <!-- Individual Card -->
                 <label class="role-premium-card d-flex align-items-center p-3" for="role_individual">
                     <input type="radio" name="role" id="role_individual" value="individual" required class="d-none">
                     <div class="role-icon-box d-flex align-items-center justify-content-center me-3">
@@ -47,7 +42,6 @@
                     </div>
                 </label>
 
-                <!-- SACCO Card -->
                 <label class="role-premium-card d-flex align-items-center p-3" for="role_sacco">
                     <input type="radio" name="role" id="role_sacco" value="sacco" class="d-none">
                     <div class="role-icon-box d-flex align-items-center justify-content-center me-3">
@@ -62,7 +56,6 @@
                     </div>
                 </label>
 
-                <!-- Partner Card -->
                 <label class="role-premium-card d-flex align-items-center p-3" for="role_partner">
                     <input type="radio" name="role" id="role_partner" value="partner" class="d-none">
                     <div class="role-icon-box d-flex align-items-center justify-content-center me-3">
@@ -79,7 +72,6 @@
 
             </div>
 
-            <!-- Action Trigger Button -->
             <button type="submit" class="btn btn-premium w-100 py-3 fw-bold text-uppercase tracking-wider">
                 Continue Configuration <i class="bi bi-arrow-right-short ms-1 fs-5 align-middle"></i>
             </button>
@@ -93,7 +85,6 @@
     </div>
 </div>
 
-<!-- Luxe UI Core Styles -->
 <style>
 html, body {
     margin: 0;
@@ -139,15 +130,13 @@ html, body {
     transform: translate(-50%, -50%);
     width: 40px;
     height: 40px;
-    background: #bf953f;
+    background: #6A2B91;
     filter: blur(25px);
     opacity: 0.15;
     z-index: -1;
 }
-.metallic-text {
-    background: linear-gradient(135deg, #aa771c 0%, #bf953f 50%, #8a5e10 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.purple-branding-text {
+    color: #6A2B91;
     display: inline-block;
 }
 
@@ -162,8 +151,8 @@ html, body {
     overflow: hidden;
 }
 .role-premium-card:hover {
-    border-color: #94a3b8;
-    background: #f1f5f9;
+    border-color: #bfa5d1;
+    background: #fcfbfe;
     transform: translateY(-1px);
 }
 .role-icon-box {
@@ -193,11 +182,11 @@ html, body {
 /* Dynamic Checked Interactivity States via CSS trickery */
 .role-premium-card:has(input[type="radio"]:checked) {
     background-color: #ffffff !important;
-    border-color: #bf953f !important;
-    box-shadow: 0 0 0 4px rgba(191, 149, 63, 0.12), 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+    border-color: #6A2B91 !important;
+    box-shadow: 0 0 0 4px rgba(106, 43, 145, 0.12), 0 4px 12px rgba(15, 23, 42, 0.03) !important;
 }
 .role-premium-card:has(input[type="radio"]:checked) .role-icon-box {
-    background: linear-gradient(135deg, #bf953f 0%, #b38728 100%);
+    background: #6A2B91;
     color: #ffffff;
     border-color: transparent;
 }
@@ -205,7 +194,7 @@ html, body {
     color: #0f172a;
 }
 .role-premium-card:has(input[type="radio"]:checked) .indicator-icon {
-    color: #bf953f;
+    color: #6A2B91;
     font-style: normal;
 }
 .role-premium-card:has(input[type="radio"]:checked) .indicator-icon::before {
@@ -214,17 +203,17 @@ html, body {
 
 /* Premium Layout Button Components */
 .btn-premium {
-    background: linear-gradient(135deg, #bf953f 0%, #b38728 100%) !important;
+    background: #6A2B91 !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 12px !important;
     transition: all 0.2s ease-in-out !important;
-    box-shadow: 0 4px 12px rgba(179, 135, 40, 0.15);
+    box-shadow: 0 4px 12px rgba(106, 43, 145, 0.2);
 }
 .btn-premium:hover {
-    background: linear-gradient(135deg, #aa771c 0%, #b38728 100%) !important;
+    background: #532073 !important; /* Slightly darker purple on hover */
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(179, 135, 40, 0.3) !important;
+    box-shadow: 0 6px 16px rgba(106, 43, 145, 0.35) !important;
 }
 .alert-danger-custom {
     background: #fef2f2 !important;

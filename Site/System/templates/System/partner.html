@@ -150,7 +150,7 @@
                     <div class="finance-block">
                         <span class="fin-lbl">Base Donation</span>
                         <h3 class="fin-val val-due">
-                            KES KES {{ partner.total_donations|default:0 }}
+                            KES {{ partner.total_donations|default:0 }}
                         </h3>
                     </div>
 
@@ -192,12 +192,12 @@
 
                     <div class="overview-item">
                         <span class="ov-label">
-                            <i class="fa-solid fa-address-card"></i> Membership No
-                        </span>
-                        <span class="ov-value">
-                            {{ partner.membership_number }}
-                        </span>
-                    </div>
+        <i class="fa-solid fa-hand-holding-dollar"></i> Total Donations
+    </span>
+    <span class="ov-value-highlight">
+        KES {{ partner.total_donations|default:0|floatformat:0 }}
+    </span>
+</div>
 
                     <div class="overview-item">
                         <span class="ov-label">

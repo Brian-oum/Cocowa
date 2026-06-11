@@ -53,8 +53,7 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;" class="text-center">#</th>
-                        <th style="width: 25%;">Partner Name</th>
-                        <th style="width: 20%;">Membership No</th>
+                        <th style="width: 25%;">Organisation Name</th>
                         <th style="width: 25%;">Email Address</th>
                         <th style="width: 25%;">Phone Contact</th>
                     </tr>
@@ -70,21 +69,9 @@
 
                         <td class="text-slate-800 fw-bold fs-7.5">
                             <div class="d-flex align-items-center gap-2.5">
-                                <div class="avatar-circle-ui">
-                                    {{ p.name|slice:":1"|upper }}
-                                </div>
-                                <span>{{ p.name }}</span>
+            
+                                <span>{{ p.organisation_name }}</span>
                             </div>
-                        </td>
-
-                        <td>
-                            {% if p.membership_number %}
-                                <span class="membership-badge-code">
-                                    {{ p.membership_number }}
-                                </span>
-                            {% else %}
-                                <span class="text-slate-300 fst-italic fs-8">—</span>
-                            {% endif %}
                         </td>
 
                         <td class="text-slate-600 fs-7.5 font-fallback-clean">

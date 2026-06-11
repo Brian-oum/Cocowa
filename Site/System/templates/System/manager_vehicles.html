@@ -1,0 +1,352 @@
+{% extends 'System/base_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-0 py-2 animate-fade-in">
+
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-4">
+        
+        <div class="card-header bg-white border-bottom border-slate-100 py-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h4 class="mb-1 fw-bold text-slate-900 d-flex align-items-center">
+                    <i class="fa-solid fa-bus-simple me-3 text-violet-600 fs-5"></i>
+                    Registered Fleet Telemetry
+                </h4>
+                <p class="text-slate-400 small mb-0 fs-7.5">
+                    Managing and auditing activated platform transit vehicles. Total assets verified: 
+                    <span class="badge bg-violet-50 text-violet-700 fw-bold border border-violet-100 px-2 py-1 ms-1 rounded-pill">{{ vehicles|length }}</span>
+                </p>
+            </div>
+
+            <form method="GET" id="searchForm" class="custom-search-form d-flex align-items-center gap-2">
+                <div class="search-box d-flex align-items-center position-relative">
+                    <div class="search-icon">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+
+                    <input type="text"
+                           id="liveSearch"
+                           name="q"
+                           value="{{ query|default:'' }}"
+                           class="search-input"
+                           placeholder="Search plate, route or SACCO..."
+                           autocomplete="off">
+
+                    <div id="suggestions" class="suggestions-dropdown"></div>
+                </div>
+
+                {% if query %}
+                <a href="." class="reset-btn">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Reset
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table class="table align-middle mb-0 premium-registry-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;" class="text-center">#</th>
+                        <th style="width: 15%;">Number Plate</th>
+                        <th style="width: 25%;">SACCO Fleet Group</th>
+                        <th style="width: 15%;">Vehicle Type</th>
+                        <th style="width: 15%;">Assigned Route</th>
+                        <th style="width: 10%;">Amount</th>
+                        <th style="width: 15%;">Payment Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for vehicle in vehicles %}
+                    <tr class="table-row-hover">
+                        
+                        <td class="text-center text-slate-400 fw-semibold tabular-index">
+                            {{ forloop.counter }}
+                        </td>
+
+                        <td>
+                            <span class="membership-badge-code fw-bold">
+                                {{ vehicle.number_plate }}
+                            </span>
+                        </td>
+
+                        <td class="text-slate-800 fw-bold fs-7.5">
+                            <div class="d-flex align-items-center gap-2.5">
+                                <div class="avatar-circle-ui">
+                                    {{ vehicle.sacco.sacco_name|default:"—"|first|upper }}
+                                </div>
+                                <span>{{ vehicle.sacco.sacco_name|default:"External Registry" }}</span>
+                            </div>
+                        </td>
+
+                        <td class="text-slate-600 fs-7.5">
+                            {{ vehicle.get_vehicle_type_display }}
+                        </td>
+
+                        <td class="text-slate-600 fs-7.5 tracking-wide">
+                            <i class="fa-solid fa-route text-slate-300 me-1"></i>{{ vehicle.route|default:"<span class='text-slate-300 fst-italic'>Unassigned</span>" }}
+                        </td>
+
+                        <td class="text-slate-800 fw-bold fs-7.5 tabular-numeric">
+                            <span class="text-slate-400 small fw-normal">KES</span> {{ vehicle.amount }}
+                        </td>
+
+                        <td>
+                            {% if vehicle.payment_status == "paid" %}
+                            <span class="state-pill pill-success-layer">
+                                <span class="state-dot"></span>
+                                Paid
+                            </span>
+
+                            {% elif vehicle.payment_status == "pending" %}
+                            <span class="state-pill pill-warning-layer">
+                                <span class="state-dot"></span>
+                                Pending
+                            </span>
+
+                            {% else %}
+                            <span class="state-pill pill-danger-layer">
+                                <span class="state-dot"></span>
+                                Rejected
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 bg-slate-25">
+                            <div class="py-5 max-w-md mx-auto text-center animate-fade-in">
+                                <div class="empty-vector-wrapper mb-3">
+                                    <i class="fa-solid fa-bus-slash text-slate-200 fs-0"></i>
+                                </div>
+                                <h6 class="fw-bold text-slate-700 mb-1">No Fleet Operations Tracked</h6>
+                                <p class="text-slate-400 small mb-0 px-4">We couldn't locate any transit asset logs matching that specific lookup criteria. Revise your global filter conditions or check system sync status.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("liveSearch");
+    const searchForm = document.getElementById("searchForm");
+    const suggestions = document.getElementById("suggestions");
+
+    let timer;
+
+    searchInput.addEventListener("keyup", function () {
+        clearTimeout(timer);
+        const query = this.value.trim();
+
+        /* ============================
+           AUTO SUBMIT ENGINE
+        ============================ */
+        timer = setTimeout(function () {
+            if (query.length >= 2 || query.length === 0) {
+                const currentUrl = new URL(window.location);
+
+                if (query) {
+                    currentUrl.searchParams.set("q", query);
+                } else {
+                    currentUrl.searchParams.delete("q");
+                }
+
+                window.history.replaceState({}, "", currentUrl);
+                searchForm.submit();
+            }
+        }, 500);
+    });
+});
+</script>
+
+<style>
+/* Color variables synced with luxury base layout system */
+:root {
+    --violet-600: #6d28d9;
+    --violet-700: #5b21b6;
+    --slate-25: #f8fafc;
+    --slate-100: #e2e8f0;
+    --slate-200: #cbd5e1;
+    --slate-300: #94a3b8;
+    --slate-400: #64748b;
+    --slate-500: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+}
+
+/* Custom Base Utility Overrides */
+.bg-violet-50 { background-color: #f5f3ff !important; }
+.text-violet-700 { color: #6d28d9 !important; }
+.border-violet-100 { border-color: #ddd6fe !important; }
+.border-slate-100 { border-color: var(--slate-100) !important; }
+.bg-slate-25 { background-color: var(--slate-25) !important; }
+.text-slate-900 { color: var(--slate-900); }
+.text-slate-700 { color: var(--slate-700); }
+.text-slate-600 { color: var(--slate-600); }
+.text-slate-400 { color: var(--slate-400); }
+.text-slate-300 { color: var(--slate-300); }
+.fs-7.5 { font-size: 0.84rem; }
+.fs-0 { font-size: 3.5rem; }
+
+/* Typography Constraints */
+.tabular-index, .tabular-numeric, .membership-badge-code {
+    font-family: 'SFMono-Regular', Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* Premium Table Row Architectures */
+.premium-registry-table th {
+    background-color: var(--slate-25);
+    color: var(--slate-400);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--slate-100) !important;
+}
+
+.premium-registry-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--slate-100);
+    white-space: nowrap;
+}
+
+.table-row-hover {
+    transition: background-color 0.15s ease;
+}
+.table-row-hover:hover {
+    background-color: rgba(248, 250, 252, 0.8) !important;
+}
+
+/* Corporate Mini Profile Avatar Frame */
+.avatar-circle-ui {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #f5f3ff;
+    color: var(--violet-600);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd6fe;
+    flex-shrink: 0;
+}
+
+/* Plate/Code Tag Style */
+.membership-badge-code {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #f8fafc;
+    border: 1px solid var(--slate-200);
+    color: var(--slate-900);
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+}
+
+/* System State Capsule Badges */
+.state-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1;
+}
+.state-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.pill-success-layer { background: #dcfce7; color: #166534; }
+.pill-success-layer .state-dot { background: #16a34a; }
+
+.pill-warning-layer { background: #fef3c7; color: #92400e; }
+.pill-warning-layer .state-dot { background: #d97706; }
+
+.pill-danger-layer { background: #fee2e2; color: #991b1b; }
+.pill-danger-layer .state-dot { background: #dc2626; }
+
+/* Entrance Animations */
+.animate-fade-in {
+    animation: simpleFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes simpleFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pill Search Bar Interface Overhaul */
+.search-box {
+    display: inline-flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px; 
+    padding: 6px 18px;    
+    min-width: 290px;
+    height: 40px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-box:focus-within {
+    border-color: #6d28d9;
+    box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.08);
+    background: #ffffff;
+}
+
+.search-icon {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.reset-btn {
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 999px; 
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.reset-btn:hover {
+    background: #f8fafc;
+    color: #334155;
+    border-color: #cbd5e1;
+}
+</style>
+{% endblock %}

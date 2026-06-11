@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -36,10 +37,68 @@ urlpatterns = [
     path("manager/cases/update/", views.update_case_status, name="update_case_status"),
     path("members/individuals/", views.individuals_list, name="individuals_list"),
     path("members/saccos/", views.sacco_list, name="sacco_list"),
+    path("vehicles/", views.vehicle_list, name="vehicle_list"),
     path("members/partners/", views.partners_list, name="partners_list"),
     path("members/autocomplete/", views.member_autocomplete, name="member_autocomplete"),
     path("saccos/autocomplete/", views.sacco_autocomplete, name="sacco_autocomplete"),
     path("partners/autocomplete/", views.partner_autocomplete, name="partner_autocomplete"),  
-    path("google-redirect/", views.google_redirect, name="google_redirect"), 
+    path("accounts/google/redirect/", views.google_redirect, name="google_redirect"), 
     path("select-role/", views.select_role, name="select_role"),
+    path("verify-email/", views.verify_email, name="verify_email"),
+    path("resend-otp/", views.resend_otp, name="resend_otp"),
+    path("settings/",                   views.settings_page,               name="settings_page"),
+    path("settings/preferences/",       views.settings_save_preferences,   name="settings_save_preferences"),
+    path("settings/change-password/",   views.settings_change_password,    name="settings_change_password"),
+    path("settings/update-profile/",    views.settings_update_profile,     name="settings_update_profile"),
+    path("settings/delete-account/",    views.settings_delete_account,     name="settings_delete_account"),
+    path("settings/toggle/",            views.settings_toggle,             name="settings_toggle"),
+    path('saccos/analytics-report/', views.sacco_report, name='sacco_report'),
+    path("manager/vehicles/", views.manager_vehicles, name="manager_vehicles"),
+    path("complaints/<int:pk>/respond/", views.respond_to_complaint, name="respond_to_complaint"),
+    path('profile/individual/', views.complete_individual_profile, name='complete_individual_profile'),
+    path('profile/next-of-kin/save/', views.save_next_of_kin, name='save_next_of_kin'),
+    path('profile/dependants/add/',               views.add_dependant,    name='add_dependant'),
+    path('profile/dependants/<int:dependant_id>/remove/', views.remove_dependant, name='remove_dependant'),
+    path('profile/beneficiaries/add/',                     views.add_beneficiary,    name='add_beneficiary'),
+    path('profile/beneficiaries/<int:beneficiary_id>/remove/', views.remove_beneficiary, name='remove_beneficiary'),
+    path('profile/consent/update/', views.update_data_consent, name='update_data_consent'),
+    path('profile/dependants/<int:dependant_id>/update/', views.update_dependant, name='update_dependant'),
+    path('profile/beneficiaries/<int:beneficiary_id>/update/', views.update_beneficiary, name='update_beneficiary'),
+    path("settings/upload-avatar/", views.settings_upload_avatar, name="settings_upload_avatar"),
+    path('cases/<int:pk>/respond/', views.respond_to_case, name='respond_to_case'),
+     # Forgot Password
+    path(
+        "password-reset/",
+        auth_views.PasswordResetView.as_view(
+            template_name="System/password_reset_form.html"
+        ),
+        name="password_reset"
+    ),
+
+    # Email Sent
+    path(
+        "password-reset/done/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="System/password_reset_done.html"
+        ),
+        name="password_reset_done"
+    ),
+
+    # Link in Email
+    path(
+        "reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="System/password_reset_confirm.html"
+        ),
+        name="password_reset_confirm"
+    ),
+
+    # Success
+    path(
+        "reset/done/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="System/password_reset_complete.html"
+        ),
+        name="password_reset_complete"
+    ),
 ]
