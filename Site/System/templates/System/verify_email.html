@@ -2,6 +2,24 @@
 
 {% block content %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% if messages %}
+    <div class="messages-wrapper">
+        {% for message in messages %}
+            <div class="alert-message {% if message.tags %}msg-{{ message.tags }}{% endif %}">
+                <div class="msg-icon-flex">
+                    {% if message.tags == 'success' %}
+                        <i class="fa-regular fa-circle-check"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fa-regular fa-circle-xmark"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-info"></i>
+                    {% endif %}
+                    <span class="msg-text-content">{{ message }}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 <div class="otp-wrapper">
     <div class="otp-card">

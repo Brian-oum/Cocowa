@@ -4,9 +4,6 @@
 {% block content %}
 <div class="dashboard-container">
 
-    <!-- =========================
-         FLOATING ALERTS (SACCO STYLE)
-    ========================== -->
     {% if alerts %}
     <div class="toast-wrapper" id="toastWrapper">
         {% for alert in alerts %}
@@ -26,9 +23,6 @@
     </div>
     {% endif %}
 
-    <!-- =========================
-         SUMMARY CARDS
-    ========================== -->
     <div class="summary-4-grid animate-fade-up" style="--delay: 1;">
 
         <div class="metrics-card interactive-hover">
@@ -82,15 +76,10 @@
 
     </div>
 
-    <!-- =========================
-         MAIN SPLIT LAYOUT
-    ========================== -->
     <div class="dashboard-main-split">
 
-        <!-- LEFT COLUMN: CHARTS & FINANCIAL OVERVIEWS -->
         <div class="split-left-column animate-fade-up" style="--delay: 2;">
 
-            <!-- PIE CHART / DISTRIBUTION -->
             <div class="ui-card distribution-card interactive-hover">
                 <h3 class="card-title">Member Distribution</h3>
                 <div class="profile-progress-layout">
@@ -129,10 +118,9 @@
                 </div>
             </div>
 
-            <!-- COMPLAINT STATUS MICRO GRID -->
             <div class="ui-card status-overview-card interactive-hover" style="margin-top: 15px;">
                 <h3 class="card-title">Complaint Status Overview</h3>
-                <div class="financial-row-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 15px;">
+                <div class="financial-row-container">
                     <div class="finance-block" style="background: #fef2f2; border-radius: 12px; padding: 12px; text-align: center;">
                         <span class="fin-lbl" style="color: #ef4444; font-weight: 600;">Open</span>
                         <h4 class="fin-val" style="margin: 4px 0 0 0; font-size: 18px; color: #991b1b;">
@@ -162,19 +150,17 @@
 
         </div>
 
-        <!-- RIGHT COLUMN: LISTS & RECENT DATA -->
         <div class="split-right-column animate-fade-up" style="--delay: 3;">
 
-            <!-- RECENT COMPLAINTS -->
             <div class="ui-card list-feed-card interactive-hover">
                 <h3 class="card-title">Recent Complaints</h3>
                 <div class="overview-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
                     {% for c in recent_complaints %}
-                    <div class="overview-item" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border-color, #f1f5f9);">
-                        <span class="ov-label" style="font-weight: 500; color: #334155;">
+                    <div class="overview-item" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border-color, #f1f5f9); gap: 10px;">
+                        <span class="ov-label" style="font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             <i class="fa-solid fa-circle-user user-avatar-inline" style="color: #ef4444; margin-right: 8px;"></i> {{ c.user.username }}
                         </span>
-                        <span class="ov-value" style="font-size: 12px; color: #64748b;">
+                        <span class="ov-value" style="font-size: 12px; color: #64748b; flex-shrink: 0;">
                             {{ c.created_at|date:"M d, Y" }} &middot; <span class="status-badge-micro">{{ c.status }}</span>
                         </span>
                     </div>
@@ -186,16 +172,15 @@
                 </div>
             </div>
 
-            <!-- REPORTED CASES LIST -->
             <div class="ui-card list-feed-card interactive-hover" style="margin-top: 20px;">
                 <h3 class="card-title">Reported Cases (Latest Details)</h3>
                 <div class="overview-list" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
                     {% for c in reported_cases %}
-                    <div class="overview-item" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border-color, #f1f5f9);">
-                        <span class="ov-label" style="font-weight: 500; color: #334155;">
+                    <div class="overview-item" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--border-color, #f1f5f9); gap: 10px;">
+                        <span class="ov-label" style="font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             <i class="fa-solid fa-circle-user user-avatar-inline" style="color: #3b82f6; margin-right: 8px;"></i> {{ c.reporter.username }}
                         </span>
-                        <span class="ov-value" style="font-size: 12px; color: #64748b; text-align: right;">
+                        <span class="ov-value" style="font-size: 12px; color: #64748b; text-align: right; flex-shrink: 0;">
                             <span class="priority-lbl" style="font-weight: 600; text-transform: uppercase; font-size: 11px;">{{ c.priority|default:"Normal" }}</span>
                             <br><small style="color:#94a3b8;">{{ c.created_at|date:"M d, Y" }}</small>
                         </span>
@@ -218,9 +203,6 @@
 
 </div>
 
-<!-- =========================
-     SCRIPTS & REFINED ANIMATION ENGINE
-========================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -265,6 +247,7 @@ document.addEventListener("DOMContentLoaded", function() {
             },
             options: {
                 cutout: '75%',
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false }
                 }
@@ -274,9 +257,6 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
-<!-- =========================
-     COMPACT STYLING EXTENSIONS
-========================== -->
 <style>
     :root {
         --c-blue: #1e3a8a;
@@ -291,6 +271,8 @@ document.addEventListener("DOMContentLoaded", function() {
         display: flex;
         flex-direction: column;
         gap: 28px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* LOADING TRANSITIONS */
@@ -323,7 +305,7 @@ document.addEventListener("DOMContentLoaded", function() {
         flex-direction: column;
         gap: 12px;
         max-width: 380px;
-        width: 100%;
+        width: calc(100% - 50px);
     }
     .toast-alert {
         background: #ffffff;
@@ -370,15 +352,16 @@ document.addEventListener("DOMContentLoaded", function() {
         align-items: center;
         justify-content: center;
         font-size: 20px;
+        flex-shrink: 0;
     }
     .icon-blue { background: #eff6ff; color: var(--c-blue); }
     .icon-green { background: #ecfdf5; color: var(--c-green); }
     .icon-amber { background: #fffbeb; color: var(--c-amber); }
     .icon-red { background: #fef2f2; color: var(--c-red); }
 
-    .metrics-info { flex: 1; }
-    .metrics-label { font-size: 13px; color: #64748b; margin: 0 0 4px 0; font-weight: 500; }
-    .metrics-value { font-size: 24px; font-weight: 700; color: #0f172a; margin: 0; }
+    .metrics-info { flex: 1; min-width: 0; }
+    .metrics-label { font-size: 13px; color: #64748b; margin: 0 0 4px 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .metrics-value { font-size: 24px; font-weight: 700; color: #0f172a; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .dashboard-main-split {
         display: grid;
@@ -405,12 +388,14 @@ document.addEventListener("DOMContentLoaded", function() {
         width: 130px;
         height: 130px;
         position: relative;
+        flex-shrink: 0;
     }
     .progress-details {
         display: flex;
         flex-direction: column;
         gap: 12px;
         flex: 1;
+        min-width: 0;
     }
     .progress-item-row {
         display: flex;
@@ -422,9 +407,17 @@ document.addEventListener("DOMContentLoaded", function() {
         height: 10px;
         border-radius: 50%;
         display: inline-block;
+        flex-shrink: 0;
     }
-    .detail-label { font-size: 12px; color: #64748b; display: block; }
+    .detail-label { font-size: 12px; color: #64748b; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .detail-value { font-size: 15px; font-weight: 700; color: #0f172a; margin: 2px 0 0 0; }
+
+    .financial-row-container {
+        display: grid; 
+        grid-template-columns: repeat(4, 1fr); 
+        gap: 12px; 
+        margin-top: 15px;
+    }
 
     .status-badge-micro {
         background: #f1f5f9;
@@ -435,24 +428,66 @@ document.addEventListener("DOMContentLoaded", function() {
         text-transform: uppercase;
     }
 
-    /* ── Responsive ── */
-    @media (max-width: 900px) {
-        .financial-row-container,
-        .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    /* ── Responsive Media Queries ── */
+    @media (max-width: 1024px) {
+        .summary-4-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .dashboard-main-split {
+            grid-template-columns: 1fr;
+        }
+        .financial-row-container { 
+            grid-template-columns: repeat(2, 1fr); 
+        }
     }
 
-    @media (max-width: 600px) {
-        .financial-row-container,
-        .stats-grid { grid-template-columns: 1fr !important; }
-
-        /* Stack 2-col grid to single column */
-        [style*="grid-template-columns: 1.2fr 1fr"],
-        [style*="grid-template-columns: 1fr 1fr"] {
-            grid-template-columns: 1fr !important;
+    @media (max-width: 480px) {
+        /* STRICT 2 COLUMNS, 2 ROWS FOR TOP METRICS */
+        .summary-4-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .metrics-card {
+            padding: 12px;
+            gap: 8px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .metrics-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+        .metrics-value {
+            font-size: 18px;
         }
 
-        /* Scrollable tables */
-        table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        /* STRICT 2 COLUMNS, 2 ROWS FOR COMPLAINTS */
+        .financial-row-container { 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 8px;
+        }
+
+        /* FORCE INDICATORS TO STAY RIGHT OF THE DONUT */
+        .profile-progress-layout {
+            flex-direction: row !important;
+            align-items: center;
+            text-align: left;
+            gap: 16px;
+        }
+        .chart-container {
+            width: 100px;
+            height: 100px;
+        }
+        .progress-item-row {
+            justify-content: flex-start;
+        }
+
+        .toast-wrapper {
+            top: 15px;
+            right: 15px;
+            width: calc(100% - 30px);
+        }
     }
 </style>
 {% endblock %}

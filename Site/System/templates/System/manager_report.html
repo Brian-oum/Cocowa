@@ -7,6 +7,9 @@
 
 <div class="rpt-shell-premium">
 
+    <!-- ══════════════════════════════════════════════════
+         PAGE HEADER
+    ══════════════════════════════════════════════════ -->
     <div class="rpt-premium-header animate__animated animate__fadeInDown">
         <div class="header-left-cluster">
             <div class="title-accent-bar"></div>
@@ -35,72 +38,74 @@
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════════════════
+         MAIN 2-COLUMN GRID
+    ══════════════════════════════════════════════════ -->
     <div class="rpt-dashboard-main-grid animate__animated animate__fadeInUp" style="animation-delay: 100ms;">
-        
+
+        <!-- ── LEFT COLUMN ──────────────────────────────── -->
         <div class="rpt-grid-column">
-            
+
+            <!-- KPI QUAD -->
             <div class="rpt-grid-mini-quad">
                 <a href="{% url 'individuals_list' %}" class="rpt-kpi-link">
-                <div class="rpt-glass-card KPI-card-interactive">
-                    <div class="card-glass-glow"></div>
-                    <div class="rpt-kpi-top">
-                        <span class="rpt-kpi-caption">Total Members</span>
-                        <div class="lux-icon-wrap"><i class="fa-regular fa-square"></i></div>
+                    <div class="rpt-glass-card KPI-card-interactive">
+                        <div class="rpt-kpi-top">
+                            <span class="rpt-kpi-caption">Total Members</span>
+                            <div class="lux-icon-wrap"><i class="fa-regular fa-square"></i></div>
+                        </div>
+                        <div class="rpt-kpi-value-lux count-up" data-target="{{ total_members }}">0</div>
+                        <div class="rpt-kpi-metric-footer status-positive">
+                            <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> {{ payment_rate }}%</span>
+                            <span class="footer-meta-text">Payment rate</span>
+                        </div>
                     </div>
-                    <div class="rpt-kpi-value-lux count-up" data-target="{{ total_members }}">0</div>
-                    <div class="rpt-kpi-metric-footer status-positive">
-                        <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> {{ payment_rate }}%</span>
-                        <span class="footer-meta-text">Payment rate</span>
-                    </div>
-                </div>
                 </a>
 
                 <a href="{% url 'individuals_list' %}?status=paid" class="rpt-kpi-link">
-                <div class="rpt-glass-card KPI-card-interactive">
-                    <div class="card-glass-glow"></div>
-                    <div class="rpt-kpi-top">
-                        <span class="rpt-kpi-caption">Active Members</span>
-                        <div class="lux-icon-wrap"><i class="fa-regular fa-square-check"></i></div>
+                    <div class="rpt-glass-card KPI-card-interactive">
+                        <div class="rpt-kpi-top">
+                            <span class="rpt-kpi-caption">Active Members</span>
+                            <div class="lux-icon-wrap"><i class="fa-regular fa-square-check"></i></div>
+                        </div>
+                        <div class="rpt-kpi-value-lux count-up" data-target="{{ active_members }}">0</div>
+                        <div class="rpt-kpi-metric-footer status-positive">
+                            <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> {% widthratio active_members total_members 100 %}%</span>
+                            <span class="footer-meta-text">of total members</span>
+                        </div>
                     </div>
-                    <div class="rpt-kpi-value-lux count-up" data-target="{{ active_members }}">0</div>
-                    <div class="rpt-kpi-metric-footer status-positive">
-                        <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> {% widthratio active_members total_members 100 %}%</span>
-                        <span class="footer-meta-text">of total members</span>
-                    </div>
-                </div>
                 </a>
 
                 <a href="{% url 'manager_cases' %}" class="rpt-kpi-link">
-                <div class="rpt-glass-card KPI-card-interactive">
-                    <div class="card-glass-glow"></div>
-                    <div class="rpt-kpi-top">
-                        <span class="rpt-kpi-caption">Total Cases</span>
-                        <div class="lux-icon-wrap"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="rpt-glass-card KPI-card-interactive">
+                        <div class="rpt-kpi-top">
+                            <span class="rpt-kpi-caption">Total Cases</span>
+                            <div class="lux-icon-wrap"><i class="fa-solid fa-shield-halved"></i></div>
+                        </div>
+                        <div class="rpt-kpi-value-lux count-up" data-target="{{ total_cases }}">0</div>
+                        <div class="rpt-kpi-metric-footer {% if open_cases > 0 %}status-negative{% else %}status-positive{% endif %}">
+                            <span class="metric-trend-pill"><i class="fa-solid fa-circle-exclamation"></i> {{ open_cases }}</span>
+                            <span class="footer-meta-text">Open cases</span>
+                        </div>
                     </div>
-                    <div class="rpt-kpi-value-lux count-up" data-target="{{ total_cases }}">0</div>
-                    <div class="rpt-kpi-metric-footer {% if open_cases > 0 %}status-negative{% else %}status-positive{% endif %}">
-                        <span class="metric-trend-pill"><i class="fa-solid fa-alert-circle"></i> {{ open_cases }}</span>
-                        <span class="footer-meta-text">Open cases</span>
-                    </div>
-                </div>
                 </a>
 
                 <a href="{% url 'individuals_list' %}" class="rpt-kpi-link">
-                <div class="rpt-glass-card KPI-card-interactive">
-                    <div class="card-glass-glow"></div>
-                    <div class="rpt-kpi-top">
-                        <span class="rpt-kpi-caption">Total Revenue</span>
-                        <div class="lux-icon-wrap"><i class="fa-regular fa-credit-card"></i></div>
+                    <div class="rpt-glass-card KPI-card-interactive">
+                        <div class="rpt-kpi-top">
+                            <span class="rpt-kpi-caption">Total Revenue</span>
+                            <div class="lux-icon-wrap"><i class="fa-regular fa-credit-card"></i></div>
+                        </div>
+                        <div class="rpt-kpi-value-lux count-up" data-target="{{ total_revenue }}">0</div>
+                        <div class="rpt-kpi-metric-footer status-positive">
+                            <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> KES</span>
+                            <span class="footer-meta-text">This year</span>
+                        </div>
                     </div>
-                    <div class="rpt-kpi-value-lux count-up" data-target="{{ total_revenue }}">0</div>
-                    <div class="rpt-kpi-metric-footer status-positive">
-                        <span class="metric-trend-pill"><i class="fa-solid fa-arrow-up"></i> KES</span>
-                        <span class="footer-meta-text">This year</span>
-                    </div>
-                </div>
                 </a>
             </div>
 
+            <!-- REVENUE TREND CHART -->
             <div class="rpt-glass-card premium-card-container">
                 <div class="premium-card-header">
                     <div class="header-title-set">
@@ -116,6 +121,7 @@
                 </div>
             </div>
 
+            <!-- MEMBERSHIP BREAKDOWN CHART -->
             <div class="rpt-glass-card premium-card-container">
                 <div class="premium-card-header">
                     <div class="header-title-set">
@@ -127,13 +133,21 @@
                 </div>
             </div>
 
-        </div>
+        </div><!-- /left column -->
 
+        <!-- ── RIGHT COLUMN ─────────────────────────────── -->
         <div class="rpt-grid-column">
-            
-            <div class="rpt-grid-double-donut">
+
+            <!--
+                2×2 QUAD GRID
+                Row 1: Members donut | Complaints donut
+                Row 2: Individual revenue | Partner revenue
+            -->
+            <div class="rpt-right-quad">
+
+                <!-- MEMBERS BY TYPE DONUT -->
                 <div class="rpt-glass-card donut-lux-card">
-                    <div class="rpt-kpi-top" style="padding:0; margin-bottom: 4px;">
+                    <div class="rpt-kpi-top" style="padding:0; margin-bottom:4px;">
                         <span class="rpt-kpi-caption">Members by Type</span>
                     </div>
                     <div class="donut-value-header count-up" data-target="{{ total_members }}">0</div>
@@ -142,15 +156,31 @@
                             <canvas id="kpiMemberChart"></canvas>
                         </div>
                         <div class="donut-custom-legend">
-                            <a href="{% url 'individuals_list' %}" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--p-sapphire);"></span><span class="legend-label-txt">{{ individual_count }} Individuals</span></div></a>
-                            <a href="{% url 'sacco_list' %}" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--p-luxury-gold);"></span><span class="legend-label-txt">{{ sacco_count }} Saccos</span></div></a>
-                            <a href="{% url 'partners_list' %}" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--p-amethyst);"></span><span class="legend-label-txt">{{ partner_count }} Partners</span></div></a>
+                            <a href="{% url 'individuals_list' %}" class="rpt-legend-link">
+                                <div class="legend-item-premium">
+                                    <span class="legend-indicator-dot" style="background:var(--p-sapphire);"></span>
+                                    <span class="legend-label-txt">{{ individual_count }} Individuals</span>
+                                </div>
+                            </a>
+                            <a href="{% url 'sacco_list' %}" class="rpt-legend-link">
+                                <div class="legend-item-premium">
+                                    <span class="legend-indicator-dot" style="background:var(--p-luxury-gold);"></span>
+                                    <span class="legend-label-txt">{{ sacco_count }} Saccos</span>
+                                </div>
+                            </a>
+                            <a href="{% url 'partners_list' %}" class="rpt-legend-link">
+                                <div class="legend-item-premium">
+                                    <span class="legend-indicator-dot" style="background:var(--p-amethyst);"></span>
+                                    <span class="legend-label-txt">{{ partner_count }} Partners</span>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
 
+                <!-- COMPLAINTS STATUS DONUT -->
                 <div class="rpt-glass-card donut-lux-card">
-                    <div class="rpt-kpi-top" style="padding:0; margin-bottom: 4px;">
+                    <div class="rpt-kpi-top" style="padding:0; margin-bottom:4px;">
                         <span class="rpt-kpi-caption">Complaints Status</span>
                     </div>
                     <div class="donut-value-header count-up" data-target="{{ total_complaints }}">0</div>
@@ -159,14 +189,35 @@
                             <canvas id="kpiPayChart"></canvas>
                         </div>
                         <div class="donut-custom-legend">
-                            <a href="{% url 'manager_complaints' %}?status=open" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--p-sapphire);"></span><span class="legend-label-txt">{{ complaint_open }} Open</span></div></a>
-                            <a href="{% url 'manager_complaints' %}?status=resolved" class="rpt-legend-link"><div class="legend-item-premium"><span class="legend-indicator-dot" style="background:var(--border-premium);"></span><span class="legend-label-txt">{{ complaint_resolved }} Resolved</span></div></a>
+                            <a href="{% url 'manager_complaints' %}?status=open" class="rpt-legend-link">
+                                <div class="legend-item-premium">
+                                    <span class="legend-indicator-dot" style="background:#be123c;"></span>
+                                    <span class="legend-label-txt">{{ complaint_open }} Open</span>
+                                </div>
+                            </a>
+                            <a href="{% url 'manager_complaints' %}?status=in_progress" class="rpt-legend-link">
+                                <div class="legend-item-premium">
+                                    <span class="legend-indicator-dot" style="background:#d97706;"></span>
+                                    <span class="legend-label-txt">{{ complaint_progress }} In Progress</span>
+                                </div>
+                            </a>
+                            <a href="{% url 'manager_complaints' %}?status=resolved" class="rpt-legend-link">
+                                <div class="legend-item-premium">
+                                    <span class="legend-indicator-dot" style="background:#0f766e;"></span>
+                                    <span class="legend-label-txt">{{ complaint_resolved }} Resolved</span>
+                                </div>
+                            </a>
+                            <a href="{% url 'manager_complaints' %}?status=closed" class="rpt-legend-link">
+                                <div class="legend-item-premium">
+                                    <span class="legend-indicator-dot" style="background:#475569;"></span>
+                                    <span class="legend-label-txt">{{ complaint_closed }} Closed</span>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="rpt-grid-financial-pair">
+                <!-- INDIVIDUAL REVENUE -->
                 <div class="rpt-glass-card financial-metric-box">
                     <div class="financial-header-inline">
                         <div class="fin-icon-badge badge-purple"><i class="fa-solid fa-wallet"></i></div>
@@ -180,6 +231,7 @@
                     <span class="fin-subtext-footnote">{{ current_year }} Financial Year</span>
                 </div>
 
+                <!-- PARTNER REVENUE -->
                 <div class="rpt-glass-card financial-metric-box">
                     <div class="financial-header-inline">
                         <div class="fin-icon-badge badge-green"><i class="fa-solid fa-briefcase"></i></div>
@@ -192,16 +244,17 @@
                     </div>
                     <span class="fin-subtext-footnote">{{ current_year }} Financial Year</span>
                 </div>
-            </div>
 
-            <div class="rpt-glass-card premium-card-container table-card-premium" style="flex-grow: 1;">
+            </div><!-- /rpt-right-quad -->
+
+            <!-- RECENT COMPLAINTS TABLE -->
+            <div class="rpt-glass-card premium-card-container table-card-premium" style="flex-grow:1;">
                 <div class="premium-card-header header-padding-leeway">
                     <div class="header-title-set">
                         <h3 class="box-main-heading">Recent Complaints ({{ total_complaints }})</h3>
                     </div>
                     <a href="{% url 'manager_complaints' %}" class="rpt-view-all-link"><i class="fa-solid fa-arrow-right"></i> View All</a>
                 </div>
-
                 <div class="premium-table-scroll-container">
                     <table class="lux-data-table">
                         <thead>
@@ -242,21 +295,23 @@
                 </div>
             </div>
 
-        </div>
-    </div>
+        </div><!-- /right column -->
+    </div><!-- /main grid -->
 
-    <div class="rpt-glass-card premium-card-container table-card-premium animate__animated animate__fadeInUp" style="animation-delay: 200ms;">
+    <!-- ══════════════════════════════════════════════════
+         FULL-WIDTH INCIDENT REPORTS TABLE
+    ══════════════════════════════════════════════════ -->
+    <div class="rpt-glass-card premium-card-container table-card-premium animate__animated animate__fadeInUp" style="animation-delay:200ms;">
         <div class="premium-card-header header-padding-leeway">
             <div class="header-title-set">
-                <h3 class="box-main-heading"><i class="fa-solid fa-shield-halved text-sapphire" style="margin-right: 6px;"></i> Recent Incident Reports ({{ total_cases }})</h3>
+                <h3 class="box-main-heading"><i class="fa-solid fa-shield-halved text-sapphire" style="margin-right:6px;"></i> Recent Incident Reports ({{ total_cases }})</h3>
                 <p class="box-sub-heading">Real-time telemetry and validation records</p>
             </div>
             <div class="header-action-addons">
                 <span class="count-badge-luxury-tag">{{ open_cases }} Open • {{ resolved_cases }} Resolved</span>
-                <a href="{% url 'manager_cases' %}" class="rpt-view-all-link" style="margin-left:12px;"><i class="fa-solid fa-arrow-right"></i> View All</a>
+                <a href="{% url 'manager_cases' %}" class="rpt-view-all-link"><i class="fa-solid fa-arrow-right"></i> View All</a>
             </div>
         </div>
-
         <div class="premium-table-scroll-container">
             <table class="lux-data-table">
                 <thead>
@@ -292,12 +347,16 @@
         </div>
     </div>
 
-</div>
+</div><!-- /rpt-shell-premium -->
 
+
+<!-- ══════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════ -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Count-Up Engine Custom Optimization
+    /* Count-Up Engine */
     document.querySelectorAll(".count-up").forEach(el => {
         const target = parseFloat(el.dataset.target) || 0;
         const start  = performance.now();
@@ -309,13 +368,13 @@ document.addEventListener("DOMContentLoaded", function () {
         })(start);
     });
 
-    // Premium Color Match Constants
-    const paletteSapphire = "#1e3a8a";
-    const paletteGold = "#d97706";
-    const paletteAmethyst = "#7c3aed";
-    const gridColorLine = "rgba(148, 163, 184, 0.05)";
+    /* Color constants */
+    const paletteSapphire  = "#1e3a8a";
+    const paletteGold      = "#d97706";
+    const paletteAmethyst  = "#7c3aed";
+    const gridColorLine    = "rgba(148, 163, 184, 0.05)";
 
-    // Users Composition Chart (Member Breakdown)
+    /* ── MEMBERS BY TYPE DONUT ────────────────────────── */
     const kpiMem = document.getElementById("kpiMemberChart");
     if (kpiMem) {
         new Chart(kpiMem, {
@@ -325,32 +384,78 @@ document.addEventListener("DOMContentLoaded", function () {
                 datasets: [{
                     data: [{{ individual_count }}, {{ sacco_count }}, {{ partner_count }}],
                     backgroundColor: [paletteSapphire, paletteGold, paletteAmethyst],
-                    borderWidth: 0,
-                    hoverOffset: 3
+                    borderWidth: 2,
+                    borderColor: "transparent",
+                    hoverOffset: 4
                 }]
             },
-            options: { cutout: "78%", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: {
+                cutout: "74%",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
         });
     }
 
-    // Subscription Chart (Complaint Status)
+    /* ── COMPLAINTS STATUS DONUT ──────────────────────── */
     const kpiPay = document.getElementById("kpiPayChart");
     if (kpiPay) {
+        const compOpen     = {{ complaint_open }};
+        const compProgress = {{ complaint_progress }};
+        const compResolved = {{ complaint_resolved }};
+        const compClosed   = {{ complaint_closed }};
+        const total        = compOpen + compProgress + compResolved + compClosed;
+
+        /*
+         * If all counts are zero Chart.js renders nothing at all.
+         * Inject a 1-unit placeholder so the ring is always visible.
+         */
+        const safeData   = total > 0
+            ? [compOpen, compProgress, compResolved, compClosed]
+            : [1, 0, 0, 0];
+        const safeColors = total > 0
+            ? ["#be123c", "#d97706", "#0f766e", "#475569"]
+            : ["rgba(226,232,240,0.5)", "transparent", "transparent", "transparent"];
+
         new Chart(kpiPay, {
             type: "doughnut",
             data: {
-                labels: ["Open", "Resolved"],
+                labels: ["Open", "In Progress", "Resolved", "Closed"],
                 datasets: [{
-                    data: [{{ complaint_open }}, {{ complaint_resolved }}],
-                    backgroundColor: [paletteSapphire, "rgba(30, 58, 138, 0.15)"],
-                    borderWidth: 0
+                    data: safeData,
+                    backgroundColor: safeColors,
+                    /*
+                     * borderWidth > 0 creates a gap between segments.
+                     * Set borderColor to the card surface so the gap
+                     * visually "disappears" against the card background.
+                     */
+                    borderWidth: 2,
+                    borderColor: "rgba(255,255,255,0.85)",
+                    hoverOffset: 4
                 }]
             },
-            options: { cutout: "78%", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: {
+                cutout: "74%",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                if (total === 0) return " No complaints yet";
+                                const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                                return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 
-    // Bar Chart - Revenue Trend
+    /* ── REVENUE TREND BAR CHART ──────────────────────── */
     const salesCtx = document.getElementById("salesDynamicsChart");
     if (salesCtx) {
         new Chart(salesCtx, {
@@ -366,7 +471,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
                     y: { grid: { color: gridColorLine }, ticks: { color: "#94a3b8", font: { size: 10 } } },
@@ -375,7 +481,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-    // Membership Breakdown — Multi-Line Chart (monthly, 3 series)
+
+    /* ── MEMBERSHIP BREAKDOWN LINE CHART ──────────────── */
     const actCtx = document.getElementById("activityChart");
     if (actCtx) {
         new Chart(actCtx, {
@@ -386,94 +493,63 @@ document.addEventListener("DOMContentLoaded", function () {
                     {
                         label: "Individual",
                         data: {{ monthly_individual|safe }},
-                        borderColor: "#1e3a8a",
-                        backgroundColor: "transparent",
-                        borderWidth: 2.5,
-                        tension: 0.45,
-                        fill: false,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                        pointBackgroundColor: "#ffffff",
-                        pointBorderColor: "#1e3a8a",
-                        pointBorderWidth: 2,
-                        pointHoverBackgroundColor: "#1e3a8a"
+                        borderColor: "#1e3a8a", backgroundColor: "transparent",
+                        borderWidth: 2.5, tension: 0.45, fill: false,
+                        pointRadius: 5, pointHoverRadius: 7,
+                        pointBackgroundColor: "#ffffff", pointBorderColor: "#1e3a8a",
+                        pointBorderWidth: 2, pointHoverBackgroundColor: "#1e3a8a"
                     },
                     {
                         label: "SACCO",
                         data: {{ monthly_sacco|safe }},
-                        borderColor: "#d97706",
-                        backgroundColor: "transparent",
-                        borderWidth: 2.5,
-                        tension: 0.45,
-                        fill: false,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                        pointBackgroundColor: "#ffffff",
-                        pointBorderColor: "#d97706",
-                        pointBorderWidth: 2,
-                        pointHoverBackgroundColor: "#d97706"
+                        borderColor: "#d97706", backgroundColor: "transparent",
+                        borderWidth: 2.5, tension: 0.45, fill: false,
+                        pointRadius: 5, pointHoverRadius: 7,
+                        pointBackgroundColor: "#ffffff", pointBorderColor: "#d97706",
+                        pointBorderWidth: 2, pointHoverBackgroundColor: "#d97706"
                     },
                     {
                         label: "Partner",
                         data: {{ monthly_partner|safe }},
-                        borderColor: "#7c3aed",
-                        backgroundColor: "transparent",
-                        borderWidth: 2.5,
-                        tension: 0.45,
-                        fill: false,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                        pointBackgroundColor: "#ffffff",
-                        pointBorderColor: "#7c3aed",
-                        pointBorderWidth: 2,
-                        pointHoverBackgroundColor: "#7c3aed"
+                        borderColor: "#7c3aed", backgroundColor: "transparent",
+                        borderWidth: 2.5, tension: 0.45, fill: false,
+                        pointRadius: 5, pointHoverRadius: 7,
+                        pointBackgroundColor: "#ffffff", pointBorderColor: "#7c3aed",
+                        pointBorderWidth: 2, pointHoverBackgroundColor: "#7c3aed"
                     }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
                 interaction: { mode: "index", intersect: false },
                 plugins: {
                     legend: {
-                        display: true,
-                        position: "top",
-                        align: "end",
+                        display: true, position: "top", align: "end",
                         labels: {
-                            color: "#94a3b8",
-                            font: { size: 11, weight: "600" },
-                            usePointStyle: true,
-                            pointStyle: "circle",
-                            boxWidth: 7,
-                            boxHeight: 7,
-                            padding: 16
+                            color: "#94a3b8", font: { size: 11, weight: "600" },
+                            usePointStyle: true, pointStyle: "circle",
+                            boxWidth: 7, boxHeight: 7, padding: 16
                         }
                     },
                     tooltip: {
-                        backgroundColor: "rgba(15, 23, 42, 0.88)",
-                        titleColor: "#e2e8f0",
-                        bodyColor: "#94a3b8",
-                        borderColor: "rgba(148, 163, 184, 0.12)",
-                        borderWidth: 1,
-                        padding: 12,
-                        cornerRadius: 10,
+                        backgroundColor: "rgba(15,23,42,0.88)",
+                        titleColor: "#e2e8f0", bodyColor: "#94a3b8",
+                        borderColor: "rgba(148,163,184,0.12)", borderWidth: 1,
+                        padding: 12, cornerRadius: 10,
                         callbacks: {
-                            label: function(ctx) {
-                                return "  " + ctx.dataset.label + ": " + ctx.parsed.y + " members";
-                            }
+                            label: ctx => "  " + ctx.dataset.label + ": " + ctx.parsed.y + " members"
                         }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: "rgba(148, 163, 184, 0.07)", drawBorder: false },
+                        grid: { color: "rgba(148,163,184,0.07)", drawBorder: false },
                         border: { display: false },
                         ticks: { color: "#94a3b8", font: { size: 10 }, precision: 0, padding: 8, maxTicksLimit: 6 }
                     },
                     x: {
-                        grid: { display: false },
-                        border: { display: false },
+                        grid: { display: false }, border: { display: false },
                         ticks: { color: "#94a3b8", font: { size: 10 }, padding: 6 }
                     }
                 }
@@ -481,61 +557,63 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // System Theme Palette Switcher
+    /* Theme toggle */
     const themeToggleBtn = document.getElementById('themeToggleBtn');
-    if(themeToggleBtn) {
+    if (themeToggleBtn) {
         themeToggleBtn.addEventListener('click', () => {
-            const rootAttr = document.documentElement;
-            const currentTheme = rootAttr.getAttribute('data-lux-theme');
+            const root = document.documentElement;
             const icon = document.getElementById('rpt-theme-icon');
-            if (currentTheme === 'dark') {
-                rootAttr.removeAttribute('data-lux-theme');
-                if(icon) icon.className = "fa-solid fa-moon";
+            if (root.getAttribute('data-lux-theme') === 'dark') {
+                root.removeAttribute('data-lux-theme');
+                if (icon) icon.className = "fa-solid fa-moon";
             } else {
-                rootAttr.setAttribute('data-lux-theme', 'dark');
-                if(icon) icon.className = "fa-solid fa-sun";
+                root.setAttribute('data-lux-theme', 'dark');
+                if (icon) icon.className = "fa-solid fa-sun";
             }
         });
     }
 });
 </script>
 
+
+<!-- ══════════════════════════════════════════════════
+     STYLES
+══════════════════════════════════════════════════ -->
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+/* ── TOKENS ─────────────────────────────────────────────── */
 :root {
-    --p-bg: #f8fafc;
-    --p-card-surface: rgba(255, 255, 255, 0.9);
-    --border-premium: rgba(226, 232, 240, 0.8);
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    
-    /* Modern Luxe Executive Identity Palette */
-    --p-sapphire: #1e3a8a;
-    --p-luxury-gold: #b45309;
-    --p-emerald: #0f766e;
-    --p-amethyst: #6d28d9;
-    --p-crimson: #be123c;
-    
+    --p-bg:            #f8fafc;
+    --p-card-surface:  rgba(255,255,255,0.9);
+    --border-premium:  rgba(226,232,240,0.8);
+    --text-main:       #0f172a;
+    --text-muted:      #64748b;
+
+    --p-sapphire:      #1e3a8a;
+    --p-luxury-gold:   #b45309;
+    --p-emerald:       #0f766e;
+    --p-amethyst:      #6d28d9;
+    --p-crimson:       #be123c;
+
     --rpt-radius-premium: 16px;
-    --rpt-premium-glow: 0 10px 30px -15px rgba(30, 58, 138, 0.05);
+    --rpt-premium-glow:   0 10px 30px -15px rgba(30,58,138,0.05);
 }
-
 [data-lux-theme="dark"] {
-    --p-bg: #0b0f19;
-    --p-card-surface: rgba(22, 30, 49, 0.85);
-    --border-premium: rgba(51, 65, 85, 0.5);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    
-    --p-sapphire: #3b82f6;
-    --p-luxury-gold: #fbbf24;
-    --p-emerald: #10b981;
-    --p-amethyst: #a78bfa;
-    --p-crimson: #f43f5e;
-    --rpt-premium-glow: 0 20px 40px -20px rgba(0, 0, 0, 0.5);
+    --p-bg:           #0b0f19;
+    --p-card-surface: rgba(22,30,49,0.85);
+    --border-premium: rgba(51,65,85,0.5);
+    --text-main:      #f8fafc;
+    --text-muted:     #94a3b8;
+    --p-sapphire:     #3b82f6;
+    --p-luxury-gold:  #fbbf24;
+    --p-emerald:      #10b981;
+    --p-amethyst:     #a78bfa;
+    --p-crimson:      #f43f5e;
+    --rpt-premium-glow: 0 20px 40px -20px rgba(0,0,0,0.5);
 }
 
+/* ── SHELL ──────────────────────────────────────────────── */
 .rpt-shell-premium {
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     background: var(--p-bg);
@@ -544,40 +622,12 @@ document.addEventListener("DOMContentLoaded", function () {
     flex-direction: column;
     gap: 24px;
     padding: 24px;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
-/* ── LAYOUT GRID CORE ARCHITECTURE ── */
-.rpt-dashboard-main-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 24px;
-}
-.rpt-grid-column {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-/* LEFT COLUMN SUB-GRIDS */
-.rpt-grid-mini-quad {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-
-/* RIGHT COLUMN SUB-GRIDS */
-.rpt-grid-double-donut {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-.rpt-grid-financial-pair {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-
-/* ── COMPONENT BOX STYLING ── */
+/* ── GLASS CARD ─────────────────────────────────────────── */
 .rpt-glass-card {
     background: var(--p-card-surface);
     border: 1px solid var(--border-premium);
@@ -588,8 +638,11 @@ document.addEventListener("DOMContentLoaded", function () {
     overflow: hidden;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    min-width: 0;
+    box-sizing: border-box;
 }
 
+/* ── PAGE HEADER ────────────────────────────────────────── */
 .rpt-premium-header {
     display: flex;
     align-items: center;
@@ -600,139 +653,235 @@ document.addEventListener("DOMContentLoaded", function () {
     padding: 20px 28px;
     box-shadow: var(--rpt-premium-glow);
     backdrop-filter: blur(12px);
+    gap: 16px;
+    flex-wrap: wrap;
 }
 .header-left-cluster { display: flex; align-items: center; gap: 16px; }
-.title-accent-bar { width: 4px; height: 32px; background: linear-gradient(135deg, var(--p-sapphire), var(--p-amethyst)); border-radius: 4px; }
-.rpt-title-lux { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.5px; background: linear-gradient(135deg, var(--text-main), var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.rpt-subtitle-lux { display: none; }
-
-.header-right-cluster { display: flex; align-items: center; gap: 16px; }
-.rpt-date-pill-lux {
-    display: flex; align-items: center; gap: 10px; background: rgba(148, 163, 184, 0.06);
-    border: 1px solid var(--border-premium); border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600; color: var(--p-sapphire);
+.title-accent-bar {
+    width: 4px; height: 32px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--p-sapphire), var(--p-amethyst));
+    border-radius: 4px;
 }
-.user-profile-plate { display: flex; align-items: center; gap: 12px; }
-.avatar-ring-premium { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-premium); background: var(--p-bg); display: flex; align-items: center; justify-content: center; color: var(--p-sapphire); }
+.rpt-title-lux {
+    font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--text-main), var(--text-muted));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.rpt-subtitle-lux { display: none; }
+.header-right-cluster { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.rpt-date-pill-lux {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(148,163,184,0.06);
+    border: 1px solid var(--border-premium);
+    border-radius: 20px; padding: 6px 16px;
+    font-size: 13px; font-weight: 600; color: var(--p-sapphire);
+    white-space: nowrap;
+}
+.user-profile-plate { display: flex; align-items: center; gap: 10px; }
+.avatar-ring-premium {
+    width: 38px; height: 38px; border-radius: 50%; overflow: hidden;
+    border: 2px solid var(--border-premium); background: var(--p-bg);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--p-sapphire); flex-shrink: 0;
+}
 .avatar-ring-premium img { width: 100%; height: 100%; object-fit: cover; }
-.profile-meta-text { font-size: 14px; font-weight: 600; color: var(--text-main); }
+.profile-meta-text {
+    font-size: 14px; font-weight: 600; color: var(--text-main);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 140px;
+}
 
-/* KPI Blocks elements */
+/* ── MAIN 2-COLUMN GRID ─────────────────────────────────── */
+.rpt-dashboard-main-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    min-width: 0;
+}
+.rpt-grid-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+}
+
+/* ── KPI QUAD (left column, 2×2) ────────────────────────── */
+.rpt-grid-mini-quad {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 20px;
+}
+
+/* ── RIGHT COLUMN 2×2 QUAD ──────────────────────────────── */
+/*
+   All four cards live here:
+   [Members donut]  [Complaints donut]
+   [Indiv. revenue] [Partner revenue]
+*/
+.rpt-right-quad {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    grid-template-rows: auto auto;
+    gap: 20px;
+}
+
+/* ── KPI CARD INTERNALS ─────────────────────────────────── */
 .rpt-kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-.rpt-kpi-caption { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.lux-icon-wrap { color: var(--p-sapphire); font-size: 18px; opacity: 0.8; }
-.rpt-kpi-value-lux { font-size: 34px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; letter-spacing: -0.5px; }
-.rpt-kpi-metric-footer { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-muted); }
-.metric-trend-pill { font-weight: 600; display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px; border-radius: 20px; }
-.status-positive .metric-trend-pill { color: var(--p-emerald); background: rgba(16, 185, 129, 0.1); }
-.status-negative .metric-trend-pill { color: var(--p-crimson); background: rgba(244, 63, 94, 0.1); }
+.rpt-kpi-caption { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; word-break: break-word; }
+.lux-icon-wrap { color: var(--p-sapphire); font-size: 18px; opacity: 0.8; flex-shrink: 0; margin-left: 8px; }
+.rpt-kpi-value-lux { font-size: 34px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; letter-spacing: -0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rpt-kpi-metric-footer { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-muted); width: 100%; flex-wrap: wrap; }
+.metric-trend-pill { font-weight: 600; display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+.status-positive .metric-trend-pill { color: var(--p-emerald); background: rgba(16,185,129,0.1); }
+.status-negative .metric-trend-pill { color: var(--p-crimson);  background: rgba(244,63,94,0.1); }
+.footer-meta-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Donut & Segment Blocks Layout */
-.donut-value-header { font-size: 28px; font-weight: 700; margin-bottom: 14px; color: var(--text-main); }
-.donut-integration-flex { display: flex; align-items: center; gap: 16px; }
-.canvas-chart-holder { width: 85px; height: 85px; flex-shrink: 0; }
-.donut-custom-legend { display: flex; flex-direction: column; gap: 6px; }
-.legend-item-premium { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
-.legend-indicator-dot { width: 8px; height: 8px; border-radius: 50%; }
+/* ── DONUT CARDS ────────────────────────────────────────── */
+.donut-value-header { font-size: 28px; font-weight: 700; margin-bottom: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.donut-integration-flex { display: flex; align-items: center; gap: 14px; }
+.canvas-chart-holder { width: 80px; height: 80px; flex-shrink: 0; }
+.donut-custom-legend { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.legend-item-premium { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; color: var(--text-muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.legend-indicator-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-/* Financial Component Row Elements */
+/* ── FINANCIAL CARDS ────────────────────────────────────── */
 .financial-header-inline { display: flex; justify-content: space-between; align-items: center; }
-.fin-icon-badge { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-.badge-purple { background: rgba(109, 40, 217, 0.1); color: var(--p-amethyst); }
-.badge-green { background: rgba(15, 118, 110, 0.1); color: var(--p-emerald); }
-.fin-percentage-pill { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; }
-.text-purple { color: var(--p-amethyst); background: rgba(109, 40, 217, 0.08); }
-.text-green { color: var(--p-emerald); background: rgba(15, 118, 110, 0.08); }
+.fin-icon-badge { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.badge-purple { background: rgba(109,40,217,0.1); color: var(--p-amethyst); }
+.badge-green  { background: rgba(15,118,110,0.1); color: var(--p-emerald);  }
+.fin-percentage-pill { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
+.text-purple { color: var(--p-amethyst); background: rgba(109,40,217,0.08); }
+.text-green  { color: var(--p-emerald);  background: rgba(15,118,110,0.08); }
 .fin-caption { font-size: 13px; font-weight: 600; color: var(--text-muted); display: block; text-transform: uppercase; letter-spacing: 0.5px; }
-.fin-value-row { display: flex; align-items: baseline; gap: 4px; margin: 6px 0; }
+.fin-value-row { display: flex; align-items: baseline; gap: 4px; margin: 6px 0; flex-wrap: wrap; }
 .fin-currency { font-size: 16px; font-weight: 700; color: var(--p-sapphire); }
-.fin-main-amount { font-size: 26px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
+.fin-main-amount { font-size: 24px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .fin-subtext-footnote { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
-/* Chart Containers and Labels styling */
+/* ── CHART CARDS ────────────────────────────────────────── */
 .premium-card-container { padding: 24px; }
-.premium-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.premium-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
 .box-main-heading { font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0; letter-spacing: -0.2px; }
 .box-sub-heading { font-size: 12px; color: var(--text-muted); margin: 4px 0 0; font-weight: 500; }
-.dropdown-pill-premium { font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-premium); background: rgba(148, 163, 184, 0.03); }
-.chart-canvas-wrapper { position: relative; height: 190px; width: 100%; }
+.dropdown-pill-premium { font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-premium); background: rgba(148,163,184,0.03); flex-shrink: 0; white-space: nowrap; }
+.chart-canvas-wrapper { position: relative; height: 190px; width: 100%; overflow: hidden; }
 
-/* Refined Clean Layout Tables Components */
+/* ── DATA TABLES ────────────────────────────────────────── */
 .table-card-premium { padding: 24px 0 0; }
-.header-padding-leeway { padding: 0 24px; margin-bottom: 16px; }
-.count-badge-luxury-tag { font-size: 11px; font-weight: 700; color: var(--p-sapphire); background: rgba(30, 58, 138, 0.08); padding: 4px 12px; border-radius: 20px; text-transform: uppercase; }
-.premium-table-scroll-container { overflow-x: auto; width: 100%; }
-.lux-data-table { width: 100%; border-collapse: collapse; text-align: left; }
-.lux-data-table thead th { color: var(--text-muted); padding: 12px 24px; font-size: 11px; font-weight: 600; border-bottom: 1px solid var(--border-premium); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(148, 163, 184, 0.02); }
+.header-padding-leeway { padding: 0 24px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.header-action-addons { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.count-badge-luxury-tag { font-size: 11px; font-weight: 700; color: var(--p-sapphire); background: rgba(30,58,138,0.08); padding: 4px 12px; border-radius: 20px; text-transform: uppercase; white-space: nowrap; }
+.premium-table-scroll-container { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+.lux-data-table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+.lux-data-table thead th { color: var(--text-muted); padding: 12px 24px; font-size: 11px; font-weight: 600; border-bottom: 1px solid var(--border-premium); text-transform: uppercase; letter-spacing: 0.5px; background: rgba(148,163,184,0.02); }
 .lux-data-table tbody td { padding: 14px 24px; font-size: 13px; font-weight: 500; border-bottom: 1px solid var(--border-premium); }
 .lux-data-table tbody tr:last-child td { border-bottom: none; }
-
 .table-user-profile-identity { display: flex; align-items: center; gap: 10px; }
-.avatar-letter-premium { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: rgba(30, 58, 138, 0.1); color: var(--p-sapphire); }
-.identity-bold-txt { font-weight: 600; color: var(--text-main); }
-.cell-muted-text { color: var(--text-muted); font-weight: 500; }
+.avatar-letter-premium { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: rgba(30,58,138,0.1); color: var(--p-sapphire); flex-shrink: 0; }
+.identity-bold-txt  { font-weight: 600; color: var(--text-main); }
+.cell-muted-text    { color: var(--text-muted); font-weight: 500; }
 .cell-identity-code { font-weight: 700; color: var(--p-sapphire); font-size: 12px; }
-.table-inline-icon { margin-right: 6px; color: var(--text-muted); font-size: 12px; }
+.table-inline-icon  { margin-right: 6px; color: var(--text-muted); font-size: 12px; }
+.empty-table-fallback-row { text-align: center; padding: 32px 24px !important; }
+.fallback-flex-center { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted); font-size: 13px; }
 
-/* Semantic Status Badge Configurations */
-.lux-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; text-transform: uppercase; letter-spacing: 0.3px; }
-.lux-badge.status-delivered, .lux-badge.status-resolved, .lux-badge.status-closed { background: rgba(16, 185, 129, 0.12); color: var(--p-emerald); }
-.lux-badge.status-in_progress, .lux-badge.status-investigating { background: rgba(245, 158, 11, 0.12); color: var(--p-luxury-gold); }
-.lux-badge.status-open { background: rgba(244, 63, 94, 0.12); color: var(--p-crimson); }
+/* ── STATUS BADGES ──────────────────────────────────────── */
+.lux-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+.lux-badge.status-delivered,
+.lux-badge.status-resolved,
+.lux-badge.status-closed       { background: rgba(16,185,129,0.12); color: var(--p-emerald); }
+.lux-badge.status-in_progress,
+.lux-badge.status-investigating { background: rgba(245,158,11,0.12);  color: var(--p-luxury-gold); }
+.lux-badge.status-open         { background: rgba(244,63,94,0.12);   color: var(--p-crimson); }
 
-/* ── CLICKABLE KPI CARDS & TABLE ROWS ── */
-.rpt-kpi-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
-.rpt-kpi-link .rpt-glass-card {
-    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s ease;
-    cursor: pointer;
-}
-.rpt-kpi-link:hover .rpt-glass-card {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px -10px rgba(30, 58, 138, 0.15);
-    border-color: var(--p-sapphire);
-}
-.rpt-legend-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    border-radius: 6px;
-    transition: background 0.15s ease;
-    padding: 4px 8px;
-    margin: -4px -8px;
-}
-.rpt-legend-link:hover {
-    background: rgba(30, 58, 138, 0.05);
-}
-.rpt-clickable-row {
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
-.rpt-clickable-row:hover {
-    background: rgba(30, 58, 138, 0.03) !important;
-}
-/* View all link in table headers */
-.rpt-view-all-link {
-    font-size: 12px;
-    color: var(--p-sapphire);
-    text-decoration: none;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: transform 0.15s ease, opacity 0.15s;
-}
+/* ── INTERACTIVE ────────────────────────────────────────── */
+.rpt-kpi-link { text-decoration: none; color: inherit; display: block; }
+.rpt-kpi-link .rpt-glass-card { transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), box-shadow 0.22s cubic-bezier(0.4,0,0.2,1), border-color 0.22s ease; cursor: pointer; }
+.rpt-kpi-link:hover .rpt-glass-card { transform: translateY(-4px); box-shadow: 0 12px 30px -10px rgba(30,58,138,0.15); border-color: var(--p-sapphire); }
+.rpt-legend-link { text-decoration: none; color: inherit; display: block; border-radius: 6px; transition: background 0.15s; padding: 4px 8px; margin: -4px -8px; }
+.rpt-legend-link:hover { background: rgba(30,58,138,0.05); }
+.rpt-clickable-row { cursor: pointer; transition: background 0.15s; }
+.rpt-clickable-row:hover { background: rgba(30,58,138,0.03) !important; }
+.rpt-view-all-link { font-size: 12px; color: var(--p-sapphire); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 4px; transition: transform 0.15s, opacity 0.15s; white-space: nowrap; flex-shrink: 0; }
 .rpt-view-all-link:hover { opacity: 0.8; transform: translateX(2px); }
+.KPI-card-interactive { transition: transform 0.15s; }
 
-/* ── RESPONSIVE VIEWPORTS HANDLERS ── */
-@media(max-width: 1150px) {
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════ */
+
+/* 1150 — stack to single column */
+@media (max-width: 1150px) {
     .rpt-dashboard-main-grid { grid-template-columns: 1fr; }
 }
-@media(max-width: 600px) {
-    .rpt-grid-mini-quad, .rpt-grid-double-donut, .rpt-grid-financial-pair { grid-template-columns: 1fr; }
-    .rpt-premium-header { flex-direction: column; gap: 14px; align-items: flex-start; padding: 16px 20px; }
+
+/* 768 — tablet portrait */
+@media (max-width: 768px) {
+    .rpt-shell-premium { padding: 16px; gap: 16px; }
+    .rpt-premium-header { padding: 16px; gap: 12px; }
+    .rpt-title-lux { font-size: 22px; }
+    .header-right-cluster { width: 100%; justify-content: space-between; }
+    .chart-canvas-wrapper { height: 160px; }
+    .rpt-glass-card { padding: 18px; }
+    .premium-card-container { padding: 18px; }
+    .table-card-premium { padding: 18px 0 0; }
+    .header-padding-leeway { padding: 0 18px; }
+    .lux-data-table thead th,
+    .lux-data-table tbody td { padding: 12px 18px; }
+}
+
+/* 600 — phones landscape */
+@media (max-width: 600px) {
+    .rpt-shell-premium { padding: 12px; gap: 14px; }
+    .rpt-grid-mini-quad { gap: 12px; }
+    .rpt-right-quad { gap: 12px; }
+    .canvas-chart-holder { width: 68px; height: 68px; }
+    .donut-value-header { font-size: 20px; margin-bottom: 8px; }
+    .rpt-kpi-value-lux { font-size: 28px; }
+    .rpt-kpi-caption { font-size: 11.5px; }
+    .fin-main-amount { font-size: 20px; }
+    .rpt-glass-card { padding: 14px; }
+    .premium-card-container { padding: 14px; }
+    .table-card-premium { padding: 14px 0 0; }
+    .header-padding-leeway { padding: 0 14px; }
+    .lux-data-table thead th,
+    .lux-data-table tbody td { padding: 10px 14px; }
+    .chart-canvas-wrapper { height: 150px; }
+    .profile-meta-text { display: none; }
+}
+
+/* 480 — standard phones */
+@media (max-width: 480px) {
+    /* KPI quad → single column */
+    .rpt-grid-mini-quad { grid-template-columns: 1fr; gap: 10px; }
+    .rpt-kpi-value-lux { font-size: 32px; }
+
+    /* Right quad stays 2×2 — just tighter */
+    .rpt-right-quad { gap: 10px; }
+    .canvas-chart-holder { width: 72px; height: 72px; }
+    .donut-value-header { font-size: 20px; }
+    .fin-main-amount { font-size: 18px; }
+    .chart-canvas-wrapper { height: 140px; }
+}
+
+/* 380 — small phones */
+@media (max-width: 380px) {
+    .rpt-shell-premium { padding: 10px; gap: 12px; }
+    .rpt-glass-card { padding: 12px; }
+    .premium-card-container { padding: 12px; }
+    .table-card-premium { padding: 12px 0 0; }
+    .header-padding-leeway { padding: 0 12px; }
+    .lux-data-table thead th,
+    .lux-data-table tbody td { padding: 10px 12px; }
+    .rpt-title-lux { font-size: 19px; }
+    .rpt-kpi-value-lux { font-size: 28px; }
+    .fin-main-amount { font-size: 16px; }
+    .donut-value-header { font-size: 18px; }
+    .chart-canvas-wrapper { height: 130px; }
+    .rpt-date-pill-lux span { display: none; }
+
+    /* On very small screens stack the right quad too */
+    .rpt-right-quad { grid-template-columns: 1fr; }
 }
 </style>
 {% endblock %}

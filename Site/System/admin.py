@@ -58,7 +58,6 @@ class IndividualMemberAdmin(admin.ModelAdmin):
         "email",
     )
 
-    readonly_fields = ("amount", "membership_number", "created_at")
     ordering = ("-created_at",)
 
 class VehicleInline(admin.TabularInline):

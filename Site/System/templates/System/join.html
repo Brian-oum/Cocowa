@@ -18,13 +18,24 @@
         <!-- =========================
              MESSAGES
         ========================== -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert-message">
-                    {{ message }}
+       {% if messages %}
+    <div class="messages-wrapper">
+        {% for message in messages %}
+            <div class="alert-message {% if message.tags %}msg-{{ message.tags }}{% endif %}">
+                <div class="msg-icon-flex">
+                    {% if message.tags == 'success' %}
+                        <i class="fa-regular fa-circle-check"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fa-regular fa-circle-xmark"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-info"></i>
+                    {% endif %}
+                    <span class="msg-text-content">{{ message }}</span>
                 </div>
-            {% endfor %}
-        {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
         <!-- =========================
              FORM
@@ -349,17 +360,26 @@
     text-decoration:none;
 }
 
-.alert-message{
+/* ── SUCCESS DYNAMICS (Green Tint Palette) ── */
+.alert-message.msg-success {
+    background: rgba(16, 185, 129, 0.08); /* Transparent soft emerald background */
+    color: #0f766e;                       /* Premium deep teal/green text */
+    border-color: rgba(16, 185, 129, 0.2);
+}
 
-    background:#ffe5e5;
+/* ── ERROR DYNAMICS (Red Tint Palette) ── */
+.alert-message.msg-error,
+.alert-message.msg-danger {
+    background: rgba(244, 63, 94, 0.08);  /* Transparent soft crimson background */
+    color: #be123c;                       /* Premium deep rich red text */
+    border-color: rgba(244, 63, 94, 0.2);
+}
 
-    color:#c62828;
-
-    padding:15px;
-
-    border-radius:10px;
-
-    margin-bottom:20px;
+/* ── DEFAULT / INFO DYNAMICS (Fallback Palette) ── */
+.alert-message.msg-info {
+    background: rgba(30, 58, 138, 0.06);
+    color: #1e3a8a;
+    border-color: rgba(30, 58, 138, 0.15);
 }
 
 @media(max-width:768px){
