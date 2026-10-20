@@ -4,6 +4,24 @@
 {% block content %}
 
 <div class="profile-page-container">
+{% if messages %}
+    <div class="messages-wrapper">
+        {% for message in messages %}
+            <div class="alert-message {% if message.tags %}msg-{{ message.tags }}{% endif %}">
+                <div class="msg-icon-flex">
+                    {% if message.tags == 'success' %}
+                        <i class="fa-regular fa-circle-check"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fa-regular fa-circle-xmark"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-info"></i>
+                    {% endif %}
+                    <span class="msg-text-content">{{ message }}</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
     <!-- HEADER -->
     <div class="profile-header-card">
@@ -102,31 +120,16 @@
                 <div class="vehicle-row">
 
                     <!-- VEHICLE TYPE -->
-                    <select class="vehicle-type" required>
+                     <select class="vehicle-type" required>
+                    <option value="">Select Vehicle Type</option>
 
-                        <option value="">
-                            Select Vehicle Type
+                    {% for value, label in vehicle_choices %}
+                        <option value="{{ value }}"
+                            {% if v.vehicle_type == value %}selected{% endif %}>
+                            {{ label }}
                         </option>
-
-                        <option value="town_service"
-                            {% if v.vehicle_type == "town_service" %}
-                                selected
-                            {% endif %}>
-
-                            Nairobi Town Service Vehicle
-
-                        </option>
-
-                        <option value="long_distance"
-                            {% if v.vehicle_type == "long_distance" %}
-                                selected
-                            {% endif %}>
-
-                            Long Distance Vehicle
-
-                        </option>
-
-                    </select>
+                    {% endfor %}
+                </select>
 
                     <!-- NUMBER PLATE -->
                     <input type="text"
@@ -157,21 +160,13 @@
                 <!-- DEFAULT EMPTY ROW -->
                 <div class="vehicle-row">
 
-                    <select class="vehicle-type" required>
+                     <select class="vehicle-type" required>
+                    <option value="">Select Vehicle Type</option>
 
-                        <option value="">
-                            Select Vehicle Type
-                        </option>
-
-                        <option value="nairobi">
-                            Nairobi Vehicle
-                        </option>
-
-                        <option value="long_distance">
-                            Long Distance Vehicle
-                        </option>
-
-                    </select>
+                    {% for value, label in vehicle_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
 
                     <input type="text"
                            class="number-plate"
@@ -225,96 +220,65 @@
 ========================== -->
 <script>
 
+const vehicleChoices = [
+    {% for value, label in vehicle_choices %}
+        { value: "{{ value }}", label: "{{ label }}" },
+    {% endfor %}
+];
+
 function addVehicleRow() {
 
-    const container =
-        document.getElementById('vehicleContainer');
+    const container = document.getElementById('vehicleContainer');
+
+    const options = vehicleChoices.map(v =>
+        `<option value="${v.value}">${v.label}</option>`
+    ).join("");
 
     const row = document.createElement('div');
 
     row.className = 'vehicle-row';
 
     row.innerHTML = `
-
         <select class="vehicle-type" required>
-
-            <option value="">
-                Select Vehicle Type
-            </option>
-
-            <option value="town_service">
-                Nairobi Vehicle
-            </option>
-
-            <option value="long_distance">
-                Long Distance Vehicle
-            </option>
-
+            <option value="">Select Vehicle Type</option>
+            ${options}
         </select>
 
-        <input type="text"
-               class="number-plate"
-               placeholder="Number Plate"
-               required>
+        <input type="text" class="number-plate" placeholder="Number Plate" required>
+        <input type="text" class="vehicle-route" placeholder="Route" required>
 
-        <input type="text"
-               class="vehicle-route"
-               placeholder="Route"
-               required>
-
-        <button type="button"
-                class="remove-btn"
-                onclick="removeVehicle(this)">
-
-            <i class="fa-solid fa-trash"></i>
-
+        <button type="button" class="remove-btn" onclick="removeVehicle(this)">
+            🗑
         </button>
-
     `;
 
     container.appendChild(row);
 }
 
 function removeVehicle(btn) {
-
-    const rows =
-        document.querySelectorAll('.vehicle-row');
-
+    const rows = document.querySelectorAll('.vehicle-row');
     if (rows.length > 1) {
         btn.parentElement.remove();
     }
-
 }
 
-document.getElementById('saccoForm')
-.addEventListener('submit', function(e) {
+document.getElementById('saccoForm').addEventListener('submit', function () {
 
-    const rows =
-        document.querySelectorAll('.vehicle-row');
-
+    const rows = document.querySelectorAll('.vehicle-row');
     const vehicles = [];
 
     rows.forEach(row => {
-
         vehicles.push({
-
-            vehicle_type:
-                row.querySelector('.vehicle-type').value,
-
-            number_plate:
-                row.querySelector('.number-plate').value,
-
-            route:
-                row.querySelector('.vehicle-route').value
-
+            vehicle_type: row.querySelector('.vehicle-type').value,
+            number_plate: row.querySelector('.number-plate').value,
+            route: row.querySelector('.vehicle-route').value
         });
-
     });
 
     document.getElementById('vehiclesData').value =
         JSON.stringify(vehicles);
-
 });
+
 </script>
 
 <!-- =========================
@@ -463,6 +427,27 @@ document.getElementById('saccoForm')
     font-size:16px;
     font-weight:700;
     cursor:pointer;
+}
+/* ── SUCCESS DYNAMICS (Green Tint Palette) ── */
+.alert-message.msg-success {
+    background: rgba(16, 185, 129, 0.08); /* Transparent soft emerald background */
+    color: #0f766e;                       /* Premium deep teal/green text */
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+/* ── ERROR DYNAMICS (Red Tint Palette) ── */
+.alert-message.msg-error,
+.alert-message.msg-danger {
+    background: rgba(244, 63, 94, 0.08);  /* Transparent soft crimson background */
+    color: #be123c;                       /* Premium deep rich red text */
+    border-color: rgba(244, 63, 94, 0.2);
+}
+
+/* ── DEFAULT / INFO DYNAMICS (Fallback Palette) ── */
+.alert-message.msg-info {
+    background: rgba(30, 58, 138, 0.06);
+    color: #1e3a8a;
+    border-color: rgba(30, 58, 138, 0.15);
 }
 
 .submit-btn:hover{

@@ -33,6 +33,8 @@ from django.utils.html import strip_tags
 import logging as _logging
 _email_logger = _logging.getLogger("cocowa.email")
 
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
 
 def _send_email(subject, to_email, html_body):
     """Send one HTML+text email. Silently logs failures."""
@@ -2181,122 +2183,76 @@ def update_data_consent(request):
 # ]
 # COMPLETE SACCO PROFILE
 # ==========================================
+import json
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def complete_sacco_profile(request):
 
-    member, _ = SaccoMember.objects.get_or_create(
-        user=request.user
-    )
-
-    profile, _ = UserProfile.objects.get_or_create(
-        user=request.user
-    )
+    member, _ = SaccoMember.objects.get_or_create(user=request.user)
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
     edit_mode = request.GET.get("edit") == "1"
-
-    existing_vehicles = Vehicle.objects.filter(
-        sacco=member
-    )
+    existing_vehicles = Vehicle.objects.filter(sacco=member)
 
     if request.method == "POST":
 
-        member.sacco_name = request.POST.get(
-            "sacco_name"
-        )
-
-        member.phone_number = request.POST.get(
-            "phone_number"
-        )
-
-        member.email = request.POST.get(
-            "email"
-        )
-
+        member.sacco_name = request.POST.get("sacco_name")
+        member.phone_number = request.POST.get("phone_number")
+        member.email = request.POST.get("email")
         member.save()
 
-        # Remove old vehicles
+        # delete old vehicles
         member.vehicles.all().delete()
 
-        # Save vehicles
-        vehicles_json = request.POST.get(
-            "vehicles_data"
-        )
+        vehicles_json = request.POST.get("vehicles_data")
 
         if vehicles_json:
-
             try:
+                vehicles = json.loads(vehicles_json)
 
-                vehicles = json.loads(
-                    vehicles_json
-                )
+                allowed_types = [c[0] for c in Vehicle.VEHICLE_TYPES]
+
+                # legacy mapping (old values)
+                LEGACY_MAP = {
+                    "nairobi": "minibus_matatu",
+                    "town_service": "minibus_matatu",
+                }
 
                 for v in vehicles:
 
-                    vehicle_type = v.get(
-                        "vehicle_type"
-                    )
+                    vehicle_type = v.get("vehicle_type")
 
-                    # Legacy support
-                    if vehicle_type == "nairobi":
-                        vehicle_type = "town_service"
-
-                    allowed_types = [
-                        choice[0]
-                        for choice in Vehicle.VEHICLE_TYPES
-                    ]
+                    # apply legacy fix
+                    vehicle_type = LEGACY_MAP.get(vehicle_type, vehicle_type)
 
                     if vehicle_type not in allowed_types:
-
-                        print(
-                            f"INVALID VEHICLE TYPE: {vehicle_type}"
-                        )
-
                         continue
 
                     Vehicle.objects.create(
                         sacco=member,
                         vehicle_type=vehicle_type,
-                        number_plate=v.get(
-                            "number_plate"
-                        ),
-                        route=v.get(
-                            "route"
-                        ),
+                        number_plate=v.get("number_plate"),
+                        route=v.get("route"),
                     )
 
             except json.JSONDecodeError:
-
-                messages.error(
-                    request,
-                    "Invalid vehicle data submitted."
-                )
-
-                return redirect(
-                    "complete_sacco_profile"
-                )
+                messages.error(request, "Invalid vehicle data submitted.")
+                return redirect("complete_sacco_profile")
 
         if not profile.profile_completed:
-
             profile.profile_completed = True
             profile.save()
+
             email_profile_completed(request.user, "sacco")
-            messages.success(
-                request,
-                "SACCO profile completed successfully!"
-            )
 
-            return redirect(
-                "payment_page"
-            )
+            messages.success(request, "SACCO profile completed successfully!")
+            return redirect("payment_page", 'individual', member.id)
 
-        messages.success(
-            request,
-            "SACCO profile updated successfully!"
-        )
-
-        return redirect(
-            "sacco_dashboard"
-        )
+        messages.success(request, "SACCO profile updated successfully!")
+        return redirect("sacco_dashboard")
 
     context = {
         "vehicle_choices": Vehicle.VEHICLE_TYPES,
@@ -2307,11 +2263,7 @@ def complete_sacco_profile(request):
         "edit_mode": edit_mode,
     }
 
-    return render(
-        request,
-        "System/sacco_profile.html",
-        context
-    )
+    return render(request, "System/sacco_profile.html", context)
 # ==========================================
 # COMPLETE PARTNER PROFILE
 # ==========================================

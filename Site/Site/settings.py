@@ -23,9 +23,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--m(4a2hrzu@xwvpa-f)(p^&&^7(x5q3i)4#k)9t65q(nf((4b1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True  # Set to False in production
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'cocowa.co.ke',
+    'www.cocowa.co.ke',
+    '127.0.0.1',
+    'localhost',
+]
+
+# ─────────────────────────────────────────────
+# CSRF FIX — required when behind Nginx/proxy
+# ─────────────────────────────────────────────
+CSRF_TRUSTED_ORIGINS = [
+    'https://cocowa.co.ke',
+    'https://www.cocowa.co.ke',
+    'http://cocowa.co.ke',
+    'http://www.cocowa.co.ke',
+]
+
+# Tell Django it's sitting behind a reverse proxy
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
